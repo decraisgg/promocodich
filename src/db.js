@@ -147,6 +147,20 @@ function seed() {
     _seedInitial();
   }
   _seedV2();
+  _ensureDefaults();
+}
+
+// Ensure newer settings keys have a sensible default without clobbering
+// values the admin has set. Safe to run on every boot.
+function _ensureDefaults() {
+  const defaults = {
+    favicon_url: '',
+    giveaways_icon: '🎁',
+    home_sections: 'promocodes,sites,articles',
+  };
+  for (const [k, v] of Object.entries(defaults)) {
+    if (getSettingStmt.get(k) === undefined) setSetting(k, v);
+  }
 }
 
 function _seedV2() {
@@ -245,6 +259,9 @@ function _seedInitial() {
     contacts_email: 'support@promocodich.ru',
     contacts_text: 'По вопросам сотрудничества и размещения рекламы пишите нам.',
     logo_url: '',
+    favicon_url: '',
+    giveaways_icon: '🎁',
+    home_sections: 'promocodes,sites,articles',
     dirty: '1',
     seeded: '1',
   };

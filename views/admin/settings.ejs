@@ -2,7 +2,7 @@
 
 <div class="page-head">
   <h1>Настройки сайта</h1>
-  <p class="page-sub">Название, логотип, описание и контакты сайта.</p>
+  <p class="page-sub">Название, логотип, фавикон, описание, контакты и порядок разделов главной страницы.</p>
 </div>
 
 <form method="post" action="/admin/settings" class="card form">
@@ -22,7 +22,18 @@
 
     <%- include('partials/image-field', { name: 'logo_url', value: values.logo_url, label: 'Логотип сайта (показывается в шапке вместо иконки %)' }) %>
     <div class="field field--full field-hint-standalone">
-      Рекомендуемый размер логотипа: 38×38 пикселей, PNG с прозрачным фоном.
+      Рекомендуемый размер логотипа: до 56 пикселей в высоту, PNG с прозрачным фоном.
+    </div>
+
+    <%- include('partials/image-field', { name: 'favicon_url', value: values.favicon_url, label: 'Favicon (иконка во вкладке браузера)' }) %>
+    <div class="field field--full field-hint-standalone">
+      Рекомендуемый размер фавикона: 32×32 или 64×64 пикселя, формат PNG / ICO / SVG.
+    </div>
+
+    <div class="field">
+      <label>Иконка раздела «Розыгрыши» в шапке</label>
+      <input type="text" name="giveaways_icon" class="input" value="<%= values.giveaways_icon %>" placeholder="🎁" maxlength="8">
+      <span class="field-hint">Эмодзи или символ слева от текста «Розыгрыши». По умолчанию 🎁.</span>
     </div>
 
     <div class="field">
@@ -37,8 +48,58 @@
       <label>Текст на странице контактов</label>
       <textarea name="contacts_text" class="input" rows="2"><%= values.contacts_text %></textarea>
     </div>
+
+    <div class="field field--full">
+      <label>Порядок разделов на главной странице</label>
+      <span class="field-hint">Перетаскивайте разделы кнопками ↑ / ↓. Баннеры всегда показываются сверху.</span>
+      <div class="reorder-list" id="reorderList">
+        <% homeSections.forEach(function(sec){ %>
+          <div class="reorder-item" data-key="<%= sec.key %>">
+            <span class="reorder-handle">≡</span>
+            <span class="reorder-label"><%= sec.label %></span>
+            <div class="reorder-btns">
+              <button type="button" class="reorder-up" aria-label="Выше">↑</button>
+              <button type="button" class="reorder-down" aria-label="Ниже">↓</button>
+            </div>
+          </div>
+        <% }); %>
+      </div>
+      <input type="hidden" name="home_sections" id="homeSectionsInput" value="<%= homeSections.map(function(s){ return s.key; }).join(',') %>">
+    </div>
   </div>
   <div class="form-actions"><button class="btn btn-primary" type="submit">Сохранить настройки</button></div>
 </form>
+
+<script>
+(function () {
+  var list = document.getElementById('reorderList');
+  var input = document.getElementById('homeSectionsInput');
+  if (!list || !input) return;
+
+  function sync() {
+    var keys = Array.prototype.map.call(list.querySelectorAll('.reorder-item'), function (el) {
+      return el.getAttribute('data-key');
+    });
+    input.value = keys.join(',');
+  }
+
+  list.addEventListener('click', function (e) {
+    var btn = e.target.closest('.reorder-up, .reorder-down');
+    if (!btn) return;
+    var item = btn.closest('.reorder-item');
+    if (!item) return;
+    if (btn.classList.contains('reorder-up')) {
+      var prev = item.previousElementSibling;
+      if (prev) list.insertBefore(item, prev);
+    } else {
+      var next = item.nextElementSibling;
+      if (next) list.insertBefore(next, item);
+    }
+    sync();
+  });
+
+  sync();
+})();
+</script>
 
 <%- include('partials/admin-footer') %>

@@ -16,6 +16,21 @@ function baseLocals(snapshot) {
   };
 }
 
+// Known home-page content sections and their default order.
+const HOME_SECTIONS = ['promocodes', 'sites', 'articles'];
+function parseHomeSections(raw) {
+  const requested = String(raw || '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter((s) => HOME_SECTIONS.includes(s));
+  // De-duplicate, then append any known sections that were omitted.
+  const seen = new Set();
+  const order = [];
+  for (const s of requested) if (!seen.has(s)) { seen.add(s); order.push(s); }
+  for (const s of HOME_SECTIONS) if (!seen.has(s)) order.push(s);
+  return order;
+}
+
 router.get('/', (req, res) => {
   const snap = getPublishedSnapshot();
   const allBanners = snap.banners || [];
@@ -26,8 +41,6 @@ router.get('/', (req, res) => {
   const latestArticles = (snap.articles || []).slice(0, 6);
   // Global promos: no service_id
   const globalPromos = (snap.promocodes || []).filter((p) => !p.service_id);
-  // Active giveaways (up to 3 for homepage teaser)
-  const activeGiveaways = (snap.giveaways || []).slice(0, 3);
 
   res.render('public/home', {
     ...baseLocals(snap),
@@ -36,7 +49,7 @@ router.get('/', (req, res) => {
     smallBanners,
     promocodes: globalPromos,
     latestArticles,
-    activeGiveaways,
+    homeSections: parseHomeSections((snap.settings || {}).home_sections),
   });
 });
 

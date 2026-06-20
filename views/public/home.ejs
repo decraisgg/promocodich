@@ -34,124 +34,106 @@
   </div>
 </section>
 
-<!-- ПРОМОКОДЫ (БОНУСЫ) -->
-<section class="section" id="promocodes">
-  <div class="container">
-    <div class="section-head">
-      <h2 class="section-title"><span class="ico">%</span> Актуальные промокоды и бонусы</h2>
-      <p class="section-sub">Активируй коды и получай скидки на любимых цифровых сервисах</p>
-    </div>
+<%
+  // Render content sections in the admin-configured order.
+  (homeSections || ['promocodes','sites','articles']).forEach(function(sec){
+%>
 
-    <div class="promo-grid">
-      <% if (!promocodes.length) { %>
-        <p class="empty-note">Промокоды скоро появятся.</p>
-      <% } %>
-      <% promocodes.forEach(function(p){ %>
-        <article class="promo-card">
-          <div class="promo-top">
-            <div class="promo-logo">
-              <% if (p.image_url) { %>
-                <img src="<%= p.image_url %>" alt="<%= p.service_name %>">
-              <% } else { %>
-                <span class="promo-logo-fallback"><%= (p.service_name || '?').slice(0,2).toUpperCase() %></span>
+  <% if (sec === 'promocodes') { %>
+    <!-- ПРОМОКОДЫ (БОНУСЫ) -->
+    <section class="section" id="promocodes">
+      <div class="container">
+        <div class="section-head">
+          <h2 class="section-title"><span class="ico">%</span> Актуальные промокоды и бонусы</h2>
+          <p class="section-sub">Активируй коды и получай скидки на любимых цифровых сервисах</p>
+        </div>
+
+        <div class="promo-grid">
+          <% if (!promocodes.length) { %>
+            <p class="empty-note">Промокоды скоро появятся.</p>
+          <% } %>
+          <% promocodes.forEach(function(p){ %>
+            <article class="promo-card">
+              <div class="promo-top">
+                <div class="promo-logo">
+                  <% if (p.image_url) { %>
+                    <img src="<%= p.image_url %>" alt="<%= p.service_name %>">
+                  <% } else { %>
+                    <span class="promo-logo-fallback"><%= (p.service_name || '?').slice(0,2).toUpperCase() %></span>
+                  <% } %>
+                </div>
+                <div class="promo-titles">
+                  <h3 class="promo-service"><%= p.service_name %></h3>
+                  <% if (p.bonus_label) { %><span class="promo-bonus"><%= p.bonus_label %></span><% } %>
+                </div>
+              </div>
+              <% if (p.description) { %><p class="promo-desc"><%= p.description %></p><% } %>
+              <% if (p.code) { %>
+                <div class="promo-code" data-code="<%= p.code %>">
+                  <span class="promo-code-value"><%= p.code %></span>
+                  <button class="promo-code-copy" type="button">Копировать</button>
+                </div>
               <% } %>
-            </div>
-            <div class="promo-titles">
-              <h3 class="promo-service"><%= p.service_name %></h3>
-              <% if (p.bonus_label) { %><span class="promo-bonus"><%= p.bonus_label %></span><% } %>
-            </div>
-          </div>
-          <% if (p.description) { %><p class="promo-desc"><%= p.description %></p><% } %>
-          <% if (p.code) { %>
-            <div class="promo-code" data-code="<%= p.code %>">
-              <span class="promo-code-value"><%= p.code %></span>
-              <button class="promo-code-copy" type="button">Копировать</button>
-            </div>
-          <% } %>
-          <a class="promo-go" href="<%= p.link || '#' %>" target="_blank" rel="nofollow noopener">Получить бонус</a>
-        </article>
-      <% }); %>
-    </div>
-  </div>
-</section>
+              <a class="promo-go" href="<%= p.link || '#' %>" target="_blank" rel="nofollow noopener">Получить бонус</a>
+            </article>
+          <% }); %>
+        </div>
+      </div>
+    </section>
+  <% } %>
 
-<!-- СЕРВИСЫ -->
-<% if (services && services.length) { %>
-<section class="section section--services">
-  <div class="container">
-    <div class="section-head">
-      <h2 class="section-title"><span class="ico">★</span> Популярные сервисы</h2>
-      <a class="section-link" href="/services">Все сервисы →</a>
-    </div>
-    <div class="services-strip">
-      <% services.forEach(function(svc){ %>
-        <a class="service-chip" href="/services/<%= svc.slug %>" style="<%= svc.color ? '--svc-color:' + svc.color : '' %>">
-          <% if (svc.image_url) { %>
-            <img src="<%= svc.image_url %>" alt="<%= svc.name %>">
-          <% } else { %>
-            <span class="service-chip-icon"><%= svc.name.slice(0,2).toUpperCase() %></span>
-          <% } %>
-          <span class="service-chip-name"><%= svc.name %></span>
-          <span class="service-chip-arrow">→</span>
-        </a>
-      <% }); %>
-    </div>
-  </div>
-</section>
-<% } %>
+  <% if (sec === 'sites' && services && services.length) { %>
+    <!-- ПОПУЛЯРНЫЕ САЙТЫ -->
+    <section class="section section--sites">
+      <div class="container">
+        <div class="section-head">
+          <h2 class="section-title"><span class="ico">%</span> Популярные сайты</h2>
+          <a class="section-link" href="/services">Все сайты →</a>
+        </div>
+        <div class="sites-tiles">
+          <% services.forEach(function(svc){ %>
+            <a class="site-tile" href="/services/<%= svc.slug %>" style="<%= svc.color ? '--svc-color:' + svc.color : '' %>">
+              <div class="site-tile-logo">
+                <% if (svc.image_url) { %>
+                  <img src="<%= svc.image_url %>" alt="<%= svc.name %>">
+                <% } else { %>
+                  <span class="site-tile-logo-text"><%= svc.name %></span>
+                <% } %>
+              </div>
+              <div class="site-tile-name"><%= svc.name %></div>
+            </a>
+          <% }); %>
+        </div>
+      </div>
+    </section>
+  <% } %>
 
-<!-- РОЗЫГРЫШИ -->
-<% if (activeGiveaways && activeGiveaways.length) { %>
-<section class="section section--giveaways">
-  <div class="container">
-    <div class="section-head">
-      <h2 class="section-title"><span class="ico">🎁</span> Розыгрыши</h2>
-      <a class="section-link" href="/giveaways">Все розыгрыши →</a>
-    </div>
-    <div class="giveaway-strip">
-      <% activeGiveaways.forEach(function(g){ %>
-        <a class="giveaway-teaser" href="/giveaways/<%= g.slug %>">
-          <div class="giveaway-teaser-img<%= g.image_url ? '' : ' is-empty' %>"
-               <% if (g.image_url) { %>style="background-image:url('<%= g.image_url %>')"<% } %>>
-            <span class="giveaway-badge">Розыгрыш</span>
-          </div>
-          <div class="giveaway-teaser-body">
-            <h3 class="giveaway-teaser-title"><%= g.title %></h3>
-            <% if (g.prize) { %><div class="giveaway-prize">🏆 <%= g.prize %></div><% } %>
-            <% if (g.deadline) { %><div class="giveaway-deadline">до <%= g.deadline %></div><% } %>
-            <span class="giveaway-cta">Участвовать →</span>
-          </div>
-        </a>
-      <% }); %>
-    </div>
-  </div>
-</section>
-<% } %>
+  <% if (sec === 'articles' && latestArticles.length) { %>
+    <!-- ПОСЛЕДНИЕ СТАТЬИ -->
+    <section class="section">
+      <div class="container">
+        <div class="section-head">
+          <h2 class="section-title"><span class="ico">%</span> Последние статьи</h2>
+          <a class="section-link" href="/articles">Все статьи →</a>
+        </div>
+        <div class="article-grid">
+          <% latestArticles.forEach(function(a){ %>
+            <a class="article-card" href="/articles/<%= a.slug %>">
+              <div class="article-thumb<%= a.featured_image ? '' : ' is-empty' %>"
+                   <% if (a.featured_image) { %>style="background-image:url('<%= a.featured_image %>')"<% } %>>
+                <span class="article-cat"><%= a.categoryTitle %></span>
+              </div>
+              <div class="article-card-body">
+                <h3 class="article-card-title"><%= a.title %></h3>
+                <% if (a.excerpt) { %><p class="article-card-excerpt"><%= a.excerpt %></p><% } %>
+              </div>
+            </a>
+          <% }); %>
+        </div>
+      </div>
+    </section>
+  <% } %>
 
-<!-- ПОСЛЕДНИЕ СТАТЬИ -->
-<% if (latestArticles.length) { %>
-<section class="section">
-  <div class="container">
-    <div class="section-head">
-      <h2 class="section-title"><span class="ico">%</span> Последние статьи</h2>
-      <a class="section-link" href="/articles">Все статьи →</a>
-    </div>
-    <div class="article-grid">
-      <% latestArticles.forEach(function(a){ %>
-        <a class="article-card" href="/articles/<%= a.slug %>">
-          <div class="article-thumb<%= a.featured_image ? '' : ' is-empty' %>"
-               <% if (a.featured_image) { %>style="background-image:url('<%= a.featured_image %>')"<% } %>>
-            <span class="article-cat"><%= a.categoryTitle %></span>
-          </div>
-          <div class="article-card-body">
-            <h3 class="article-card-title"><%= a.title %></h3>
-            <% if (a.excerpt) { %><p class="article-card-excerpt"><%= a.excerpt %></p><% } %>
-          </div>
-        </a>
-      <% }); %>
-    </div>
-  </div>
-</section>
-<% } %>
+<% }); %>
 
 <%- include('partials/footer') %>

@@ -524,16 +524,49 @@ router.post('/giveaways/:id/delete', (req, res) => {
 });
 
 // --- Settings -----------------------------------------------------------
+const SETTINGS_KEYS = [
+  'site_title', 'tagline', 'intro_text', 'logo_url', 'favicon_url',
+  'giveaways_icon', 'home_sections',
+  'contacts_telegram', 'contacts_email', 'contacts_text',
+];
+const HOME_SECTION_DEFS = [
+  { key: 'promocodes', label: 'Актуальные промокоды и бонусы' },
+  { key: 'sites',      label: 'Популярные сайты' },
+  { key: 'articles',   label: 'Последние статьи' },
+];
+const HOME_SECTION_KEYS = HOME_SECTION_DEFS.map((d) => d.key);
+
+function normalizeHomeSections(raw) {
+  const requested = String(raw || '')
+    .split(',')
+    .map((x) => x.trim())
+    .filter((x) => HOME_SECTION_KEYS.includes(x));
+  const seen = new Set();
+  const order = [];
+  for (const x of requested) if (!seen.has(x)) { seen.add(x); order.push(x); }
+  for (const x of HOME_SECTION_KEYS) if (!seen.has(x)) order.push(x);
+  return order;
+}
+
 router.get('/settings', (req, res) => {
-  const keys = ['site_title', 'tagline', 'intro_text', 'logo_url', 'contacts_telegram', 'contacts_email', 'contacts_text'];
   const values = {};
-  for (const k of keys) values[k] = getSetting(k, '');
-  renderAdmin(req, res, 'admin/settings', { active: 'settings', values });
+  for (const k of SETTINGS_KEYS) values[k] = getSetting(k, '');
+  const order = normalizeHomeSections(values.home_sections);
+  const homeSections = order.map((key) => ({
+    key,
+    label: (HOME_SECTION_DEFS.find((d) => d.key === key) || {}).label || key,
+  }));
+  renderAdmin(req, res, 'admin/settings', { active: 'settings', values, homeSections });
 });
 
 router.post('/settings', (req, res) => {
-  const keys = ['site_title', 'tagline', 'intro_text', 'logo_url', 'contacts_telegram', 'contacts_email', 'contacts_text'];
-  for (const k of keys) setSetting(k, s(req.body[k]));
+  for (const k of SETTINGS_KEYS) {
+    if (k === 'home_sections') {
+      setSetting(k, normalizeHomeSections(req.body.home_sections).join(','));
+    } else {
+      setSetting(k, s(req.body[k]));
+    }
+  }
   markDirty();
   flash(req, 'success', 'Настройки сохранены.');
   res.redirect('/admin/settings');

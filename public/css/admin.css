@@ -138,6 +138,23 @@ textarea.input { resize: vertical; }
 .color-picker { width: 44px; height: 42px; border: 1px solid var(--line); border-radius: 8px; cursor: pointer; padding: 2px; flex: none; }
 .field-hint { font-size: 12px; color: var(--muted); margin-top: 2px; }
 .field-hint-standalone { color: var(--muted); font-size: 12px; padding: 4px 0; grid-column: 1 / -1; }
+
+/* ---------- Reorder list (home sections) ---------- */
+.reorder-list { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+.reorder-item {
+  display: flex; align-items: center; gap: 12px; padding: 12px 14px;
+  background: #fff; border: 1px solid var(--line); border-radius: 10px;
+}
+.reorder-handle { color: var(--muted); font-size: 18px; cursor: grab; user-select: none; }
+.reorder-label { flex: 1; font-weight: 700; font-size: 14px; }
+.reorder-btns { display: flex; gap: 6px; }
+.reorder-btns button {
+  width: 32px; height: 32px; border: 1px solid var(--line); background: #fff; border-radius: 8px;
+  cursor: pointer; font-size: 15px; line-height: 1; display: grid; place-items: center; transition: .15s;
+}
+.reorder-btns button:hover { border-color: var(--accent); color: var(--accent); }
+.reorder-item:first-child .reorder-up { opacity: .3; pointer-events: none; }
+.reorder-item:last-child .reorder-down { opacity: .3; pointer-events: none; }
 .btn-ghost { background: transparent; border-color: var(--line); color: var(--muted); }
 .btn-ghost:hover { background: var(--bg); color: var(--text); }
 .data-table { width: 100%; border-collapse: collapse; }
