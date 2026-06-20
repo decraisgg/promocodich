@@ -1,0 +1,38 @@
+<%- include('partials/header', { pageTitle: 'Статьи — ' + (site.site_title || 'ПРОМОКОДЫЧ') }) %>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <h2 class="section-title"><span class="ico">%</span> Статьи</h2>
+      <p class="section-sub">Гайды, новости и обзоры по цифровым сервисам</p>
+    </div>
+
+    <div class="cat-tabs">
+      <a href="/articles" class="cat-tab <%= !activeCategory ? 'active' : '' %>">Все</a>
+      <% (categories || []).forEach(function(c){ %>
+        <a href="/articles?category=<%= c.slug %>" class="cat-tab <%= activeCategory === c.slug ? 'active' : '' %>"><%= c.title %></a>
+      <% }); %>
+    </div>
+
+    <% if (!articles.length) { %>
+      <p class="empty-note">В этой категории пока нет статей.</p>
+    <% } %>
+
+    <div class="article-grid">
+      <% articles.forEach(function(a){ %>
+        <a class="article-card" href="/articles/<%= a.slug %>">
+          <div class="article-thumb<%= a.featured_image ? '' : ' is-empty' %>"
+               <% if (a.featured_image) { %>style="background-image:url('<%= a.featured_image %>')"<% } %>>
+            <span class="article-cat"><%= a.categoryTitle %></span>
+          </div>
+          <div class="article-card-body">
+            <h3 class="article-card-title"><%= a.title %></h3>
+            <% if (a.excerpt) { %><p class="article-card-excerpt"><%= a.excerpt %></p><% } %>
+          </div>
+        </a>
+      <% }); %>
+    </div>
+  </div>
+</section>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,65 @@
+<%- include('partials/header', { pageTitle: article.title + ' — ' + (site.site_title || 'ПРОМОКОДЫЧ') }) %>
+
+<article class="article-page">
+  <div class="container container--narrow">
+    <nav class="crumbs">
+      <a href="/">Главная</a> / <a href="/articles">Статьи</a> /
+      <a href="/articles?category=<%= article.category %>"><%= article.categoryTitle %></a>
+    </nav>
+
+    <span class="article-cat-pill"><%= article.categoryTitle %></span>
+    <h1 class="article-title"><%= article.title %></h1>
+    <% if (article.created_at) { %><div class="article-meta">Опубликовано: <%= article.created_at %></div><% } %>
+
+    <% if (article.featured_image) { %>
+      <div class="article-hero" style="background-image:url('<%= article.featured_image %>')"></div>
+    <% } %>
+
+    <div class="article-content">
+      <% (article.blocks || []).forEach(function(block){ %>
+        <% if (block.type === 'paragraph') { %>
+          <p><%- block.html %></p>
+        <% } else if (block.type === 'heading') { %>
+          <% if (block.level === 1) { %><h1 class="c-h1"><%= block.text %></h1>
+          <% } else if (block.level === 3) { %><h3 class="c-h3"><%= block.text %></h3>
+          <% } else { %><h2 class="c-h2"><%= block.text %></h2><% } %>
+        <% } else if (block.type === 'button') { %>
+          <div class="content-btn-wrap">
+            <a class="content-btn" href="<%= block.link || '#' %>" target="_blank" rel="nofollow noopener"><%= block.text || 'Перейти' %></a>
+          </div>
+        <% } else if (block.type === 'image' && block.url) { %>
+          <figure class="content-figure">
+            <img src="<%= block.url %>" alt="<%= block.captionEnabled ? block.caption : '' %>">
+            <% if (block.captionEnabled && block.caption) { %>
+              <figcaption><%= block.caption %></figcaption>
+            <% } %>
+            <% if (block.buttonEnabled && block.buttonText) { %>
+              <a class="content-btn content-btn--img" href="<%= block.buttonLink || '#' %>" target="_blank" rel="nofollow noopener"><%= block.buttonText %></a>
+            <% } %>
+          </figure>
+        <% } %>
+      <% }); %>
+    </div>
+
+    <% if (related && related.length) { %>
+      <div class="related">
+        <h2 class="section-title"><span class="ico">%</span> Похожие статьи</h2>
+        <div class="article-grid">
+          <% related.forEach(function(a){ %>
+            <a class="article-card" href="/articles/<%= a.slug %>">
+              <div class="article-thumb<%= a.featured_image ? '' : ' is-empty' %>"
+                   <% if (a.featured_image) { %>style="background-image:url('<%= a.featured_image %>')"<% } %>>
+                <span class="article-cat"><%= a.categoryTitle %></span>
+              </div>
+              <div class="article-card-body">
+                <h3 class="article-card-title"><%= a.title %></h3>
+              </div>
+            </a>
+          <% }); %>
+        </div>
+      </div>
+    <% } %>
+  </div>
+</article>
+
+<%- include('partials/footer') %>

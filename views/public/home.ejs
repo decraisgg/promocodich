@@ -1,0 +1,123 @@
+<%- include('partials/header') %>
+
+<!-- HERO: большой баннер по центру + два маленьких по бокам -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-grid">
+      <div class="hero-side">
+        <% if (smallBanners[0]) { %>
+          <%- include('partials/banner', { b: smallBanners[0], variant: 'small' }) %>
+        <% } %>
+      </div>
+
+      <div class="hero-main">
+        <% if (bigBanner) { %>
+          <%- include('partials/banner', { b: bigBanner, variant: 'big' }) %>
+        <% } else { %>
+          <div class="banner banner--big banner--noimg">
+            <div class="banner-content">
+              <span class="hero-badge">ТОЛЬКО НА ПРОМОКОДЫЧ</span>
+              <h1 class="banner-title"><%= site.tagline || 'Лучшие промокоды' %></h1>
+              <p class="banner-subtitle"><%= site.intro_text || '' %></p>
+              <a class="banner-btn" href="#promocodes">Смотреть промокоды</a>
+            </div>
+          </div>
+        <% } %>
+      </div>
+
+      <div class="hero-side">
+        <% if (smallBanners[1]) { %>
+          <%- include('partials/banner', { b: smallBanners[1], variant: 'small' }) %>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ПРОМОКОДЫ (БОНУСЫ) -->
+<section class="section" id="promocodes">
+  <div class="container">
+    <div class="section-head">
+      <h2 class="section-title"><span class="ico">%</span> Актуальные промокоды и бонусы</h2>
+      <p class="section-sub">Активируй коды и получай скидки на любимых цифровых сервисах</p>
+    </div>
+
+    <div class="promo-grid">
+      <% if (!promocodes.length) { %>
+        <p class="empty-note">Промокоды скоро появятся.</p>
+      <% } %>
+      <% promocodes.forEach(function(p){ %>
+        <article class="promo-card">
+          <div class="promo-top">
+            <div class="promo-logo">
+              <% if (p.image_url) { %>
+                <img src="<%= p.image_url %>" alt="<%= p.service_name %>">
+              <% } else { %>
+                <span class="promo-logo-fallback"><%= (p.service_name || '?').slice(0,2).toUpperCase() %></span>
+              <% } %>
+            </div>
+            <div class="promo-titles">
+              <h3 class="promo-service"><%= p.service_name %></h3>
+              <% if (p.bonus_label) { %><span class="promo-bonus"><%= p.bonus_label %></span><% } %>
+            </div>
+          </div>
+          <% if (p.description) { %><p class="promo-desc"><%= p.description %></p><% } %>
+          <% if (p.code) { %>
+            <div class="promo-code" data-code="<%= p.code %>">
+              <span class="promo-code-value"><%= p.code %></span>
+              <button class="promo-code-copy" type="button">Копировать</button>
+            </div>
+          <% } %>
+          <a class="promo-go" href="<%= p.link || '#' %>" target="_blank" rel="nofollow noopener">Получить бонус</a>
+        </article>
+      <% }); %>
+    </div>
+  </div>
+</section>
+
+<!-- ПОПУЛЯРНЫЕ СЕРВИСЫ -->
+<% if (promocodes.length) { %>
+<section class="section section--tight">
+  <div class="container">
+    <div class="section-head">
+      <h2 class="section-title"><span class="ico">%</span> Популярные сервисы</h2>
+    </div>
+    <div class="sites-strip">
+      <% promocodes.forEach(function(p){ %>
+        <a class="site-chip" href="<%= p.link || '#' %>" target="_blank" rel="nofollow noopener">
+          <% if (p.image_url) { %><img src="<%= p.image_url %>" alt=""><% } %>
+          <span><%= p.service_name %></span>
+        </a>
+      <% }); %>
+    </div>
+  </div>
+</section>
+<% } %>
+
+<!-- ПОСЛЕДНИЕ СТАТЬИ -->
+<% if (latestArticles.length) { %>
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <h2 class="section-title"><span class="ico">%</span> Последние статьи</h2>
+      <a class="section-link" href="/articles">Все статьи →</a>
+    </div>
+    <div class="article-grid">
+      <% latestArticles.forEach(function(a){ %>
+        <a class="article-card" href="/articles/<%= a.slug %>">
+          <div class="article-thumb<%= a.featured_image ? '' : ' is-empty' %>"
+               <% if (a.featured_image) { %>style="background-image:url('<%= a.featured_image %>')"<% } %>>
+            <span class="article-cat"><%= a.categoryTitle %></span>
+          </div>
+          <div class="article-card-body">
+            <h3 class="article-card-title"><%= a.title %></h3>
+            <% if (a.excerpt) { %><p class="article-card-excerpt"><%= a.excerpt %></p><% } %>
+          </div>
+        </a>
+      <% }); %>
+    </div>
+  </div>
+</section>
+<% } %>
+
+<%- include('partials/footer') %>

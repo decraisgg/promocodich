@@ -1,0 +1,38 @@
+<%- include('partials/admin-header') %>
+
+<div class="page-head">
+  <h1>Настройки сайта</h1>
+  <p class="page-sub">Название, описание и контакты сайта.</p>
+</div>
+
+<form method="post" action="/admin/settings" class="card form">
+  <div class="form-grid">
+    <div class="field">
+      <label>Название сайта</label>
+      <input type="text" name="site_title" class="input" value="<%= values.site_title %>">
+    </div>
+    <div class="field">
+      <label>Слоган (короткий)</label>
+      <input type="text" name="tagline" class="input" value="<%= values.tagline %>">
+    </div>
+    <div class="field field--full">
+      <label>Вводный текст</label>
+      <textarea name="intro_text" class="input" rows="3"><%= values.intro_text %></textarea>
+    </div>
+    <div class="field">
+      <label>Telegram (ссылка)</label>
+      <input type="text" name="contacts_telegram" class="input" value="<%= values.contacts_telegram %>">
+    </div>
+    <div class="field">
+      <label>E-mail</label>
+      <input type="text" name="contacts_email" class="input" value="<%= values.contacts_email %>">
+    </div>
+    <div class="field field--full">
+      <label>Текст на странице контактов</label>
+      <textarea name="contacts_text" class="input" rows="2"><%= values.contacts_text %></textarea>
+    </div>
+  </div>
+  <div class="form-actions"><button class="btn btn-primary" type="submit">Сохранить настройки</button></div>
+</form>
+
+<%- include('partials/admin-footer') %>

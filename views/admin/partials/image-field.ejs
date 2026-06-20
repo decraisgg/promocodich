@@ -1,0 +1,19 @@
+<%
+  var fLabel = (typeof label !== 'undefined') ? label : 'Изображение';
+  var fName = name;
+  var fValue = (typeof value !== 'undefined' && value) ? value : '';
+%>
+<div class="field img-field">
+  <label><%= fLabel %></label>
+  <div class="img-field-row">
+    <div class="img-preview<%= fValue ? '' : ' empty' %>" <% if (fValue) { %>style="background-image:url('<%= fValue %>')"<% } %>></div>
+    <div class="img-field-controls">
+      <input type="text" name="<%= fName %>" class="img-url input" value="<%= fValue %>" placeholder="Ссылка на картинку или загрузите файл →">
+      <label class="btn btn-sm btn-upload">
+        Загрузить файл
+        <input type="file" class="img-file" accept="image/*" hidden>
+      </label>
+      <span class="img-status"></span>
+    </div>
+  </div>
+</div>

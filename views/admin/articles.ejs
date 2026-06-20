@@ -1,0 +1,41 @@
+<%- include('partials/admin-header') %>
+
+<div class="page-head">
+  <h1>Статьи</h1>
+  <p class="page-sub">Создавайте статьи с заголовками, форматированием, кнопками и картинками.</p>
+  <a href="/admin/articles/new" class="btn btn-primary">+ Новая статья</a>
+</div>
+
+<div class="card">
+  <% if (!articles.length) { %>
+    <p class="empty-note">Статей пока нет. Создайте первую!</p>
+  <% } else { %>
+    <table class="table">
+      <thead>
+        <tr><th>Название</th><th>Категория</th><th>Статус</th><th>Создана</th><th></th></tr>
+      </thead>
+      <tbody>
+        <% articles.forEach(function(a){ %>
+          <tr>
+            <td>
+              <a class="table-title" href="/admin/articles/<%= a.id %>/edit"><%= a.title %></a>
+              <div class="table-slug">/articles/<%= a.slug %></div>
+            </td>
+            <td><span class="badge size"><%= categoryTitles[a.category] || a.category %></span></td>
+            <td><span class="badge <%= a.enabled ? 'on' : 'off' %>"><%= a.enabled ? 'ВКЛ' : 'ВЫКЛ' %></span></td>
+            <td class="muted"><%= (a.created_at || '').slice(0,10) %></td>
+            <td class="row-actions">
+              <a class="btn btn-sm" href="/articles/<%= a.slug %>" target="_blank">↗</a>
+              <a class="btn btn-sm btn-primary" href="/admin/articles/<%= a.id %>/edit">Изменить</a>
+              <form method="post" action="/admin/articles/<%= a.id %>/delete" onsubmit="return confirm('Удалить статью?')">
+                <button class="btn btn-sm btn-danger" type="submit">Удалить</button>
+              </form>
+            </td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  <% } %>
+</div>
+
+<%- include('partials/admin-footer') %>

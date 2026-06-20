@@ -1,0 +1,65 @@
+<div class="form-grid">
+  <div class="field field--switch">
+    <label class="switch">
+      <input type="checkbox" name="enabled" <%= banner.enabled ? 'checked' : '' %>>
+      <span class="slider"></span>
+    </label>
+    <span>Баннер включён</span>
+  </div>
+
+  <div class="field">
+    <label>Размер</label>
+    <select name="size" class="input">
+      <option value="big" <%= banner.size === 'big' ? 'selected' : '' %>>Большой (центр)</option>
+      <option value="small" <%= banner.size === 'small' ? 'selected' : '' %>>Маленький (боковой)</option>
+    </select>
+  </div>
+
+  <%- include('image-field', { name: 'image_url', value: banner.image_url, label: 'Картинка баннера (фон)' }) %>
+
+  <div class="field">
+    <label>Ссылка с картинки (куда ведёт клик по баннеру)</label>
+    <input type="text" name="image_link" class="input" value="<%= banner.image_link %>" placeholder="https://...">
+  </div>
+
+  <div class="field field--switch">
+    <label class="switch">
+      <input type="checkbox" name="text_enabled" <%= banner.text_enabled ? 'checked' : '' %>>
+      <span class="slider"></span>
+    </label>
+    <span>Показывать текст на баннере</span>
+  </div>
+
+  <div class="field">
+    <label>Заголовок на баннере</label>
+    <input type="text" name="title" class="input" value="<%= banner.title %>" placeholder="Например: ЛУЧШИЕ ПРОМОКОДЫ">
+  </div>
+
+  <div class="field field--full">
+    <label>Подзаголовок / описание</label>
+    <textarea name="subtitle" class="input" rows="2"><%= banner.subtitle %></textarea>
+  </div>
+
+  <div class="field field--switch">
+    <label class="switch">
+      <input type="checkbox" name="button_enabled" <%= banner.button_enabled ? 'checked' : '' %>>
+      <span class="slider"></span>
+    </label>
+    <span>Показывать кнопку</span>
+  </div>
+
+  <div class="field">
+    <label>Текст кнопки</label>
+    <input type="text" name="button_text" class="input" value="<%= banner.button_text %>" placeholder="Получить бонус">
+  </div>
+
+  <div class="field">
+    <label>Ссылка в кнопке</label>
+    <input type="text" name="button_link" class="input" value="<%= banner.button_link %>" placeholder="https://...">
+  </div>
+
+  <div class="field field--narrow">
+    <label>Порядок</label>
+    <input type="number" name="sort_order" class="input" value="<%= banner.sort_order %>">
+  </div>
+</div>

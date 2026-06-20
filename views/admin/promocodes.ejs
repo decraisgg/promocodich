@@ -1,0 +1,39 @@
+<%- include('partials/admin-header') %>
+
+<div class="page-head">
+  <h1>Промокоды и бонусы</h1>
+  <p class="page-sub">Промокоды для цифровых сервисов — отображаются карточками на главной странице.</p>
+</div>
+
+<details class="adder">
+  <summary class="btn btn-primary">+ Добавить промокод</summary>
+  <form method="post" action="/admin/promocodes" class="card form">
+    <h3>Новый промокод</h3>
+    <%- include('partials/promo-fields', { promo: { enabled:1, service_name:'', bonus_label:'', code:'', description:'', image_url:'', link:'', sort_order:0 } }) %>
+    <div class="form-actions"><button class="btn btn-primary" type="submit">Добавить промокод</button></div>
+  </form>
+</details>
+
+<div class="items">
+  <% if (!promocodes.length) { %><p class="empty-note">Промокодов пока нет.</p><% } %>
+  <% promocodes.forEach(function(promo){ %>
+    <div class="card item">
+      <div class="item-head">
+        <div class="item-title">
+          <span class="badge <%= promo.enabled ? 'on' : 'off' %>"><%= promo.enabled ? 'ВКЛ' : 'ВЫКЛ' %></span>
+          <b><%= promo.service_name || 'Без названия' %></b>
+          <% if (promo.code) { %><code class="mini-code"><%= promo.code %></code><% } %>
+        </div>
+        <form method="post" action="/admin/promocodes/<%= promo.id %>/delete" onsubmit="return confirm('Удалить промокод?')">
+          <button class="btn btn-danger btn-sm" type="submit">Удалить</button>
+        </form>
+      </div>
+      <form method="post" action="/admin/promocodes/<%= promo.id %>" class="form">
+        <%- include('partials/promo-fields', { promo: promo }) %>
+        <div class="form-actions"><button class="btn btn-primary" type="submit">Сохранить</button></div>
+      </form>
+    </div>
+  <% }); %>
+</div>
+
+<%- include('partials/admin-footer') %>

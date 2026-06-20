@@ -1,0 +1,37 @@
+<%- include('partials/admin-header') %>
+
+<div class="page-head">
+  <h1>Дашборд</h1>
+  <p class="page-sub">Управляйте контентом сайта. После изменений нажмите «Обновить сайт», чтобы они появились на публичной части.</p>
+</div>
+
+<div class="stat-grid">
+  <a class="stat-card" href="/admin/banners">
+    <div class="stat-num"><%= counts.banners %></div>
+    <div class="stat-label">Баннеры</div>
+  </a>
+  <a class="stat-card" href="/admin/promocodes">
+    <div class="stat-num"><%= counts.promocodes %></div>
+    <div class="stat-label">Промокоды</div>
+  </a>
+  <a class="stat-card" href="/admin/articles">
+    <div class="stat-num"><%= counts.articles %></div>
+    <div class="stat-label">Статьи</div>
+  </a>
+  <a class="stat-card" href="/admin/popups">
+    <div class="stat-num"><%= counts.popups %></div>
+    <div class="stat-label">Всплывающие окна</div>
+  </a>
+</div>
+
+<div class="info-card">
+  <h2>Как это работает</h2>
+  <ol class="how-list">
+    <li>Добавляйте и редактируйте баннеры, промокоды, статьи и всплывающие окна в соответствующих разделах.</li>
+    <li>Все изменения сохраняются как черновик и не видны посетителям сразу.</li>
+    <li>Когда всё готово — нажмите кнопку <b>«⟳ Обновить сайт»</b> вверху справа. Изменения мгновенно появятся на сайте.</li>
+    <li>Индикатор вверху показывает, есть ли неопубликованные изменения.</li>
+  </ol>
+</div>
+
+<%- include('partials/admin-footer') %>

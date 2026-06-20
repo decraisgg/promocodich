@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Админка — <%= siteTitle %></title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/admin.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23ff2d55'/><text x='50' y='72' font-size='66' text-anchor='middle' fill='white' font-family='Arial' font-weight='bold'>%25</text></svg>">
+</head>
+<body>
+  <div class="admin-shell">
+    <aside class="admin-sidebar">
+      <a class="admin-brand" href="/admin">
+        <span class="brand-logo">%</span>
+        <span><%= siteTitle %><small>админка</small></span>
+      </a>
+      <nav class="admin-nav">
+        <a href="/admin" class="<%= active === 'dashboard' ? 'active' : '' %>"><span>▦</span> Дашборд</a>
+        <a href="/admin/banners" class="<%= active === 'banners' ? 'active' : '' %>"><span>▭</span> Баннеры</a>
+        <a href="/admin/promocodes" class="<%= active === 'promocodes' ? 'active' : '' %>"><span>%</span> Промокоды</a>
+        <a href="/admin/articles" class="<%= active === 'articles' ? 'active' : '' %>"><span>¶</span> Статьи</a>
+        <a href="/admin/popups" class="<%= active === 'popups' ? 'active' : '' %>"><span>◳</span> Всплывающие окна</a>
+        <a href="/admin/settings" class="<%= active === 'settings' ? 'active' : '' %>"><span>⚙</span> Настройки</a>
+      </nav>
+      <div class="admin-sidebar-foot">
+        <a href="/" target="_blank" class="ghost-link">Открыть сайт ↗</a>
+        <form method="post" action="/admin/logout"><button class="ghost-link" type="submit">Выйти</button></form>
+      </div>
+    </aside>
+
+    <div class="admin-main">
+      <header class="admin-topbar">
+        <div class="topbar-left">
+          <% if (dirty) { %>
+            <span class="dirty-badge">● Есть неопубликованные изменения</span>
+          <% } else { %>
+            <span class="clean-badge">✓ Сайт опубликован</span>
+          <% } %>
+          <% if (lastPublished) { %><span class="last-pub">Обновлён: <%= lastPublished.replace('T',' ').slice(0,16) %></span><% } %>
+        </div>
+        <form method="post" action="/admin/publish" class="publish-form">
+          <button type="submit" class="btn btn-publish <%= dirty ? 'pulse' : '' %>">⟳ Обновить сайт</button>
+        </form>
+      </header>
+
+      <% if (flash) { %>
+        <div class="flash flash-<%= flash.type %>" id="flash"><%= flash.text %></div>
+      <% } %>
+
+      <div class="admin-content">

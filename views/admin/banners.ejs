@@ -1,0 +1,39 @@
+<%- include('partials/admin-header') %>
+
+<div class="page-head">
+  <h1>Баннеры</h1>
+  <p class="page-sub">Большой баннер в центре и два маленьких по бокам на главной. Управляйте картинкой, ссылкой, текстом и кнопкой.</p>
+</div>
+
+<details class="adder" >
+  <summary class="btn btn-primary">+ Добавить баннер</summary>
+  <form method="post" action="/admin/banners" class="card form">
+    <h3>Новый баннер</h3>
+    <%- include('partials/banner-fields', { banner: { enabled:1, size:'small', image_url:'', image_link:'', text_enabled:1, title:'', subtitle:'', button_enabled:1, button_text:'', button_link:'', sort_order:0 } }) %>
+    <div class="form-actions"><button class="btn btn-primary" type="submit">Добавить баннер</button></div>
+  </form>
+</details>
+
+<div class="items">
+  <% if (!banners.length) { %><p class="empty-note">Баннеров пока нет.</p><% } %>
+  <% banners.forEach(function(banner){ %>
+    <div class="card item">
+      <div class="item-head">
+        <div class="item-title">
+          <span class="badge <%= banner.enabled ? 'on' : 'off' %>"><%= banner.enabled ? 'ВКЛ' : 'ВЫКЛ' %></span>
+          <span class="badge size"><%= banner.size === 'big' ? 'Большой' : 'Маленький' %></span>
+          <b><%= banner.title || 'Без заголовка' %></b>
+        </div>
+        <form method="post" action="/admin/banners/<%= banner.id %>/delete" onsubmit="return confirm('Удалить баннер?')">
+          <button class="btn btn-danger btn-sm" type="submit">Удалить</button>
+        </form>
+      </div>
+      <form method="post" action="/admin/banners/<%= banner.id %>" class="form">
+        <%- include('partials/banner-fields', { banner: banner }) %>
+        <div class="form-actions"><button class="btn btn-primary" type="submit">Сохранить</button></div>
+      </form>
+    </div>
+  <% }); %>
+</div>
+
+<%- include('partials/admin-footer') %>

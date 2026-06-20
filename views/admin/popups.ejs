@@ -1,0 +1,39 @@
+<%- include('partials/admin-header') %>
+
+<div class="page-head">
+  <h1>Всплывающие окна</h1>
+  <p class="page-sub">Окна 300×200 в левом нижнем углу сайта: картинка, текст, промокод в рамке и кнопка со ссылкой.</p>
+</div>
+
+<details class="adder">
+  <summary class="btn btn-primary">+ Добавить окно</summary>
+  <form method="post" action="/admin/popups" class="card form">
+    <h3>Новое всплывающее окно</h3>
+    <%- include('partials/popup-fields', { popup: { enabled:1, image_url:'', text:'', code:'', button_text:'', button_link:'', sort_order:0 } }) %>
+    <div class="form-actions"><button class="btn btn-primary" type="submit">Добавить окно</button></div>
+  </form>
+</details>
+
+<div class="items">
+  <% if (!popups.length) { %><p class="empty-note">Всплывающих окон пока нет.</p><% } %>
+  <% popups.forEach(function(popup){ %>
+    <div class="card item">
+      <div class="item-head">
+        <div class="item-title">
+          <span class="badge <%= popup.enabled ? 'on' : 'off' %>"><%= popup.enabled ? 'ВКЛ' : 'ВЫКЛ' %></span>
+          <b><%= (popup.text || 'Окно').slice(0, 50) %></b>
+          <% if (popup.code) { %><code class="mini-code"><%= popup.code %></code><% } %>
+        </div>
+        <form method="post" action="/admin/popups/<%= popup.id %>/delete" onsubmit="return confirm('Удалить окно?')">
+          <button class="btn btn-danger btn-sm" type="submit">Удалить</button>
+        </form>
+      </div>
+      <form method="post" action="/admin/popups/<%= popup.id %>" class="form">
+        <%- include('partials/popup-fields', { popup: popup }) %>
+        <div class="form-actions"><button class="btn btn-primary" type="submit">Сохранить</button></div>
+      </form>
+    </div>
+  <% }); %>
+</div>
+
+<%- include('partials/admin-footer') %>

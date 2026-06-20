@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Вход в админку</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/admin.css">
+</head>
+<body class="login-body">
+  <form class="login-card" method="post" action="/admin/login">
+    <div class="login-logo"><span class="brand-logo">%</span></div>
+    <h1>ПРОМОКОДЫЧ</h1>
+    <p class="login-sub">Панель управления сайтом</p>
+    <% if (error) { %><div class="flash flash-error"><%= error %></div><% } %>
+    <label>Пароль</label>
+    <input type="password" name="password" class="input" autofocus placeholder="Введите пароль">
+    <button type="submit" class="btn btn-primary btn-block">Войти</button>
+  </form>
+</body>
+</html>

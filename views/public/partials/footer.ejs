@@ -1,0 +1,43 @@
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <span class="brand-logo">%</span>
+        <span class="brand-name"><%= site.site_title || 'ПРОМОКОДЫЧ' %></span>
+      </div>
+      <p class="footer-note">
+        Промокоды и бонусы для цифровых сервисов. Все коды проверяются вручную.
+      </p>
+      <div class="footer-links">
+        <a href="/">Главная</a>
+        <a href="/#promocodes">Промокоды</a>
+        <a href="/articles">Статьи</a>
+        <a href="/contacts">Контакты</a>
+      </div>
+      <p class="footer-copy">© <%= currentYear %> <%= site.site_title || 'ПРОМОКОДЫЧ' %>. Все права защищены.</p>
+    </div>
+  </footer>
+
+  <!-- Всплывающие окна (300×200, левый нижний угол) -->
+  <div class="popup-stack" id="popupStack">
+    <% (popups || []).forEach(function(p, i){ %>
+      <div class="popup-card" data-popup-id="<%= i %>">
+        <button class="popup-close" aria-label="Закрыть">×</button>
+        <% if (p.image_url) { %>
+          <div class="popup-image" style="background-image:url('<%= p.image_url %>')"></div>
+        <% } %>
+        <div class="popup-body">
+          <% if (p.text) { %><p class="popup-text"><%= p.text %></p><% } %>
+          <% if (p.code) { %><div class="popup-code"><%= p.code %></div><% } %>
+          <% if (p.button_text) { %>
+            <a class="popup-btn" href="<%= p.button_link || '#' %>" target="_blank" rel="nofollow noopener"><%= p.button_text %></a>
+          <% } %>
+        </div>
+      </div>
+    <% }); %>
+  </div>
+
+  <script src="/static/js/site.js"></script>
+</body>
+</html>

@@ -1,0 +1,168 @@
+<%- include('partials/admin-header') %>
+
+<div class="page-head">
+  <h1><%= isNew ? 'Новая статья' : 'Редактирование статьи' %></h1>
+  <a href="/admin/articles" class="btn btn-sm">← К списку</a>
+</div>
+
+<form method="post" action="<%= isNew ? '/admin/articles' : '/admin/articles/' + article.id %>" id="articleForm" class="article-editor">
+  <div class="editor-cols">
+    <div class="editor-main card">
+      <div class="field">
+        <label>Заголовок статьи</label>
+        <input type="text" name="title" class="input input-lg" value="<%= article.title %>" placeholder="Заголовок статьи" required>
+      </div>
+
+      <%- include('partials/image-field', { name: 'featured_image', value: article.featured_image, label: 'Главная картинка статьи (обложка)' }) %>
+
+      <div class="field">
+        <label>Краткое описание (для карточки в списке)</label>
+        <textarea name="excerpt" class="input" rows="2"><%= article.excerpt %></textarea>
+      </div>
+
+      <h3 class="editor-section-title">Содержание статьи</h3>
+      <p class="hint">Добавляйте блоки: абзацы (с жирным, курсивом и ссылками), заголовки H1–H3, кнопки и картинки. Картинки можно ставить в начале и между текстом, у каждой — подпись и кнопка (включаются по желанию).</p>
+
+      <div id="blocks" class="blocks"></div>
+
+      <div class="add-block-bar">
+        <button type="button" class="btn btn-sm" data-add="paragraph">+ Абзац</button>
+        <button type="button" class="btn btn-sm" data-add="heading">+ Заголовок</button>
+        <button type="button" class="btn btn-sm" data-add="button">+ Кнопка</button>
+        <button type="button" class="btn btn-sm" data-add="image">+ Картинка</button>
+      </div>
+
+      <input type="hidden" name="blocks" id="blocksInput">
+    </div>
+
+    <aside class="editor-side card">
+      <div class="field field--switch">
+        <label class="switch">
+          <input type="checkbox" name="enabled" <%= article.enabled ? 'checked' : '' %>>
+          <span class="slider"></span>
+        </label>
+        <span>Статья опубликована</span>
+      </div>
+
+      <div class="field">
+        <label>Категория</label>
+        <select name="category" class="input">
+          <% categories.forEach(function(c){ %>
+            <option value="<%= c.slug %>" <%= article.category === c.slug ? 'selected' : '' %>><%= c.title %></option>
+          <% }); %>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>URL (slug, необязательно)</label>
+        <input type="text" name="slug" class="input" value="<%= article.slug %>" placeholder="будет создан из заголовка">
+      </div>
+
+      <div class="field">
+        <label>Порядок</label>
+        <input type="number" name="sort_order" class="input" value="<%= article.sort_order || 0 %>">
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block">💾 Сохранить статью</button>
+      <p class="hint">После сохранения нажмите «⟳ Обновить сайт», чтобы статья появилась на сайте.</p>
+    </aside>
+  </div>
+</form>
+
+<!-- Скелеты блоков -->
+<template id="tpl-paragraph">
+  <div class="block" data-type="paragraph">
+    <div class="block-bar">
+      <span class="block-type">¶ Абзац</span>
+      <div class="block-tools">
+        <button type="button" class="rte-cmd" data-cmd="bold" title="Жирный"><b>Ж</b></button>
+        <button type="button" class="rte-cmd" data-cmd="italic" title="Курсив"><i>К</i></button>
+        <button type="button" class="rte-cmd" data-cmd="link" title="Ссылка">🔗</button>
+        <span class="block-sep"></span>
+        <button type="button" class="blk-up" title="Выше">↑</button>
+        <button type="button" class="blk-down" title="Ниже">↓</button>
+        <button type="button" class="blk-del" title="Удалить">✕</button>
+      </div>
+    </div>
+    <div class="block-rte" contenteditable="true" data-placeholder="Введите текст абзаца…"></div>
+  </div>
+</template>
+
+<template id="tpl-heading">
+  <div class="block" data-type="heading">
+    <div class="block-bar">
+      <span class="block-type">H Заголовок</span>
+      <div class="block-tools">
+        <select class="blk-level input-mini">
+          <option value="1">H1</option>
+          <option value="2" selected>H2</option>
+          <option value="3">H3</option>
+        </select>
+        <span class="block-sep"></span>
+        <button type="button" class="blk-up" title="Выше">↑</button>
+        <button type="button" class="blk-down" title="Ниже">↓</button>
+        <button type="button" class="blk-del" title="Удалить">✕</button>
+      </div>
+    </div>
+    <input type="text" class="blk-text input" placeholder="Текст заголовка">
+  </div>
+</template>
+
+<template id="tpl-button">
+  <div class="block" data-type="button">
+    <div class="block-bar">
+      <span class="block-type">▭ Кнопка</span>
+      <div class="block-tools">
+        <button type="button" class="blk-up" title="Выше">↑</button>
+        <button type="button" class="blk-down" title="Ниже">↓</button>
+        <button type="button" class="blk-del" title="Удалить">✕</button>
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="field"><label>Текст кнопки</label><input type="text" class="blk-btn-text input" placeholder="Перейти"></div>
+      <div class="field"><label>Ссылка</label><input type="text" class="blk-btn-link input" placeholder="https://..."></div>
+    </div>
+  </div>
+</template>
+
+<template id="tpl-image">
+  <div class="block" data-type="image">
+    <div class="block-bar">
+      <span class="block-type">🖼 Картинка</span>
+      <div class="block-tools">
+        <button type="button" class="blk-up" title="Выше">↑</button>
+        <button type="button" class="blk-down" title="Ниже">↓</button>
+        <button type="button" class="blk-del" title="Удалить">✕</button>
+      </div>
+    </div>
+    <div class="img-field">
+      <div class="img-field-row">
+        <div class="img-preview empty"></div>
+        <div class="img-field-controls">
+          <input type="text" class="img-url blk-img-url input" placeholder="Ссылка на картинку или загрузите файл →">
+          <label class="btn btn-sm btn-upload">Загрузить файл<input type="file" class="img-file" accept="image/*" hidden></label>
+          <span class="img-status"></span>
+        </div>
+      </div>
+    </div>
+    <div class="field--switch">
+      <label class="switch"><input type="checkbox" class="blk-cap-en"><span class="slider"></span></label>
+      <span>Показывать подпись под картинкой</span>
+    </div>
+    <div class="field"><input type="text" class="blk-cap input" placeholder="Подпись к картинке"></div>
+    <div class="field--switch">
+      <label class="switch"><input type="checkbox" class="blk-btn-en"><span class="slider"></span></label>
+      <span>Показывать кнопку на картинке</span>
+    </div>
+    <div class="form-grid">
+      <div class="field"><input type="text" class="blk-imgbtn-text input" placeholder="Текст кнопки"></div>
+      <div class="field"><input type="text" class="blk-imgbtn-link input" placeholder="Ссылка кнопки"></div>
+    </div>
+  </div>
+</template>
+
+<script>
+  window.__ARTICLE_BLOCKS__ = <%- JSON.stringify(article.blocks || []).replace(/</g, '\\u003c') %>;
+</script>
+
+<%- include('partials/admin-footer') %>

@@ -1,0 +1,22 @@
+<%- include('partials/header', { pageTitle: 'Контакты — ' + (site.site_title || 'ПРОМОКОДЫЧ') }) %>
+
+<section class="section">
+  <div class="container container--narrow">
+    <div class="section-head">
+      <h2 class="section-title"><span class="ico">%</span> Контакты</h2>
+    </div>
+    <div class="contacts-card">
+      <% if (site.contacts_text) { %><p class="contacts-text"><%= site.contacts_text %></p><% } %>
+      <ul class="contacts-list">
+        <% if (site.contacts_telegram) { %>
+          <li><span>Telegram:</span> <a href="<%= site.contacts_telegram %>" target="_blank" rel="noopener"><%= site.contacts_telegram %></a></li>
+        <% } %>
+        <% if (site.contacts_email) { %>
+          <li><span>E-mail:</span> <a href="mailto:<%= site.contacts_email %>"><%= site.contacts_email %></a></li>
+        <% } %>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<%- include('partials/footer') %>

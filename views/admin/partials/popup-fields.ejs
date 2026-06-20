@@ -1,0 +1,36 @@
+<div class="form-grid">
+  <div class="field field--switch">
+    <label class="switch">
+      <input type="checkbox" name="enabled" <%= popup.enabled ? 'checked' : '' %>>
+      <span class="slider"></span>
+    </label>
+    <span>Окно включено</span>
+  </div>
+
+  <%- include('image-field', { name: 'image_url', value: popup.image_url, label: 'Картинка окна' }) %>
+
+  <div class="field field--full">
+    <label>Текст</label>
+    <textarea name="text" class="input" rows="2" placeholder="Используй промокод ниже и получи бонус!"><%= popup.text %></textarea>
+  </div>
+
+  <div class="field">
+    <label>Промокод / бонус (в рамке)</label>
+    <input type="text" name="code" class="input code-input" value="<%= popup.code %>" placeholder="PROMOCODICH35">
+  </div>
+
+  <div class="field">
+    <label>Текст кнопки</label>
+    <input type="text" name="button_text" class="input" value="<%= popup.button_text %>" placeholder="Применить на сайте">
+  </div>
+
+  <div class="field">
+    <label>Ссылка в кнопке</label>
+    <input type="text" name="button_link" class="input" value="<%= popup.button_link %>" placeholder="https://...">
+  </div>
+
+  <div class="field field--narrow">
+    <label>Порядок</label>
+    <input type="number" name="sort_order" class="input" value="<%= popup.sort_order %>">
+  </div>
+</div>

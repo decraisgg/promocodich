@@ -1,0 +1,41 @@
+<div class="form-grid">
+  <div class="field field--switch">
+    <label class="switch">
+      <input type="checkbox" name="enabled" <%= promo.enabled ? 'checked' : '' %>>
+      <span class="slider"></span>
+    </label>
+    <span>Промокод включён</span>
+  </div>
+
+  <div class="field">
+    <label>Название сервиса</label>
+    <input type="text" name="service_name" class="input" value="<%= promo.service_name %>" placeholder="Playerok / Kupikod / Lis-Skins">
+  </div>
+
+  <div class="field">
+    <label>Бонус (короткая подпись)</label>
+    <input type="text" name="bonus_label" class="input" value="<%= promo.bonus_label %>" placeholder="+25% к пополнению">
+  </div>
+
+  <div class="field">
+    <label>Промокод</label>
+    <input type="text" name="code" class="input code-input" value="<%= promo.code %>" placeholder="PROMO25">
+  </div>
+
+  <div class="field field--full">
+    <label>Описание бонуса</label>
+    <textarea name="description" class="input" rows="2" placeholder="Краткое описание бонуса"><%= promo.description %></textarea>
+  </div>
+
+  <%- include('image-field', { name: 'image_url', value: promo.image_url, label: 'Логотип / картинка сервиса' }) %>
+
+  <div class="field">
+    <label>Ссылка (куда ведёт кнопка «Получить бонус»)</label>
+    <input type="text" name="link" class="input" value="<%= promo.link %>" placeholder="https://...">
+  </div>
+
+  <div class="field field--narrow">
+    <label>Порядок</label>
+    <input type="number" name="sort_order" class="input" value="<%= promo.sort_order %>">
+  </div>
+</div>
