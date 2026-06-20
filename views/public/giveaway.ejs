@@ -1,0 +1,103 @@
+<%- include('partials/header') %>
+
+<section class="section giveaway-page">
+  <div class="container container--narrow">
+
+    <div class="crumbs">
+      <a href="/">Главная</a> / <a href="/giveaways">Розыгрыши</a> / <span><%= giveaway.title %></span>
+    </div>
+
+    <% if (justJoined) { %>
+      <div class="giveaway-success-banner">
+        🎉 Вы успешно зарегистрированы как участник! Удачи в розыгрыше!
+      </div>
+    <% } %>
+    <% if (alreadyJoined && !justJoined) { %>
+      <div class="giveaway-already-banner">
+        ✓ Вы уже участвуете в этом розыгрыше. Ждите итогов!
+      </div>
+    <% } %>
+
+    <article class="giveaway-article">
+      <% if (giveaway.image_url) { %>
+        <div class="giveaway-hero-img" style="background-image:url('<%= giveaway.image_url %>')"></div>
+      <% } else { %>
+        <div class="giveaway-hero-img is-empty">
+          <span>🎁</span>
+        </div>
+      <% } %>
+
+      <div class="giveaway-meta">
+        <span class="giveaway-badge">Розыгрыш</span>
+        <% if (giveaway.deadline) { %><span class="giveaway-deadline">Завершается: <%= giveaway.deadline %></span><% } %>
+        <span class="giveaway-entry-count-badge"><%= entryCount %> участник(ов)</span>
+      </div>
+
+      <h1 class="giveaway-title"><%= giveaway.title %></h1>
+
+      <% if (giveaway.prize) { %>
+        <div class="giveaway-prize-box">
+          <span class="giveaway-prize-label">Приз:</span>
+          <span class="giveaway-prize-value">🏆 <%= giveaway.prize %></span>
+        </div>
+      <% } %>
+
+      <% if (giveaway.description) { %>
+        <div class="giveaway-description"><%- giveaway.description.replace(/\n/g, '<br>') %></div>
+      <% } %>
+
+      <% if (!alreadyJoined && giveaway.conditions && giveaway.conditions.length) { %>
+        <div class="giveaway-conditions">
+          <h2 class="giveaway-conditions-title">Условия участия</h2>
+          <p class="giveaway-conditions-sub">Выполни все условия, затем нажми «Участвовать»</p>
+          <div class="conditions-list" id="conditionsList">
+            <% giveaway.conditions.forEach(function(cond){ %>
+              <label class="condition-item">
+                <input type="checkbox" class="condition-check" value="<%= cond.id %>">
+                <span class="condition-checkmark"></span>
+                <span class="condition-text"><%= cond.text %></span>
+              </label>
+            <% }); %>
+          </div>
+        </div>
+      <% } %>
+
+      <% if (!alreadyJoined) { %>
+        <form method="post" action="/giveaways/<%= giveaway.slug %>/join" class="giveaway-join-form" id="joinForm">
+          <button type="submit" class="giveaway-join-btn" id="joinBtn"
+                  <% if (giveaway.conditions && giveaway.conditions.length) { %>disabled<% } %>>
+            <% if (giveaway.conditions && giveaway.conditions.length) { %>
+              Выполните все условия для участия
+            <% } else { %>
+              🎁 Участвовать в розыгрыше
+            <% } %>
+          </button>
+        </form>
+      <% } else { %>
+        <div class="giveaway-joined-state">
+          <span class="giveaway-joined-icon">✓</span>
+          <span>Вы участвуете</span>
+        </div>
+      <% } %>
+    </article>
+  </div>
+</section>
+
+<script>
+(function() {
+  var checks = document.querySelectorAll('.condition-check');
+  var btn = document.getElementById('joinBtn');
+  var total = checks.length;
+  if (!total || !btn) return;
+  function update() {
+    var done = Array.from(checks).filter(function(c){ return c.checked; }).length;
+    var allDone = done === total;
+    btn.disabled = !allDone;
+    btn.textContent = allDone ? '🎁 Участвовать в розыгрыше' : 'Выполнено ' + done + ' из ' + total + ' условий';
+  }
+  checks.forEach(function(c){ c.addEventListener('change', update); });
+  update();
+})();
+</script>
+
+<%- include('partials/footer') %>

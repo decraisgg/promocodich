@@ -1,0 +1,47 @@
+<%- include('partials/header') %>
+
+<section class="section section--page-hero">
+  <div class="container">
+    <div class="page-hero-head">
+      <h1 class="page-hero-title">🎁 Розыгрыши</h1>
+      <p class="page-hero-sub">Участвуй в розыгрышах и выигрывай призы — выполни простые условия и попади в список участников</p>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <% if (!giveaways.length) { %>
+      <div class="empty-state">
+        <div class="empty-state-icon">🎁</div>
+        <p class="empty-state-text">Розыгрышей пока нет. Следите за обновлениями!</p>
+      </div>
+    <% } %>
+    <div class="giveaway-grid">
+      <% giveaways.forEach(function(g){ %>
+        <a class="giveaway-card" href="/giveaways/<%= g.slug %>">
+          <div class="giveaway-card-img<%= g.image_url ? '' : ' is-empty' %>"
+               <% if (g.image_url) { %>style="background-image:url('<%= g.image_url %>')"<% } %>>
+            <span class="giveaway-badge">Розыгрыш</span>
+            <% if (g.deadline) { %>
+              <span class="giveaway-deadline-badge">до <%= g.deadline %></span>
+            <% } %>
+          </div>
+          <div class="giveaway-card-body">
+            <h2 class="giveaway-card-title"><%= g.title %></h2>
+            <% if (g.prize) { %>
+              <div class="giveaway-prize">🏆 <%= g.prize %></div>
+            <% } %>
+            <% if (g.conditions && g.conditions.length) { %>
+              <div class="giveaway-conditions-count"><%= g.conditions.length %> условия участия</div>
+            <% } %>
+            <div class="giveaway-entry-count"><%= g.entryCount %> участник(ов)</div>
+            <span class="giveaway-cta-btn">Участвовать</span>
+          </div>
+        </a>
+      <% }); %>
+    </div>
+  </div>
+</section>
+
+<%- include('partials/footer') %>

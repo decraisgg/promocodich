@@ -1,0 +1,74 @@
+<%- include('partials/admin-header') %>
+
+<div class="page-head">
+  <h1><%= isNew ? 'Новый сервис' : 'Редактировать: ' + service.name %></h1>
+  <% if (!isNew) { %><a href="/services/<%= service.slug %>" target="_blank" class="page-sub-link">Открыть страницу ↗</a><% } %>
+</div>
+
+<form method="post" action="/admin/services<%= isNew ? '' : '/' + service.id %>" class="card form">
+  <div class="form-grid">
+    <div class="field">
+      <label>Название сервиса</label>
+      <input type="text" name="name" class="input" value="<%= service.name %>" required placeholder="Playerok">
+    </div>
+
+    <div class="field">
+      <label>Slug (URL)</label>
+      <input type="text" name="slug" class="input" value="<%= service.slug %>" placeholder="playerok">
+      <span class="field-hint">Адрес: /services/slug</span>
+    </div>
+
+    <div class="field field--full">
+      <label>Описание</label>
+      <textarea name="description" class="input" rows="3"><%= service.description %></textarea>
+    </div>
+
+    <%- include('partials/image-field', { name: 'image_url', value: service.image_url, label: 'Логотип / картинка сервиса' }) %>
+
+    <div class="field">
+      <label>Акцентный цвет (HEX или название)</label>
+      <div class="color-field-row">
+        <input type="color" class="color-picker" value="<%= service.color || '#ff2d55' %>" id="colorPicker">
+        <input type="text" name="color" class="input" value="<%= service.color %>" id="colorInput" placeholder="#ff2d55">
+      </div>
+    </div>
+
+    <div class="field field--narrow">
+      <label>Порядок</label>
+      <input type="number" name="sort_order" class="input" value="<%= service.sort_order %>">
+    </div>
+
+    <div class="field field--switch">
+      <label class="switch">
+        <input type="checkbox" name="enabled" <%= service.enabled ? 'checked' : '' %>>
+        <span class="slider"></span>
+      </label>
+      <span>Сервис включён</span>
+    </div>
+  </div>
+
+  <div class="form-actions">
+    <button class="btn btn-primary" type="submit"><%= isNew ? 'Создать сервис' : 'Сохранить' %></button>
+    <a href="/admin/services" class="btn btn-ghost">Отмена</a>
+  </div>
+</form>
+
+<% if (!isNew) { %>
+<div class="info-card" style="margin-top:20px">
+  <h3>Баннеры и промокоды</h3>
+  <p>Чтобы добавить баннеры и промокоды для этого сервиса, перейдите в разделы
+    <a href="/admin/banners">Баннеры</a> и <a href="/admin/promocodes">Промокоды</a>
+    и выберите сервис <b><%= service.name %></b> в поле «Сервис».</p>
+</div>
+<% } %>
+
+<script>
+document.getElementById('colorPicker').addEventListener('input', function() {
+  document.getElementById('colorInput').value = this.value;
+});
+document.getElementById('colorInput').addEventListener('input', function() {
+  document.getElementById('colorPicker').value = this.value || '#ff2d55';
+});
+</script>
+
+<%- include('partials/admin-footer') %>

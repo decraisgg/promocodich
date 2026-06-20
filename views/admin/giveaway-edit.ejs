@@ -1,0 +1,64 @@
+<%- include('partials/admin-header') %>
+
+<div class="page-head">
+  <h1><%= isNew ? 'Новый розыгрыш' : 'Редактировать розыгрыш' %></h1>
+  <% if (!isNew) { %><a href="/giveaways/<%= giveaway.slug %>" target="_blank" class="page-sub-link">Открыть ↗</a><% } %>
+</div>
+
+<form method="post" action="/admin/giveaways<%= isNew ? '' : '/' + giveaway.id %>" class="card form">
+  <div class="form-grid">
+    <div class="field field--full">
+      <label>Название розыгрыша</label>
+      <input type="text" name="title" class="input" value="<%= giveaway.title %>" required placeholder="Розыгрыш пополнения Steam">
+    </div>
+
+    <div class="field">
+      <label>Slug (URL)</label>
+      <input type="text" name="slug" class="input" value="<%= giveaway.slug %>" placeholder="rozygrysh-steam">
+      <span class="field-hint">Адрес: /giveaways/slug</span>
+    </div>
+
+    <div class="field">
+      <label>Приз</label>
+      <input type="text" name="prize" class="input" value="<%= giveaway.prize %>" placeholder="Пополнение Steam 1000 руб.">
+    </div>
+
+    <div class="field field--full">
+      <label>Описание</label>
+      <textarea name="description" class="input" rows="4"><%= giveaway.description %></textarea>
+    </div>
+
+    <%- include('partials/image-field', { name: 'image_url', value: giveaway.image_url, label: 'Изображение розыгрыша' }) %>
+
+    <div class="field field--full">
+      <label>Условия участия</label>
+      <textarea name="conditions_text" class="input" rows="5" placeholder="Подпишись на Telegram-канал&#10;Сделай репост&#10;Оставь комментарий"><%= (giveaway.conditions || []).map(function(c){ return c.text; }).join('\n') %></textarea>
+      <span class="field-hint">Каждое условие на новой строке. Участник должен выполнить все условия.</span>
+    </div>
+
+    <div class="field">
+      <label>Дата окончания (ГГГГ-ММ-ДД)</label>
+      <input type="date" name="deadline" class="input" value="<%= giveaway.deadline %>">
+    </div>
+
+    <div class="field field--narrow">
+      <label>Порядок</label>
+      <input type="number" name="sort_order" class="input" value="<%= giveaway.sort_order %>">
+    </div>
+
+    <div class="field field--switch">
+      <label class="switch">
+        <input type="checkbox" name="enabled" <%= giveaway.enabled ? 'checked' : '' %>>
+        <span class="slider"></span>
+      </label>
+      <span>Розыгрыш активен</span>
+    </div>
+  </div>
+
+  <div class="form-actions">
+    <button class="btn btn-primary" type="submit"><%= isNew ? 'Создать розыгрыш' : 'Сохранить' %></button>
+    <a href="/admin/giveaways" class="btn btn-ghost">Отмена</a>
+  </div>
+</form>
+
+<%- include('partials/admin-footer') %>

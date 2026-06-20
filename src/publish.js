@@ -12,6 +12,10 @@ function buildSnapshot() {
     delete settings[k];
   }
 
+  const services = db
+    .prepare('SELECT * FROM services WHERE enabled = 1 ORDER BY sort_order, id')
+    .all();
+
   const banners = db
     .prepare('SELECT * FROM banners WHERE enabled = 1 ORDER BY sort_order, id')
     .all();
@@ -33,12 +37,23 @@ function buildSnapshot() {
     .prepare('SELECT * FROM popups WHERE enabled = 1 ORDER BY sort_order, id')
     .all();
 
+  const giveawaysRaw = db
+    .prepare('SELECT * FROM giveaways WHERE enabled = 1 ORDER BY sort_order, id')
+    .all();
+  const giveaways = giveawaysRaw.map((g) => {
+    let conditions = [];
+    try { conditions = JSON.parse(g.conditions || '[]'); } catch (_) { conditions = []; }
+    return { ...g, conditions };
+  });
+
   return {
     settings,
+    services,
     banners,
     promocodes,
     articles,
     popups,
+    giveaways,
     categories: CATEGORIES,
     publishedAt: new Date().toISOString(),
   };

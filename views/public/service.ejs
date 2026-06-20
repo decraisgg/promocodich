@@ -1,0 +1,114 @@
+<%- include('partials/header') %>
+
+<!-- SERVICE HERO -->
+<section class="section service-page-hero" style="<%= service.color ? '--svc-color:' + service.color : '' %>">
+  <div class="container">
+    <div class="crumbs">
+      <a href="/">Главная</a> / <a href="/services">Сервисы</a> / <span><%= service.name %></span>
+    </div>
+    <div class="service-hero-inner">
+      <div class="service-hero-icon">
+        <% if (service.image_url) { %>
+          <img src="<%= service.image_url %>" alt="<%= service.name %>">
+        <% } else { %>
+          <span><%= service.name.slice(0,2).toUpperCase() %></span>
+        <% } %>
+      </div>
+      <div>
+        <h1 class="service-hero-title"><%= service.name %></h1>
+        <% if (service.description) { %>
+          <p class="service-hero-desc"><%= service.description %></p>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICE BANNERS -->
+<% if (bigBanner || smallBanners.length) { %>
+<section class="hero hero--service">
+  <div class="container">
+    <div class="hero-grid">
+      <div class="hero-side">
+        <% if (smallBanners[0]) { %>
+          <%- include('partials/banner', { b: smallBanners[0], variant: 'small' }) %>
+        <% } %>
+      </div>
+      <div class="hero-main">
+        <% if (bigBanner) { %>
+          <%- include('partials/banner', { b: bigBanner, variant: 'big' }) %>
+        <% } %>
+      </div>
+      <div class="hero-side">
+        <% if (smallBanners[1]) { %>
+          <%- include('partials/banner', { b: smallBanners[1], variant: 'small' }) %>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</section>
+<% } %>
+
+<!-- SERVICE PROMO CODES -->
+<section class="section" id="promocodes">
+  <div class="container">
+    <div class="section-head">
+      <h2 class="section-title"><span class="ico">%</span> Промокоды <%= service.name %></h2>
+    </div>
+    <div class="promo-grid">
+      <% if (!promocodes.length) { %>
+        <p class="empty-note">Промокоды для этого сервиса скоро появятся.</p>
+      <% } %>
+      <% promocodes.forEach(function(p){ %>
+        <article class="promo-card">
+          <div class="promo-top">
+            <div class="promo-logo">
+              <% if (p.image_url) { %>
+                <img src="<%= p.image_url %>" alt="<%= p.service_name %>">
+              <% } else { %>
+                <span class="promo-logo-fallback"><%= (p.service_name || '?').slice(0,2).toUpperCase() %></span>
+              <% } %>
+            </div>
+            <div class="promo-titles">
+              <h3 class="promo-service"><%= p.service_name %></h3>
+              <% if (p.bonus_label) { %><span class="promo-bonus"><%= p.bonus_label %></span><% } %>
+            </div>
+          </div>
+          <% if (p.description) { %><p class="promo-desc"><%= p.description %></p><% } %>
+          <% if (p.code) { %>
+            <div class="promo-code" data-code="<%= p.code %>">
+              <span class="promo-code-value"><%= p.code %></span>
+              <button class="promo-code-copy" type="button">Копировать</button>
+            </div>
+          <% } %>
+          <a class="promo-go" href="<%= p.link || '#' %>" target="_blank" rel="nofollow noopener">Получить бонус</a>
+        </article>
+      <% }); %>
+    </div>
+  </div>
+</section>
+
+<!-- OTHER SERVICES -->
+<% if (services.filter(function(s){ return s.id !== service.id; }).length) { %>
+<section class="section section--tight">
+  <div class="container">
+    <div class="section-head">
+      <h2 class="section-title"><span class="ico">★</span> Другие сервисы</h2>
+    </div>
+    <div class="services-strip">
+      <% services.filter(function(s){ return s.id !== service.id; }).forEach(function(svc){ %>
+        <a class="service-chip" href="/services/<%= svc.slug %>" style="<%= svc.color ? '--svc-color:' + svc.color : '' %>">
+          <% if (svc.image_url) { %>
+            <img src="<%= svc.image_url %>" alt="<%= svc.name %>">
+          <% } else { %>
+            <span class="service-chip-icon"><%= svc.name.slice(0,2).toUpperCase() %></span>
+          <% } %>
+          <span class="service-chip-name"><%= svc.name %></span>
+        </a>
+      <% }); %>
+    </div>
+  </div>
+</section>
+<% } %>
+
+<%- include('partials/footer') %>

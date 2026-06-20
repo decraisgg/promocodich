@@ -1,0 +1,37 @@
+<%- include('partials/admin-header') %>
+
+<div class="page-head">
+  <h1>Участники: <%= giveaway.title %></h1>
+  <p class="page-sub">Всего участников: <b><%= entries.length %></b></p>
+</div>
+
+<div class="page-actions">
+  <a href="/admin/giveaways/<%= giveaway.id %>/edit" class="btn btn-sm">← Назад к розыгрышу</a>
+</div>
+
+<% if (!entries.length) { %>
+  <div class="card" style="padding:20px"><p class="empty-note">Участников пока нет.</p></div>
+<% } else { %>
+  <div class="card" style="overflow:auto">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>ID сессии (анонимный)</th>
+          <th>Дата участия</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% entries.forEach(function(e, i){ %>
+          <tr>
+            <td><%= i + 1 %></td>
+            <td><code><%= e.session_id.slice(0,16) %>...</code></td>
+            <td><%= e.joined_at %></td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+<% } %>
+
+<%- include('partials/admin-footer') %>

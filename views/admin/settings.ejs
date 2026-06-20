@@ -2,7 +2,7 @@
 
 <div class="page-head">
   <h1>Настройки сайта</h1>
-  <p class="page-sub">Название, описание и контакты сайта.</p>
+  <p class="page-sub">Название, логотип, описание и контакты сайта.</p>
 </div>
 
 <form method="post" action="/admin/settings" class="card form">
@@ -19,6 +19,12 @@
       <label>Вводный текст</label>
       <textarea name="intro_text" class="input" rows="3"><%= values.intro_text %></textarea>
     </div>
+
+    <%- include('partials/image-field', { name: 'logo_url', value: values.logo_url, label: 'Логотип сайта (показывается в шапке вместо иконки %)' }) %>
+    <div class="field field--full field-hint-standalone">
+      Рекомендуемый размер логотипа: 38×38 пикселей, PNG с прозрачным фоном.
+    </div>
+
     <div class="field">
       <label>Telegram (ссылка)</label>
       <input type="text" name="contacts_telegram" class="input" value="<%= values.contacts_telegram %>">

@@ -75,18 +75,52 @@
   </div>
 </section>
 
-<!-- ПОПУЛЯРНЫЕ СЕРВИСЫ -->
-<% if (promocodes.length) { %>
-<section class="section section--tight">
+<!-- СЕРВИСЫ -->
+<% if (services && services.length) { %>
+<section class="section section--services">
   <div class="container">
     <div class="section-head">
-      <h2 class="section-title"><span class="ico">%</span> Популярные сервисы</h2>
+      <h2 class="section-title"><span class="ico">★</span> Популярные сервисы</h2>
+      <a class="section-link" href="/services">Все сервисы →</a>
     </div>
-    <div class="sites-strip">
-      <% promocodes.forEach(function(p){ %>
-        <a class="site-chip" href="<%= p.link || '#' %>" target="_blank" rel="nofollow noopener">
-          <% if (p.image_url) { %><img src="<%= p.image_url %>" alt=""><% } %>
-          <span><%= p.service_name %></span>
+    <div class="services-strip">
+      <% services.forEach(function(svc){ %>
+        <a class="service-chip" href="/services/<%= svc.slug %>" style="<%= svc.color ? '--svc-color:' + svc.color : '' %>">
+          <% if (svc.image_url) { %>
+            <img src="<%= svc.image_url %>" alt="<%= svc.name %>">
+          <% } else { %>
+            <span class="service-chip-icon"><%= svc.name.slice(0,2).toUpperCase() %></span>
+          <% } %>
+          <span class="service-chip-name"><%= svc.name %></span>
+          <span class="service-chip-arrow">→</span>
+        </a>
+      <% }); %>
+    </div>
+  </div>
+</section>
+<% } %>
+
+<!-- РОЗЫГРЫШИ -->
+<% if (activeGiveaways && activeGiveaways.length) { %>
+<section class="section section--giveaways">
+  <div class="container">
+    <div class="section-head">
+      <h2 class="section-title"><span class="ico">🎁</span> Розыгрыши</h2>
+      <a class="section-link" href="/giveaways">Все розыгрыши →</a>
+    </div>
+    <div class="giveaway-strip">
+      <% activeGiveaways.forEach(function(g){ %>
+        <a class="giveaway-teaser" href="/giveaways/<%= g.slug %>">
+          <div class="giveaway-teaser-img<%= g.image_url ? '' : ' is-empty' %>"
+               <% if (g.image_url) { %>style="background-image:url('<%= g.image_url %>')"<% } %>>
+            <span class="giveaway-badge">Розыгрыш</span>
+          </div>
+          <div class="giveaway-teaser-body">
+            <h3 class="giveaway-teaser-title"><%= g.title %></h3>
+            <% if (g.prize) { %><div class="giveaway-prize">🏆 <%= g.prize %></div><% } %>
+            <% if (g.deadline) { %><div class="giveaway-deadline">до <%= g.deadline %></div><% } %>
+            <span class="giveaway-cta">Участвовать →</span>
+          </div>
         </a>
       <% }); %>
     </div>

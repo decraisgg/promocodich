@@ -126,8 +126,26 @@ textarea.input { resize: vertical; }
 .img-status.ok { color: var(--green); }
 .img-status.err { color: var(--accent); }
 
+/* ---------- Misc admin helpers ---------- */
+.page-actions { margin-bottom: 16px; display: flex; gap: 10px; flex-wrap: wrap; }
+.page-sub-link { color: var(--accent); font-weight: 700; font-size: 14px; }
+.item-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.item-desc { margin: 0; color: var(--muted); font-size: 14px; }
+.item-stat { font-size: 12px; color: var(--muted); font-weight: 600; background: #f3f4f7; padding: 3px 8px; border-radius: 6px; }
+.prize-badge { background: #fff8e6; color: #b86e00; font-size: 12px; font-weight: 700; padding: 3px 8px; border-radius: 8px; }
+.color-dot { width: 14px; height: 14px; border-radius: 50%; display: inline-block; flex: none; }
+.color-field-row { display: flex; gap: 8px; align-items: center; }
+.color-picker { width: 44px; height: 42px; border: 1px solid var(--line); border-radius: 8px; cursor: pointer; padding: 2px; flex: none; }
+.field-hint { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.field-hint-standalone { color: var(--muted); font-size: 12px; padding: 4px 0; grid-column: 1 / -1; }
+.btn-ghost { background: transparent; border-color: var(--line); color: var(--muted); }
+.btn-ghost:hover { background: var(--bg); color: var(--text); }
+.data-table { width: 100%; border-collapse: collapse; }
+.data-table th { text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); padding: 0 12px 12px; }
+.data-table td { padding: 12px; border-top: 1px solid var(--line); vertical-align: middle; font-size: 14px; }
+
 /* ---------- Stat cards ---------- */
-.stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 22px; }
+.stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 22px; }
 .stat-card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; transition: .15s; }
 .stat-card:hover { transform: translateY(-3px); box-shadow: 0 12px 26px rgba(20,22,30,.08); }
 .stat-num { font-size: 34px; font-weight: 900; color: var(--accent); }

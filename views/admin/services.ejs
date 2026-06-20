@@ -1,0 +1,38 @@
+<%- include('partials/admin-header') %>
+
+<div class="page-head">
+  <h1>Сервисы</h1>
+  <p class="page-sub">Страницы сервисов с баннерами и промокодами. Каждый сервис доступен по адресу /services/slug.</p>
+</div>
+
+<div class="page-actions">
+  <a href="/admin/services/new" class="btn btn-primary">+ Добавить сервис</a>
+</div>
+
+<div class="items">
+  <% if (!allServices.length) { %><p class="empty-note">Сервисов пока нет.</p><% } %>
+  <% allServices.forEach(function(svc){ %>
+    <div class="card item">
+      <div class="item-head">
+        <div class="item-title">
+          <span class="badge <%= svc.enabled ? 'on' : 'off' %>"><%= svc.enabled ? 'ВКЛ' : 'ВЫКЛ' %></span>
+          <% if (svc.color) { %><span class="color-dot" style="background:<%= svc.color %>"></span><% } %>
+          <b><%= svc.name || 'Без названия' %></b>
+          <code class="mini-code">/services/<%= svc.slug %></code>
+          <span class="item-stat"><%= svc.bannerCount %> баннер(ов)</span>
+          <span class="item-stat"><%= svc.promoCount %> промокод(ов)</span>
+        </div>
+        <div class="item-actions">
+          <a href="/services/<%= svc.slug %>" target="_blank" class="btn btn-sm btn-ghost">Открыть ↗</a>
+          <a href="/admin/services/<%= svc.id %>/edit" class="btn btn-sm">Редактировать</a>
+          <form method="post" action="/admin/services/<%= svc.id %>/delete" onsubmit="return confirm('Удалить сервис?')" style="display:inline">
+            <button class="btn btn-danger btn-sm" type="submit">Удалить</button>
+          </form>
+        </div>
+      </div>
+      <% if (svc.description) { %><p class="item-desc"><%= svc.description %></p><% } %>
+    </div>
+  <% }); %>
+</div>
+
+<%- include('partials/admin-footer') %>

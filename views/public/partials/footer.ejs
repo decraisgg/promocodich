@@ -3,7 +3,11 @@
   <footer class="site-footer">
     <div class="container footer-inner">
       <div class="footer-brand">
-        <span class="brand-logo">%</span>
+        <% if (site.logo_url) { %>
+          <img class="footer-logo-img" src="<%= site.logo_url %>" alt="<%= site.site_title || 'ПРОМОКОДЫЧ' %>">
+        <% } else { %>
+          <span class="brand-logo">%</span>
+        <% } %>
         <span class="brand-name"><%= site.site_title || 'ПРОМОКОДЫЧ' %></span>
       </div>
       <p class="footer-note">
@@ -12,7 +16,9 @@
       <div class="footer-links">
         <a href="/">Главная</a>
         <a href="/#promocodes">Промокоды</a>
+        <a href="/services">Сервисы</a>
         <a href="/articles">Статьи</a>
+        <a href="/giveaways">Розыгрыши</a>
         <a href="/contacts">Контакты</a>
       </div>
       <p class="footer-copy">© <%= currentYear %> <%= site.site_title || 'ПРОМОКОДЫЧ' %>. Все права защищены.</p>

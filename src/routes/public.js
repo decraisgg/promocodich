@@ -1,6 +1,7 @@
 'use strict';
 
 const express = require('express');
+const { db } = require('../db');
 const { getPublishedSnapshot } = require('../publish');
 
 const router = express.Router();
@@ -10,24 +11,32 @@ function baseLocals(snapshot) {
   return {
     site: snapshot.settings || {},
     categories: snapshot.categories || [],
+    services: snapshot.services || [],
     popups: snapshot.popups || [],
   };
 }
 
 router.get('/', (req, res) => {
   const snap = getPublishedSnapshot();
-  const banners = snap.banners || [];
-  const bigBanner = banners.find((b) => b.size === 'big') || null;
-  const smallBanners = banners.filter((b) => b.size === 'small').slice(0, 2);
+  const allBanners = snap.banners || [];
+  // Global banners: service_id is null/0/falsy
+  const globalBanners = allBanners.filter((b) => !b.service_id);
+  const bigBanner = globalBanners.find((b) => b.size === 'big') || null;
+  const smallBanners = globalBanners.filter((b) => b.size === 'small').slice(0, 2);
   const latestArticles = (snap.articles || []).slice(0, 6);
+  // Global promos: no service_id
+  const globalPromos = (snap.promocodes || []).filter((p) => !p.service_id);
+  // Active giveaways (up to 3 for homepage teaser)
+  const activeGiveaways = (snap.giveaways || []).slice(0, 3);
 
   res.render('public/home', {
     ...baseLocals(snap),
     page: 'home',
     bigBanner,
     smallBanners,
-    promocodes: snap.promocodes || [],
+    promocodes: globalPromos,
     latestArticles,
+    activeGiveaways,
   });
 });
 
@@ -66,6 +75,107 @@ router.get('/articles/:slug', (req, res) => {
   });
 });
 
+// --- Services -----------------------------------------------------------
+router.get('/services', (req, res) => {
+  const snap = getPublishedSnapshot();
+  res.render('public/services', {
+    ...baseLocals(snap),
+    page: 'services',
+    services: snap.services || [],
+  });
+});
+
+router.get('/services/:slug', (req, res) => {
+  const snap = getPublishedSnapshot();
+  const service = (snap.services || []).find((s) => s.slug === req.params.slug);
+  if (!service) {
+    return res.status(404).render('public/404', {
+      ...baseLocals(snap),
+      page: 'services',
+    });
+  }
+
+  const serviceBanners = (snap.banners || []).filter((b) => b.service_id === service.id);
+  const bigBanner = serviceBanners.find((b) => b.size === 'big') || null;
+  const smallBanners = serviceBanners.filter((b) => b.size === 'small').slice(0, 2);
+  const servicePromos = (snap.promocodes || []).filter((p) => p.service_id === service.id);
+
+  res.render('public/service', {
+    ...baseLocals(snap),
+    page: 'services',
+    service,
+    bigBanner,
+    smallBanners,
+    promocodes: servicePromos,
+  });
+});
+
+// --- Giveaways ----------------------------------------------------------
+router.get('/giveaways', (req, res) => {
+  const snap = getPublishedSnapshot();
+  const giveaways = snap.giveaways || [];
+
+  // Attach entry counts (live from DB)
+  const withCounts = giveaways.map((g) => {
+    const row = db.prepare('SELECT COUNT(*) AS c FROM giveaway_entries WHERE giveaway_id = ?').get(g.id);
+    return { ...g, entryCount: row ? row.c : 0 };
+  });
+
+  res.render('public/giveaways', {
+    ...baseLocals(snap),
+    page: 'giveaways',
+    giveaways: withCounts,
+  });
+});
+
+router.get('/giveaways/:slug', (req, res) => {
+  const snap = getPublishedSnapshot();
+  const giveaway = (snap.giveaways || []).find((g) => g.slug === req.params.slug);
+  if (!giveaway) {
+    return res.status(404).render('public/404', {
+      ...baseLocals(snap),
+      page: 'giveaways',
+    });
+  }
+
+  const entryRow = db.prepare('SELECT COUNT(*) AS c FROM giveaway_entries WHERE giveaway_id = ?').get(giveaway.id);
+  const entryCount = entryRow ? entryRow.c : 0;
+
+  // Check if current session already joined
+  const sessionEntry = req.sessionID
+    ? db.prepare('SELECT id FROM giveaway_entries WHERE giveaway_id = ? AND session_id = ?').get(giveaway.id, req.sessionID)
+    : null;
+  const alreadyJoined = !!sessionEntry;
+
+  const joined = req.session._giveawayJoined || null;
+  delete req.session._giveawayJoined;
+
+  res.render('public/giveaway', {
+    ...baseLocals(snap),
+    page: 'giveaways',
+    giveaway,
+    entryCount,
+    alreadyJoined,
+    justJoined: joined === giveaway.slug,
+  });
+});
+
+router.post('/giveaways/:slug/join', (req, res) => {
+  const snap = getPublishedSnapshot();
+  const giveaway = (snap.giveaways || []).find((g) => g.slug === req.params.slug);
+  if (!giveaway) return res.redirect('/giveaways');
+
+  if (req.sessionID) {
+    try {
+      db.prepare('INSERT OR IGNORE INTO giveaway_entries (giveaway_id, session_id) VALUES (?, ?)').run(giveaway.id, req.sessionID);
+    } catch (_) { /* ignore duplicate */ }
+    req.session._giveawayJoined = giveaway.slug;
+  }
+
+  res.redirect(`/giveaways/${giveaway.slug}`);
+});
+
+// --- Contacts -----------------------------------------------------------
 router.get('/contacts', (req, res) => {
   const snap = getPublishedSnapshot();
   res.render('public/contacts', {

@@ -15,6 +15,17 @@
     </select>
   </div>
 
+  <div class="field">
+    <label>Сервис (страница сервиса)</label>
+    <select name="service_id" class="input">
+      <option value="">Главная страница</option>
+      <% (typeof services !== 'undefined' ? services : []).forEach(function(svc){ %>
+        <option value="<%= svc.id %>" <%= (banner.service_id == svc.id ? 'selected' : '') %>><%= svc.name %></option>
+      <% }); %>
+    </select>
+    <span class="field-hint">Выберите сервис, если баннер должен показываться только на странице этого сервиса.</span>
+  </div>
+
   <%- include('image-field', { name: 'image_url', value: banner.image_url, label: 'Картинка баннера (фон)' }) %>
 
   <div class="field">

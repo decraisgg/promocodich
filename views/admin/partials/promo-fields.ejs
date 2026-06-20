@@ -13,6 +13,17 @@
   </div>
 
   <div class="field">
+    <label>Страница сервиса</label>
+    <select name="service_id" class="input">
+      <option value="">Главная страница</option>
+      <% (typeof services !== 'undefined' ? services : []).forEach(function(svc){ %>
+        <option value="<%= svc.id %>" <%= (promo.service_id == svc.id ? 'selected' : '') %>><%= svc.name %></option>
+      <% }); %>
+    </select>
+    <span class="field-hint">Выберите сервис, если промокод должен показываться на странице сервиса. Без выбора — отображается на главной.</span>
+  </div>
+
+  <div class="field">
     <label>Бонус (короткая подпись)</label>
     <input type="text" name="bonus_label" class="input" value="<%= promo.bonus_label %>" placeholder="+25% к пополнению">
   </div>

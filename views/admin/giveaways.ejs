@@ -1,0 +1,37 @@
+<%- include('partials/admin-header') %>
+
+<div class="page-head">
+  <h1>Розыгрыши</h1>
+  <p class="page-sub">Управляйте розыгрышами с условиями участия. Участники регистрируются на публичном сайте.</p>
+</div>
+
+<div class="page-actions">
+  <a href="/admin/giveaways/new" class="btn btn-primary">+ Создать розыгрыш</a>
+</div>
+
+<div class="items">
+  <% if (!allGiveaways.length) { %><p class="empty-note">Розыгрышей пока нет.</p><% } %>
+  <% allGiveaways.forEach(function(g){ %>
+    <div class="card item">
+      <div class="item-head">
+        <div class="item-title">
+          <span class="badge <%= g.enabled ? 'on' : 'off' %>"><%= g.enabled ? 'ВКЛ' : 'ВЫКЛ' %></span>
+          <b><%= g.title || 'Без названия' %></b>
+          <% if (g.prize) { %><span class="prize-badge">🏆 <%= g.prize %></span><% } %>
+          <% if (g.deadline) { %><span class="item-stat">до <%= g.deadline %></span><% } %>
+          <span class="item-stat"><%= g.entryCount %> участник(ов)</span>
+        </div>
+        <div class="item-actions">
+          <a href="/giveaways/<%= g.slug %>" target="_blank" class="btn btn-sm btn-ghost">Открыть ↗</a>
+          <a href="/admin/giveaways/<%= g.id %>/entries" class="btn btn-sm">Участники (<%= g.entryCount %>)</a>
+          <a href="/admin/giveaways/<%= g.id %>/edit" class="btn btn-sm">Редактировать</a>
+          <form method="post" action="/admin/giveaways/<%= g.id %>/delete" onsubmit="return confirm('Удалить розыгрыш и все участия?')" style="display:inline">
+            <button class="btn btn-danger btn-sm" type="submit">Удалить</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  <% }); %>
+</div>
+
+<%- include('partials/admin-footer') %>

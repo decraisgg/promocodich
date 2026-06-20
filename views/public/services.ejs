@@ -1,0 +1,41 @@
+<%- include('partials/header') %>
+
+<section class="section section--page-hero">
+  <div class="container">
+    <div class="page-hero-head">
+      <h1 class="page-hero-title">Сервисы</h1>
+      <p class="page-hero-sub">Промокоды и бонусы для каждого сервиса на одной странице</p>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <% if (!services.length) { %>
+      <p class="empty-note">Сервисы скоро появятся.</p>
+    <% } %>
+    <div class="services-grid">
+      <% services.forEach(function(svc){ %>
+        <a class="service-card" href="/services/<%= svc.slug %>"
+           style="<%= svc.color ? '--svc-color:' + svc.color : '' %>">
+          <div class="service-card-icon">
+            <% if (svc.image_url) { %>
+              <img src="<%= svc.image_url %>" alt="<%= svc.name %>">
+            <% } else { %>
+              <span><%= svc.name.slice(0,2).toUpperCase() %></span>
+            <% } %>
+          </div>
+          <div class="service-card-body">
+            <h2 class="service-card-name"><%= svc.name %></h2>
+            <% if (svc.description) { %>
+              <p class="service-card-desc"><%= svc.description %></p>
+            <% } %>
+          </div>
+          <span class="service-card-link">Смотреть промокоды →</span>
+        </a>
+      <% }); %>
+    </div>
+  </div>
+</section>
+
+<%- include('partials/footer') %>

@@ -44,6 +44,7 @@ function flash(req, type, text) {
 function renderAdmin(req, res, view, locals = {}) {
   const flashMsg = req.session.flash || null;
   delete req.session.flash;
+  const services = db.prepare('SELECT id, name, slug FROM services ORDER BY sort_order, id').all();
   res.render(view, {
     layout: true,
     active: '',
@@ -52,6 +53,7 @@ function renderAdmin(req, res, view, locals = {}) {
     siteTitle: getSetting('site_title', 'ПРОМОКОДЫЧ'),
     categories: CATEGORIES,
     categoryTitles: CATEGORY_TITLES,
+    services,
     flash: flashMsg,
     ...locals,
   });
@@ -71,14 +73,14 @@ function slugify(str) {
     .join('')
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
-    .slice(0, 80) || 'article';
+    .slice(0, 80) || 'item';
 }
-function uniqueSlug(base, excludeId = null) {
+function uniqueSlugFor(table, base, excludeId = null) {
   let slug = slugify(base);
   let candidate = slug;
   let n = 2;
   while (true) {
-    const row = db.prepare('SELECT id FROM articles WHERE slug = ?').get(candidate);
+    const row = db.prepare(`SELECT id FROM ${table} WHERE slug = ?`).get(candidate);
     if (!row || row.id === excludeId) return candidate;
     candidate = `${slug}-${n++}`;
   }
@@ -115,6 +117,8 @@ router.get('/', (req, res) => {
     promocodes: db.prepare('SELECT COUNT(*) c FROM promocodes').get().c,
     articles: db.prepare('SELECT COUNT(*) c FROM articles').get().c,
     popups: db.prepare('SELECT COUNT(*) c FROM popups').get().c,
+    services: db.prepare('SELECT COUNT(*) c FROM services').get().c,
+    giveaways: db.prepare('SELECT COUNT(*) c FROM giveaways').get().c,
   };
   renderAdmin(req, res, 'admin/dashboard', { active: 'dashboard', counts });
 });
@@ -143,6 +147,7 @@ router.get('/banners', (req, res) => {
 function bannerFromBody(body) {
   return {
     enabled: b(body.enabled),
+    service_id: body.service_id ? parseInt(body.service_id, 10) : null,
     size: body.size === 'big' ? 'big' : 'small',
     image_url: s(body.image_url),
     image_link: s(body.image_link),
@@ -159,8 +164,8 @@ function bannerFromBody(body) {
 router.post('/banners', (req, res) => {
   const d = bannerFromBody(req.body);
   db.prepare(`INSERT INTO banners
-    (enabled,size,image_url,image_link,text_enabled,title,subtitle,button_enabled,button_text,button_link,sort_order)
-    VALUES (@enabled,@size,@image_url,@image_link,@text_enabled,@title,@subtitle,@button_enabled,@button_text,@button_link,@sort_order)`).run(d);
+    (enabled,service_id,size,image_url,image_link,text_enabled,title,subtitle,button_enabled,button_text,button_link,sort_order)
+    VALUES (@enabled,@service_id,@size,@image_url,@image_link,@text_enabled,@title,@subtitle,@button_enabled,@button_text,@button_link,@sort_order)`).run(d);
   markDirty();
   flash(req, 'success', 'Баннер добавлен.');
   res.redirect('/admin/banners');
@@ -169,7 +174,7 @@ router.post('/banners', (req, res) => {
 router.post('/banners/:id', (req, res) => {
   const d = bannerFromBody(req.body);
   db.prepare(`UPDATE banners SET
-    enabled=@enabled,size=@size,image_url=@image_url,image_link=@image_link,text_enabled=@text_enabled,
+    enabled=@enabled,service_id=@service_id,size=@size,image_url=@image_url,image_link=@image_link,text_enabled=@text_enabled,
     title=@title,subtitle=@subtitle,button_enabled=@button_enabled,button_text=@button_text,button_link=@button_link,sort_order=@sort_order
     WHERE id=@id`).run({ ...d, id: req.params.id });
   markDirty();
@@ -193,6 +198,7 @@ router.get('/promocodes', (req, res) => {
 function promoFromBody(body) {
   return {
     enabled: b(body.enabled),
+    service_id: body.service_id ? parseInt(body.service_id, 10) : null,
     service_name: s(body.service_name),
     bonus_label: s(body.bonus_label),
     code: s(body.code),
@@ -206,8 +212,8 @@ function promoFromBody(body) {
 router.post('/promocodes', (req, res) => {
   const d = promoFromBody(req.body);
   db.prepare(`INSERT INTO promocodes
-    (enabled,service_name,bonus_label,code,description,image_url,link,sort_order)
-    VALUES (@enabled,@service_name,@bonus_label,@code,@description,@image_url,@link,@sort_order)`).run(d);
+    (enabled,service_id,service_name,bonus_label,code,description,image_url,link,sort_order)
+    VALUES (@enabled,@service_id,@service_name,@bonus_label,@code,@description,@image_url,@link,@sort_order)`).run(d);
   markDirty();
   flash(req, 'success', 'Промокод добавлен.');
   res.redirect('/admin/promocodes');
@@ -216,7 +222,7 @@ router.post('/promocodes', (req, res) => {
 router.post('/promocodes/:id', (req, res) => {
   const d = promoFromBody(req.body);
   db.prepare(`UPDATE promocodes SET
-    enabled=@enabled,service_name=@service_name,bonus_label=@bonus_label,code=@code,
+    enabled=@enabled,service_id=@service_id,service_name=@service_name,bonus_label=@bonus_label,code=@code,
     description=@description,image_url=@image_url,link=@link,sort_order=@sort_order WHERE id=@id`)
     .run({ ...d, id: req.params.id });
   markDirty();
@@ -309,7 +315,7 @@ function parseBlocks(raw) {
 
 router.post('/articles', (req, res) => {
   const title = s(req.body.title) || 'Без названия';
-  const slug = uniqueSlug(s(req.body.slug) || title);
+  const slug = uniqueSlugFor('articles', s(req.body.slug) || title);
   const blocks = parseBlocks(req.body.blocks);
   db.prepare(`INSERT INTO articles (slug,title,category,excerpt,featured_image,blocks,enabled,sort_order)
     VALUES (@slug,@title,@category,@excerpt,@featured_image,@blocks,@enabled,@sort_order)`).run({
@@ -332,7 +338,7 @@ router.post('/articles/:id', (req, res) => {
   const existing = db.prepare('SELECT id FROM articles WHERE id = ?').get(id);
   if (!existing) return res.redirect('/admin/articles');
   const title = s(req.body.title) || 'Без названия';
-  const slug = uniqueSlug(s(req.body.slug) || title, Number(id));
+  const slug = uniqueSlugFor('articles', s(req.body.slug) || title, Number(id));
   const blocks = parseBlocks(req.body.blocks);
   db.prepare(`UPDATE articles SET slug=@slug,title=@title,category=@category,excerpt=@excerpt,
     featured_image=@featured_image,blocks=@blocks,enabled=@enabled,sort_order=@sort_order WHERE id=@id`).run({
@@ -358,16 +364,175 @@ router.post('/articles/:id/delete', (req, res) => {
   res.redirect('/admin/articles');
 });
 
+// --- Services -----------------------------------------------------------
+router.get('/services', (req, res) => {
+  const allServices = db.prepare('SELECT * FROM services ORDER BY sort_order, id').all();
+  const withCounts = allServices.map((svc) => ({
+    ...svc,
+    bannerCount: db.prepare('SELECT COUNT(*) c FROM banners WHERE service_id = ?').get(svc.id).c,
+    promoCount: db.prepare('SELECT COUNT(*) c FROM promocodes WHERE service_id = ?').get(svc.id).c,
+  }));
+  renderAdmin(req, res, 'admin/services', { active: 'services', allServices: withCounts });
+});
+
+router.get('/services/new', (req, res) => {
+  renderAdmin(req, res, 'admin/service-edit', {
+    active: 'services',
+    service: { id: '', slug: '', name: '', description: '', image_url: '', color: '', enabled: 1, sort_order: 0 },
+    isNew: true,
+  });
+});
+
+router.get('/services/:id/edit', (req, res) => {
+  const service = db.prepare('SELECT * FROM services WHERE id = ?').get(req.params.id);
+  if (!service) return res.redirect('/admin/services');
+  renderAdmin(req, res, 'admin/service-edit', { active: 'services', service, isNew: false });
+});
+
+function serviceFromBody(body) {
+  return {
+    name: s(body.name),
+    slug: slugify(s(body.slug) || s(body.name)),
+    description: s(body.description),
+    image_url: s(body.image_url),
+    color: s(body.color),
+    enabled: b(body.enabled),
+    sort_order: parseInt(body.sort_order, 10) || 0,
+  };
+}
+
+router.post('/services', (req, res) => {
+  const d = serviceFromBody(req.body);
+  const slug = uniqueSlugFor('services', d.slug);
+  db.prepare(`INSERT INTO services (slug,name,description,image_url,color,enabled,sort_order)
+    VALUES (@slug,@name,@description,@image_url,@color,@enabled,@sort_order)`).run({ ...d, slug });
+  markDirty();
+  flash(req, 'success', 'Сервис добавлен.');
+  res.redirect('/admin/services');
+});
+
+router.post('/services/:id', (req, res) => {
+  const id = req.params.id;
+  const existing = db.prepare('SELECT id FROM services WHERE id = ?').get(id);
+  if (!existing) return res.redirect('/admin/services');
+  const d = serviceFromBody(req.body);
+  const slug = uniqueSlugFor('services', d.slug, Number(id));
+  db.prepare(`UPDATE services SET slug=@slug,name=@name,description=@description,image_url=@image_url,
+    color=@color,enabled=@enabled,sort_order=@sort_order WHERE id=@id`).run({ ...d, slug, id });
+  markDirty();
+  flash(req, 'success', 'Сервис сохранён.');
+  res.redirect('/admin/services');
+});
+
+router.post('/services/:id/delete', (req, res) => {
+  db.prepare('DELETE FROM services WHERE id = ?').run(req.params.id);
+  markDirty();
+  flash(req, 'success', 'Сервис удалён.');
+  res.redirect('/admin/services');
+});
+
+// --- Giveaways ----------------------------------------------------------
+router.get('/giveaways', (req, res) => {
+  const allGiveaways = db.prepare('SELECT * FROM giveaways ORDER BY sort_order, id').all();
+  const withCounts = allGiveaways.map((g) => ({
+    ...g,
+    entryCount: db.prepare('SELECT COUNT(*) c FROM giveaway_entries WHERE giveaway_id = ?').get(g.id).c,
+  }));
+  renderAdmin(req, res, 'admin/giveaways', { active: 'giveaways', allGiveaways: withCounts });
+});
+
+router.get('/giveaways/new', (req, res) => {
+  renderAdmin(req, res, 'admin/giveaway-edit', {
+    active: 'giveaways',
+    giveaway: { id: '', slug: '', title: '', description: '', image_url: '', prize: '', conditions: [], deadline: '', enabled: 1, sort_order: 0 },
+    isNew: true,
+  });
+});
+
+router.get('/giveaways/:id/edit', (req, res) => {
+  const giveaway = db.prepare('SELECT * FROM giveaways WHERE id = ?').get(req.params.id);
+  if (!giveaway) return res.redirect('/admin/giveaways');
+  let conditions = [];
+  try { conditions = JSON.parse(giveaway.conditions || '[]'); } catch (_) { conditions = []; }
+  renderAdmin(req, res, 'admin/giveaway-edit', {
+    active: 'giveaways',
+    giveaway: { ...giveaway, conditions },
+    isNew: false,
+  });
+});
+
+router.get('/giveaways/:id/entries', (req, res) => {
+  const giveaway = db.prepare('SELECT * FROM giveaways WHERE id = ?').get(req.params.id);
+  if (!giveaway) return res.redirect('/admin/giveaways');
+  const entries = db.prepare('SELECT * FROM giveaway_entries WHERE giveaway_id = ? ORDER BY joined_at DESC').all(giveaway.id);
+  renderAdmin(req, res, 'admin/giveaway-entries', { active: 'giveaways', giveaway, entries });
+});
+
+function conditionsFromText(text) {
+  return String(text || '').split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line, i) => ({ id: `c${i + 1}`, text: line }));
+}
+
+function giveawayFromBody(body) {
+  return {
+    title: s(body.title),
+    description: s(body.description),
+    image_url: s(body.image_url),
+    prize: s(body.prize),
+    conditions: JSON.stringify(conditionsFromText(body.conditions_text)),
+    deadline: s(body.deadline),
+    enabled: b(body.enabled),
+    sort_order: parseInt(body.sort_order, 10) || 0,
+  };
+}
+
+router.post('/giveaways', (req, res) => {
+  const d = giveawayFromBody(req.body);
+  const title = d.title || 'Розыгрыш';
+  const slug = uniqueSlugFor('giveaways', s(req.body.slug) || title);
+  db.prepare(`INSERT INTO giveaways (slug,title,description,image_url,prize,conditions,deadline,enabled,sort_order)
+    VALUES (@slug,@title,@description,@image_url,@prize,@conditions,@deadline,@enabled,@sort_order)`)
+    .run({ ...d, slug });
+  markDirty();
+  flash(req, 'success', 'Розыгрыш создан.');
+  res.redirect('/admin/giveaways');
+});
+
+router.post('/giveaways/:id', (req, res) => {
+  const id = req.params.id;
+  const existing = db.prepare('SELECT id FROM giveaways WHERE id = ?').get(id);
+  if (!existing) return res.redirect('/admin/giveaways');
+  const d = giveawayFromBody(req.body);
+  const title = d.title || 'Розыгрыш';
+  const slug = uniqueSlugFor('giveaways', s(req.body.slug) || title, Number(id));
+  db.prepare(`UPDATE giveaways SET slug=@slug,title=@title,description=@description,image_url=@image_url,
+    prize=@prize,conditions=@conditions,deadline=@deadline,enabled=@enabled,sort_order=@sort_order WHERE id=@id`)
+    .run({ ...d, slug, id });
+  markDirty();
+  flash(req, 'success', 'Розыгрыш сохранён.');
+  res.redirect('/admin/giveaways');
+});
+
+router.post('/giveaways/:id/delete', (req, res) => {
+  db.prepare('DELETE FROM giveaway_entries WHERE giveaway_id = ?').run(req.params.id);
+  db.prepare('DELETE FROM giveaways WHERE id = ?').run(req.params.id);
+  markDirty();
+  flash(req, 'success', 'Розыгрыш удалён.');
+  res.redirect('/admin/giveaways');
+});
+
 // --- Settings -----------------------------------------------------------
 router.get('/settings', (req, res) => {
-  const keys = ['site_title', 'tagline', 'intro_text', 'contacts_telegram', 'contacts_email', 'contacts_text'];
+  const keys = ['site_title', 'tagline', 'intro_text', 'logo_url', 'contacts_telegram', 'contacts_email', 'contacts_text'];
   const values = {};
   for (const k of keys) values[k] = getSetting(k, '');
   renderAdmin(req, res, 'admin/settings', { active: 'settings', values });
 });
 
 router.post('/settings', (req, res) => {
-  const keys = ['site_title', 'tagline', 'intro_text', 'contacts_telegram', 'contacts_email', 'contacts_text'];
+  const keys = ['site_title', 'tagline', 'intro_text', 'logo_url', 'contacts_telegram', 'contacts_email', 'contacts_text'];
   for (const k of keys) setSetting(k, s(req.body[k]));
   markDirty();
   flash(req, 'success', 'Настройки сохранены.');
