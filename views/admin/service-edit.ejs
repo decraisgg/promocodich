@@ -25,6 +25,11 @@
 
     <%- include('partials/image-field', { name: 'image_url', value: service.image_url, label: 'Логотип / картинка сервиса' }) %>
 
+    <%- include('partials/image-field', { name: 'hero_image', value: service.hero_image, label: 'Баннер шапки сервиса (фон под названием и иконкой)' }) %>
+    <div class="field field--full field-hint-standalone">
+      Фон баннера в шапке страницы сервиса. Рекомендуемый размер: ~1140×180 пикселей. Если пусто — используется градиент акцентного цвета.
+    </div>
+
     <div class="field">
       <label>Акцентный цвет (HEX или название)</label>
       <div class="color-field-row">

@@ -395,6 +395,7 @@ function serviceFromBody(body) {
     slug: slugify(s(body.slug) || s(body.name)),
     description: s(body.description),
     image_url: s(body.image_url),
+    hero_image: s(body.hero_image),
     color: s(body.color),
     enabled: b(body.enabled),
     sort_order: parseInt(body.sort_order, 10) || 0,
@@ -404,8 +405,8 @@ function serviceFromBody(body) {
 router.post('/services', (req, res) => {
   const d = serviceFromBody(req.body);
   const slug = uniqueSlugFor('services', d.slug);
-  db.prepare(`INSERT INTO services (slug,name,description,image_url,color,enabled,sort_order)
-    VALUES (@slug,@name,@description,@image_url,@color,@enabled,@sort_order)`).run({ ...d, slug });
+  db.prepare(`INSERT INTO services (slug,name,description,image_url,hero_image,color,enabled,sort_order)
+    VALUES (@slug,@name,@description,@image_url,@hero_image,@color,@enabled,@sort_order)`).run({ ...d, slug });
   markDirty();
   flash(req, 'success', 'Сервис добавлен.');
   res.redirect('/admin/services');
@@ -418,7 +419,7 @@ router.post('/services/:id', (req, res) => {
   const d = serviceFromBody(req.body);
   const slug = uniqueSlugFor('services', d.slug, Number(id));
   db.prepare(`UPDATE services SET slug=@slug,name=@name,description=@description,image_url=@image_url,
-    color=@color,enabled=@enabled,sort_order=@sort_order WHERE id=@id`).run({ ...d, slug, id });
+    hero_image=@hero_image,color=@color,enabled=@enabled,sort_order=@sort_order WHERE id=@id`).run({ ...d, slug, id });
   markDirty();
   flash(req, 'success', 'Сервис сохранён.');
   res.redirect('/admin/services');

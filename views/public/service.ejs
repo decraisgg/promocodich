@@ -1,24 +1,27 @@
 <%- include('partials/header') %>
 
 <!-- SERVICE HERO -->
-<section class="section service-page-hero" style="<%= service.color ? '--svc-color:' + service.color : '' %>">
+<section class="service-hero-section">
   <div class="container">
     <div class="crumbs">
-      <a href="/">Главная</a> / <a href="/services">Сервисы</a> / <span><%= service.name %></span>
+      <a href="/">Главная</a> / <a href="/services">Сайты</a> / <span><%= service.name %></span>
     </div>
-    <div class="service-hero-inner">
-      <div class="service-hero-icon">
-        <% if (service.image_url) { %>
-          <img src="<%= service.image_url %>" alt="<%= service.name %>">
-        <% } else { %>
-          <span><%= service.name.slice(0,2).toUpperCase() %></span>
-        <% } %>
-      </div>
-      <div>
-        <h1 class="service-hero-title"><%= service.name %></h1>
-        <% if (service.description) { %>
-          <p class="service-hero-desc"><%= service.description %></p>
-        <% } %>
+    <div class="service-hero-banner<%= service.hero_image ? ' has-img' : '' %>"
+         style="<%= service.color ? '--svc-color:' + service.color + ';' : '' %><%= service.hero_image ? "background-image:url('" + service.hero_image + "')" : '' %>">
+      <div class="service-hero-inner">
+        <div class="service-hero-icon">
+          <% if (service.image_url) { %>
+            <img src="<%= service.image_url %>" alt="<%= service.name %>">
+          <% } else { %>
+            <span><%= service.name.slice(0,2).toUpperCase() %></span>
+          <% } %>
+        </div>
+        <div>
+          <h1 class="service-hero-title"><%= service.name %></h1>
+          <% if (service.description) { %>
+            <p class="service-hero-desc"><%= service.description %></p>
+          <% } %>
+        </div>
       </div>
     </div>
   </div>
@@ -93,7 +96,7 @@
 <section class="section section--tight">
   <div class="container">
     <div class="section-head">
-      <h2 class="section-title"><span class="ico">★</span> Другие сервисы</h2>
+      <h2 class="section-title"><span class="ico">★</span> Другие сайты</h2>
     </div>
     <div class="services-strip">
       <% services.filter(function(s){ return s.id !== service.id; }).forEach(function(svc){ %>

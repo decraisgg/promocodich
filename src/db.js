@@ -23,6 +23,7 @@ CREATE TABLE IF NOT EXISTS services (
   name        TEXT    DEFAULT '',
   description TEXT    DEFAULT '',
   image_url   TEXT    DEFAULT '',
+  hero_image  TEXT    DEFAULT '',
   color       TEXT    DEFAULT '',
   enabled     INTEGER NOT NULL DEFAULT 1,
   sort_order  INTEGER NOT NULL DEFAULT 0
@@ -113,6 +114,7 @@ const addColIfMissing = (table, col, def) => {
 };
 addColIfMissing('banners', 'service_id', 'INTEGER REFERENCES services(id) ON DELETE SET NULL');
 addColIfMissing('promocodes', 'service_id', 'INTEGER REFERENCES services(id) ON DELETE SET NULL');
+addColIfMissing('services', 'hero_image', "TEXT DEFAULT ''");
 
 // --- Settings helpers ---------------------------------------------------
 const getSettingStmt = db.prepare('SELECT value FROM settings WHERE key = ?');

@@ -280,19 +280,35 @@ img { max-width: 100%; display: block; }
 .service-card-desc { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.5; }
 .service-card-link { display: block; padding: 14px 22px; color: var(--svc-color, var(--accent)); font-weight: 800; font-size: 14px; border-top: 1px solid rgba(0,0,0,.06); }
 
-/* ---------- Service page hero ---------- */
-.service-page-hero { background: var(--card); border-bottom: 1px solid rgba(0,0,0,.06); padding: 28px 0; }
-.service-hero-inner { display: flex; align-items: center; gap: 20px; margin-top: 10px; }
+/* ---------- Service page hero (grid-width banner) ---------- */
+.service-hero-section { padding: 16px 0 6px; }
+.service-hero-section .crumbs { margin-bottom: 12px; }
+.service-hero-banner {
+  position: relative; overflow: hidden; isolation: isolate;
+  display: flex; align-items: center;
+  min-height: 168px; padding: 24px 30px;
+  border-radius: 18px;
+  background-color: #15171e;
+  background-image: linear-gradient(120deg, var(--svc-color, #2a2f3a), #15171e);
+  background-size: cover; background-position: center;
+  box-shadow: var(--shadow-lg);
+}
+/* Dark overlay only when a custom image is set, for text readability */
+.service-hero-banner.has-img::after {
+  content: ""; position: absolute; inset: 0; z-index: 1;
+  background: linear-gradient(90deg, rgba(10,11,15,.82), rgba(10,11,15,.45));
+}
+.service-hero-inner { position: relative; z-index: 2; display: flex; align-items: center; gap: 20px; }
 .service-hero-icon {
   width: 72px; height: 72px; flex: none; border-radius: 18px;
   background: linear-gradient(135deg, var(--svc-color, var(--accent)), var(--accent-2));
   display: grid; place-items: center; overflow: hidden;
-  box-shadow: 0 8px 24px rgba(0,0,0,.12);
+  box-shadow: 0 8px 24px rgba(0,0,0,.35);
 }
 .service-hero-icon img { width: 100%; height: 100%; object-fit: contain; }
 .service-hero-icon span { color: #fff; font-size: 22px; font-weight: 900; }
-.service-hero-title { margin: 0 0 6px; font-size: 32px; font-weight: 900; }
-.service-hero-desc { margin: 0; color: var(--muted); font-size: 15px; max-width: 560px; }
+.service-hero-title { margin: 0 0 6px; font-size: 32px; font-weight: 900; color: #fff; text-shadow: 0 2px 12px rgba(0,0,0,.35); }
+.service-hero-desc { margin: 0; color: rgba(255,255,255,.85); font-size: 15px; max-width: 560px; }
 
 /* ---------- Giveaway strips & grids ---------- */
 .giveaway-strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
