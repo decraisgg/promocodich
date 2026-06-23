@@ -230,7 +230,7 @@ function _ensureDefaults() {
     gift_button_text: 'Забрать',
     gift_button_link: '#',
 
-    // Header navigation labels (editable section names)
+    // Header navigation labels + order (editable section names)
     nav_home: 'Главная',
     nav_promocodes: 'Промокоды',
     nav_services: 'Сайты',
@@ -238,6 +238,11 @@ function _ensureDefaults() {
     nav_giveaways: 'Розыгрыши',
     nav_contacts: 'Контакты',
     nav_rating: 'Рейтинг',
+    nav_order: 'home,promocodes,rating,services,articles,contacts',
+
+    // Site background (configurable in admin Settings)
+    bg_image: '',
+    bg_blur: '3',
 
     // Global SEO
     seo_title_suffix: ' — ПРОМОКОДЫЧ',

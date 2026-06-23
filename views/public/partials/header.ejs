@@ -47,7 +47,26 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23ff2d55'/><text x='50' y='72' font-size='66' text-anchor='middle' fill='white' font-family='Arial' font-weight='bold'>%25</text></svg>">
   <% } %>
 </head>
-<body>
+<%
+  // Background CSS variables (configurable in admin Settings)
+  var __bgStyle = '';
+  if (site.bg_image) __bgStyle += "--site-bg:url('" + site.bg_image + "');";
+  if (site.bg_blur !== undefined && site.bg_blur !== '') __bgStyle += '--site-bg-blur:' + (parseFloat(site.bg_blur) || 0) + 'px;';
+
+  // Header navigation items in the admin-configured order.
+  var __navItems = {
+    home:       { href: '/',            label: site.nav_home       || 'Главная',   active: page === 'home' },
+    promocodes: { href: '/#promocodes', label: site.nav_promocodes || 'Промокоды', active: false },
+    rating:     { href: '/rating',      label: site.nav_rating     || 'Рейтинг',   active: page === 'rating' },
+    services:   { href: '/services',    label: site.nav_services   || 'Сайты',     active: page === 'services' },
+    articles:   { href: '/articles',    label: site.nav_articles   || 'Статьи',    active: page === 'articles' },
+    contacts:   { href: '/contacts',    label: site.nav_contacts   || 'Контакты',  active: page === 'contacts' }
+  };
+  var __navOrder = String(site.nav_order || 'home,promocodes,rating,services,articles,contacts')
+    .split(',').map(function (k) { return k.trim(); }).filter(function (k) { return __navItems[k]; });
+  Object.keys(__navItems).forEach(function (k) { if (__navOrder.indexOf(k) < 0) __navOrder.push(k); });
+%>
+<body<% if (__bgStyle) { %> style="<%= __bgStyle %>"<% } %>>
   <div class="site-header-wrap">
     <header class="site-header" id="siteHeader">
       <div class="header-inner">
@@ -60,12 +79,9 @@
           <span class="brand-name"><%= site.site_title || 'ПРОМОКОДЫЧ' %></span>
         </a>
         <nav class="main-nav" id="mainNav">
-          <a href="/" class="<%= page === 'home' ? 'active' : '' %>"><%= site.nav_home || 'Главная' %></a>
-          <a href="/#promocodes"><%= site.nav_promocodes || 'Промокоды' %></a>
-          <a href="/rating" class="<%= page === 'rating' ? 'active' : '' %>"><%= site.nav_rating || 'Рейтинг' %></a>
-          <a href="/services" class="<%= page === 'services' ? 'active' : '' %>"><%= site.nav_services || 'Сайты' %></a>
-          <a href="/articles" class="<%= page === 'articles' ? 'active' : '' %>"><%= site.nav_articles || 'Статьи' %></a>
-          <a href="/contacts" class="<%= page === 'contacts' ? 'active' : '' %>"><%= site.nav_contacts || 'Контакты' %></a>
+          <% __navOrder.forEach(function (k) { var it = __navItems[k]; %>
+            <a href="<%= it.href %>" class="<%= it.active ? 'active' : '' %>"><%= it.label %></a>
+          <% }); %>
         </nav>
         <% if (String(site.gift_enabled) === '1') { %>
           <div class="header-gift" id="giftWidget">

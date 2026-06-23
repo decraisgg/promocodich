@@ -26,10 +26,10 @@ const storage = multer.diskStorage({
 });
 const upload = multer({
   storage,
-  limits: { fileSize: 8 * 1024 * 1024 },
+  limits: { fileSize: 64 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
-    if (/^image\//.test(file.mimetype)) return cb(null, true);
-    cb(new Error('Можно загружать только изображения'));
+    if (/^(image|video)\//.test(file.mimetype)) return cb(null, true);
+    cb(new Error('Можно загружать только изображения и видео'));
   },
 });
 
@@ -649,6 +649,7 @@ router.post('/ratings/:id/reviews/:rid/delete', (req, res) => {
 const SETTINGS_KEYS = [
   'site_title', 'tagline', 'intro_text', 'logo_url', 'favicon_url',
   'giveaways_icon', 'giveaways_icon_image', 'home_sections',
+  'bg_image', 'bg_blur',
   'contacts_telegram', 'contacts_email', 'contacts_text',
 ];
 const HOME_SECTION_DEFS = [
@@ -695,18 +696,27 @@ router.post('/settings', (req, res) => {
 });
 
 // --- Header (navigation labels) -----------------------------------------
-const NAV_KEYS = [
-  'nav_home', 'nav_promocodes', 'nav_rating', 'nav_services', 'nav_articles', 'nav_giveaways', 'nav_contacts',
-];
+const NAV_ORDER_KEYS = ['home', 'promocodes', 'rating', 'services', 'articles', 'contacts'];
+const NAV_LABELS = { home: 'Главная', promocodes: 'Промокоды', rating: 'Рейтинг', services: 'Сайты', articles: 'Статьи', contacts: 'Контакты' };
+function normalizeNavOrder(raw) {
+  const requested = String(raw || '').split(',').map((x) => x.trim()).filter((x) => NAV_ORDER_KEYS.includes(x));
+  const seen = new Set();
+  const order = [];
+  for (const x of requested) if (!seen.has(x)) { seen.add(x); order.push(x); }
+  for (const x of NAV_ORDER_KEYS) if (!seen.has(x)) order.push(x);
+  return order;
+}
 
 router.get('/header', (req, res) => {
-  const values = {};
-  for (const k of NAV_KEYS) values[k] = getSetting(k, '');
-  renderAdmin(req, res, 'admin/header', { active: 'header', values });
+  const order = normalizeNavOrder(getSetting('nav_order', ''));
+  const navItems = order.map((k) => ({ key: k, label: getSetting('nav_' + k, NAV_LABELS[k]) }));
+  renderAdmin(req, res, 'admin/header', { active: 'header', navItems });
 });
 
 router.post('/header', (req, res) => {
-  for (const k of NAV_KEYS) setSetting(k, s(req.body[k]));
+  const order = normalizeNavOrder(req.body.nav_order);
+  setSetting('nav_order', order.join(','));
+  for (const k of NAV_ORDER_KEYS) setSetting('nav_' + k, s(req.body['nav_' + k]));
   markDirty();
   flash(req, 'success', 'Шапка сохранена.');
   res.redirect('/admin/header');

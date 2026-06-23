@@ -1,0 +1,20 @@
+<%
+  var __vu = String(url || '').trim();
+  var __yt = __vu.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([\w-]{6,})/);
+  var __vm = __vu.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+%>
+<% if (__yt) { %>
+  <div class="content-video">
+    <iframe src="https://www.youtube.com/embed/<%= __yt[1] %>" title="video" loading="lazy"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+  </div>
+<% } else if (__vm) { %>
+  <div class="content-video">
+    <iframe src="https://player.vimeo.com/video/<%= __vm[1] %>" title="video" loading="lazy"
+            allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+  </div>
+<% } else if (__vu) { %>
+  <div class="content-video">
+    <video src="<%= __vu %>" controls preload="metadata"></video>
+  </div>
+<% } %>

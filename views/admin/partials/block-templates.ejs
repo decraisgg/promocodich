@@ -76,6 +76,27 @@
   </div>
 </template>
 
+<template id="tpl-video">
+  <div class="block" data-type="video">
+    <div class="block-bar">
+      <span class="block-type">🎬 Видео</span>
+      <div class="block-tools">
+        <button type="button" class="blk-up" title="Выше">↑</button>
+        <button type="button" class="blk-down" title="Ниже">↓</button>
+        <button type="button" class="blk-del" title="Удалить">✕</button>
+      </div>
+    </div>
+    <div class="img-field">
+      <div class="img-field-controls">
+        <input type="text" class="blk-video-url input" placeholder="Ссылка YouTube / Vimeo / MP4 или загрузите файл →">
+        <label class="btn btn-sm btn-upload">Загрузить видео<input type="file" class="vid-file" accept="video/*" hidden></label>
+        <span class="vid-status"></span>
+      </div>
+    </div>
+    <p class="hint">Поддерживаются YouTube, Vimeo и файлы MP4 / WebM (до 64 МБ).</p>
+  </div>
+</template>
+
 <template id="tpl-image">
   <div class="block" data-type="image">
     <div class="block-bar">

@@ -28,15 +28,15 @@ body {
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 }
-/* Decorative blurred wavy topographic background (white bg, black lines) */
+/* Decorative blurred background (configurable in admin; light abstract default) */
 body::before {
   content: "";
   position: fixed;
   inset: -40px;
   z-index: -1;
-  background: #ffffff url('/static/img/bg-lines.svg') center center / cover no-repeat;
-  filter: blur(1.5px);
-  opacity: 0.24;
+  background: #f3f4f7 var(--site-bg, url('/static/img/bg-default.svg')) center center / cover no-repeat;
+  filter: blur(var(--site-bg-blur, 3px));
+  opacity: var(--site-bg-opacity, 0.75);
   pointer-events: none;
 }
 a { color: inherit; text-decoration: none; }
@@ -502,6 +502,8 @@ img { max-width: 100%; display: block; }
   font-weight: 800; padding: 13px 26px; border-radius: 12px; box-shadow: 0 10px 24px rgba(255,45,85,.4);
 }
 .content-btn:hover { filter: brightness(1.08); }
+.content-video { position: relative; margin: 26px 0; aspect-ratio: 16 / 9; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-lg); background: #000; }
+.content-video iframe, .content-video video { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; display: block; object-fit: contain; background: #000; }
 .content-figure { margin: 26px 0; text-align: center; }
 .content-figure img { width: 100%; border-radius: var(--radius); box-shadow: var(--shadow-lg); }
 .content-figure figcaption { color: var(--muted); font-size: 14px; margin-top: 10px; font-style: italic; }

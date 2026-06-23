@@ -2,47 +2,60 @@
 
 <div class="page-head">
   <h1>Шапка</h1>
-  <p class="page-sub">Названия разделов в верхнем меню сайта. Пустое поле — раздел получит название по умолчанию.</p>
+  <p class="page-sub">Названия и порядок разделов в верхнем меню. Перетаскивайте кнопками ↑ / ↓, переименовывайте в полях. Пустое поле — название по умолчанию.</p>
 </div>
 
 <form method="post" action="/admin/header" class="card form">
-  <div class="form-grid">
-    <div class="field">
-      <label>Главная</label>
-      <input type="text" name="nav_home" class="input" value="<%= values.nav_home %>" placeholder="Главная">
-    </div>
-    <div class="field">
-      <label>Промокоды</label>
-      <input type="text" name="nav_promocodes" class="input" value="<%= values.nav_promocodes %>" placeholder="Промокоды">
-    </div>
-    <div class="field">
-      <label>Рейтинг</label>
-      <input type="text" name="nav_rating" class="input" value="<%= values.nav_rating %>" placeholder="Рейтинг">
-    </div>
-    <div class="field">
-      <label>Сайты</label>
-      <input type="text" name="nav_services" class="input" value="<%= values.nav_services %>" placeholder="Сайты">
-    </div>
-    <div class="field">
-      <label>Статьи</label>
-      <input type="text" name="nav_articles" class="input" value="<%= values.nav_articles %>" placeholder="Статьи">
-    </div>
-    <div class="field">
-      <label>Розыгрыши</label>
-      <input type="text" name="nav_giveaways" class="input" value="<%= values.nav_giveaways %>" placeholder="Розыгрыши">
-    </div>
-    <div class="field">
-      <label>Контакты</label>
-      <input type="text" name="nav_contacts" class="input" value="<%= values.nav_contacts %>" placeholder="Контакты">
-    </div>
+  <div class="reorder-list" id="navReorder">
+    <% navItems.forEach(function(it){ %>
+      <div class="reorder-item nav-reorder-item" data-key="<%= it.key %>">
+        <span class="reorder-handle">≡</span>
+        <input type="text" name="nav_<%= it.key %>" class="input" value="<%= it.label %>" placeholder="Название раздела">
+        <div class="reorder-btns">
+          <button type="button" class="reorder-up" aria-label="Выше">↑</button>
+          <button type="button" class="reorder-down" aria-label="Ниже">↓</button>
+        </div>
+      </div>
+    <% }); %>
   </div>
+  <input type="hidden" name="nav_order" id="navOrderInput" value="<%= navItems.map(function(i){ return i.key; }).join(',') %>">
+
   <div class="form-actions"><button class="btn btn-primary" type="submit">Сохранить</button></div>
 </form>
 
 <div class="info-card" style="margin-top:18px">
   <h3>Связанные настройки</h3>
-  <p>Логотип, фавикон и иконку «Розыгрыши» можно изменить в разделе <a href="/admin/settings">Настройки</a>.
-     Заголовки блоков на главной (промокоды, сайты, статьи) и мета-теги — в разделе <a href="/admin/seo">SEO</a>.</p>
+  <p>Логотип, фавикон и фон сайта — в разделе <a href="/admin/settings">Настройки</a>.
+     Иконку-подарок — в разделе <a href="/admin/gift">Подарок</a>.
+     Заголовки блоков на главной и мета-теги — в разделе <a href="/admin/seo">SEO</a>.</p>
 </div>
+
+<script>
+(function () {
+  var list = document.getElementById('navReorder');
+  var input = document.getElementById('navOrderInput');
+  if (!list || !input) return;
+  function sync() {
+    input.value = Array.prototype.map.call(list.querySelectorAll('.nav-reorder-item'), function (el) {
+      return el.getAttribute('data-key');
+    }).join(',');
+  }
+  list.addEventListener('click', function (e) {
+    var btn = e.target.closest('.reorder-up, .reorder-down');
+    if (!btn) return;
+    var item = btn.closest('.nav-reorder-item');
+    if (!item) return;
+    if (btn.classList.contains('reorder-up')) {
+      var prev = item.previousElementSibling;
+      if (prev) list.insertBefore(item, prev);
+    } else {
+      var next = item.nextElementSibling;
+      if (next) list.insertBefore(next, item);
+    }
+    sync();
+  });
+  sync();
+})();
+</script>
 
 <%- include('partials/admin-footer') %>

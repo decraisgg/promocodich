@@ -95,6 +95,8 @@ function sanitizeBlocks(blocks) {
         textColor: safeColor(raw.textColor),
         bgColor: safeColor(raw.bgColor),
       });
+    } else if (type === 'video') {
+      out.push({ type, url: safeUrl(raw.url) });
     } else if (type === 'image') {
       out.push({
         type,

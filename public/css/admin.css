@@ -172,6 +172,10 @@ textarea.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, mono
 .reorder-btns button:hover { border-color: var(--accent); color: var(--accent); }
 .reorder-item:first-child .reorder-up { opacity: .3; pointer-events: none; }
 .reorder-item:last-child .reorder-down { opacity: .3; pointer-events: none; }
+.nav-reorder-item .input { flex: 1; min-width: 0; }
+.vid-status { font-size: 12px; color: var(--muted); }
+.vid-status.ok { color: var(--green); }
+.vid-status.err { color: var(--accent); }
 .btn-ghost { background: transparent; border-color: var(--line); color: var(--muted); }
 .btn-ghost:hover { background: var(--bg); color: var(--text); }
 .data-table { width: 100%; border-collapse: collapse; }

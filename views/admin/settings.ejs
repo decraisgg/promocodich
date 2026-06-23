@@ -30,6 +30,15 @@
       Рекомендуемый размер фавикона: 32×32 или 64×64 пикселя, формат PNG / ICO / SVG.
     </div>
 
+    <%- include('partials/image-field', { name: 'bg_image', value: values.bg_image, label: 'Фон сайта (фоновая картинка)' }) %>
+    <div class="field field--full field-hint-standalone">
+      Фон для всего сайта. Если пусто — используется стандартный светлый фон. На фон накладывается лёгкое размытие.
+    </div>
+    <div class="field field--narrow">
+      <label>Размытие фона (px)</label>
+      <input type="number" name="bg_blur" class="input" value="<%= values.bg_blur %>" min="0" max="20" step="1">
+    </div>
+
     <div class="field">
       <label>Иконка раздела «Розыгрыши» в шапке (эмодзи)</label>
       <input type="text" name="giveaways_icon" class="input" value="<%= values.giveaways_icon %>" placeholder="🎁" maxlength="8">

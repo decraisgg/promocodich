@@ -44,6 +44,30 @@
       });
   });
 
+  // ---- Video upload (delegated; for video blocks) ----
+  document.addEventListener('change', function (e) {
+    var t = e.target;
+    if (!t.classList || !t.classList.contains('vid-file')) return;
+    var block = t.closest('.block');
+    if (!block) return;
+    var urlInput = block.querySelector('.blk-video-url');
+    var status = block.querySelector('.vid-status');
+    var file = t.files && t.files[0];
+    if (!file) return;
+    var fd = new FormData();
+    fd.append('file', file);
+    if (status) { status.textContent = 'Загрузка…'; status.className = 'vid-status'; }
+    fetch('/admin/upload', { method: 'POST', body: fd })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (d && d.ok) {
+          if (urlInput) urlInput.value = d.url;
+          if (status) { status.textContent = 'Загружено ✓'; status.className = 'vid-status ok'; }
+        } else if (status) { status.textContent = (d && d.error) || 'Ошибка'; status.className = 'vid-status err'; }
+      })
+      .catch(function () { if (status) { status.textContent = 'Ошибка загрузки'; status.className = 'vid-status err'; } });
+  });
+
   // Live preview when a URL is typed/pasted manually.
   document.addEventListener('input', function (e) {
     var t = e.target;
@@ -112,6 +136,8 @@
       var bcp = node.querySelector('.blk-btn-bgcolor-picker');
       if (tcp && v.textColor && /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(v.textColor)) tcp.value = v.textColor;
       if (bcp && v.bgColor && /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(v.bgColor)) bcp.value = v.bgColor;
+    } else if (type === 'video') {
+      node.querySelector('.blk-video-url').value = v.url || '';
     } else if (type === 'image') {
       node.querySelector('.blk-img-url').value = v.url || '';
       setPreview(node.querySelector('.img-preview'), v.url || '');
@@ -140,6 +166,8 @@
           textColor: (block.querySelector('.blk-btn-textcolor') || {}).value || '',
           bgColor: (block.querySelector('.blk-btn-bgcolor') || {}).value || '',
         });
+      } else if (type === 'video') {
+        out.push({ type: 'video', url: block.querySelector('.blk-video-url').value });
       } else if (type === 'image') {
         out.push({
           type: 'image',
