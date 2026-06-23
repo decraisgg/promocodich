@@ -15,6 +15,15 @@ function escapeHtml(str) {
     .replace(/'/g, '&#39;');
 }
 
+function safeColor(value) {
+  const v = String(value || '').trim();
+  if (!v) return '';
+  // Allow #rgb, #rrggbb and a small set of common CSS color names.
+  if (/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(v)) return v.toLowerCase();
+  if (/^[a-z]{3,20}$/i.test(v)) return v.toLowerCase();
+  return '';
+}
+
 function safeUrl(url) {
   const u = String(url || '').trim();
   if (!u) return '';
@@ -64,7 +73,13 @@ function sanitizeBlocks(blocks) {
       if (![1, 2, 3].includes(level)) level = 2;
       out.push({ type, level, text: escapeHtml(raw.text).slice(0, 300) });
     } else if (type === 'button') {
-      out.push({ type, text: escapeHtml(raw.text).slice(0, 120), link: safeUrl(raw.link) });
+      out.push({
+        type,
+        text: escapeHtml(raw.text).slice(0, 120),
+        link: safeUrl(raw.link),
+        textColor: safeColor(raw.textColor),
+        bgColor: safeColor(raw.bgColor),
+      });
     } else if (type === 'image') {
       out.push({
         type,
@@ -80,4 +95,4 @@ function sanitizeBlocks(blocks) {
   return out;
 }
 
-module.exports = { sanitizeHtml, sanitizeBlocks, escapeHtml, safeUrl };
+module.exports = { sanitizeHtml, sanitizeBlocks, escapeHtml, safeUrl, safeColor };

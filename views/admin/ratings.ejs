@@ -1,0 +1,42 @@
+<%- include('partials/admin-header') %>
+
+<div class="page-head">
+  <h1>Рейтинг сайтов</h1>
+  <p class="page-sub">Сайты в рейтинге: логотип, категория, оценка (звёзды), плюсы/минусы, страница-обзор и отзывы.</p>
+  <a href="/admin/ratings/new" class="btn btn-primary">+ Добавить сайт</a>
+</div>
+
+<div class="card">
+  <% if (!ratings.length) { %>
+    <p class="empty-note">Сайтов в рейтинге пока нет. Добавьте первый!</p>
+  <% } else { %>
+    <table class="table">
+      <thead>
+        <tr><th>Сайт</th><th>Категория</th><th>Оценка</th><th>Отзывы</th><th>Статус</th><th></th></tr>
+      </thead>
+      <tbody>
+        <% ratings.forEach(function(r){ %>
+          <tr>
+            <td>
+              <a class="table-title" href="/admin/ratings/<%= r.id %>/edit"><%= r.name %></a>
+              <div class="table-slug">/rating/<%= r.slug %><%= r.featured ? ' • ★ выделен' : '' %></div>
+            </td>
+            <td><span class="badge size"><%= (ratingCategories.find(function(c){return c.slug===r.category;})||{}).title || r.category %></span></td>
+            <td><b><%= (r.rating || 0).toFixed(1) %></b> / 5</td>
+            <td class="muted"><%= r.reviewCount %></td>
+            <td><span class="badge <%= r.enabled ? 'on' : 'off' %>"><%= r.enabled ? 'ВКЛ' : 'ВЫКЛ' %></span></td>
+            <td class="row-actions">
+              <a class="btn btn-sm" href="/rating/<%= r.slug %>" target="_blank">↗</a>
+              <a class="btn btn-sm btn-primary" href="/admin/ratings/<%= r.id %>/edit">Изменить</a>
+              <form method="post" action="/admin/ratings/<%= r.id %>/delete" onsubmit="return confirm('Удалить сайт из рейтинга?')">
+                <button class="btn btn-sm btn-danger" type="submit">Удалить</button>
+              </form>
+            </td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  <% } %>
+</div>
+
+<%- include('partials/admin-footer') %>

@@ -115,6 +115,37 @@ CREATE TABLE IF NOT EXISTS giveaway_entries (
   joined_at   TEXT    DEFAULT (datetime('now')),
   UNIQUE(giveaway_id, session_id)
 );
+
+CREATE TABLE IF NOT EXISTS ratings (
+  id              INTEGER PRIMARY KEY AUTOINCREMENT,
+  slug            TEXT    UNIQUE,
+  name            TEXT    DEFAULT '',
+  image_url       TEXT    DEFAULT '',
+  hero_image      TEXT    DEFAULT '',
+  category        TEXT    DEFAULT 'cases',
+  rating          REAL    NOT NULL DEFAULT 0,
+  featured        INTEGER NOT NULL DEFAULT 0,
+  site_link       TEXT    DEFAULT '',
+  button_text     TEXT    DEFAULT '',
+  bonus_label     TEXT    DEFAULT '',
+  pros            TEXT    DEFAULT '[]',
+  cons            TEXT    DEFAULT '[]',
+  blocks          TEXT    DEFAULT '[]',
+  meta_title      TEXT    DEFAULT '',
+  meta_description TEXT   DEFAULT '',
+  enabled         INTEGER NOT NULL DEFAULT 1,
+  sort_order      INTEGER NOT NULL DEFAULT 0,
+  created_at      TEXT    DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS rating_reviews (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  rating_id   INTEGER NOT NULL,
+  author      TEXT    DEFAULT '',
+  text        TEXT    DEFAULT '',
+  stars       INTEGER NOT NULL DEFAULT 5,
+  created_at  TEXT    DEFAULT (datetime('now'))
+);
 `);
 
 // Migration: add service_id to existing tables if column is missing
@@ -157,6 +188,16 @@ const CATEGORIES = [
 ];
 const CATEGORY_TITLES = Object.fromEntries(CATEGORIES.map((c) => [c.slug, c.title]));
 
+// --- Rating categories (single source of truth) -------------------------
+const RATING_CATEGORIES = [
+  { slug: 'cases',      title: 'Кейсы' },
+  { slug: 'mini-games', title: 'Мини игры' },
+  { slug: 'skins',      title: 'Скины' },
+  { slug: 'keys',       title: 'Ключи' },
+  { slug: 'steam',      title: 'Пополнение Steam' },
+];
+const RATING_CATEGORY_TITLES = Object.fromEntries(RATING_CATEGORIES.map((c) => [c.slug, c.title]));
+
 // --- Seed (only on first run / empty DB) --------------------------------
 function seed() {
   if (getSetting('seeded') !== '1') {
@@ -182,6 +223,7 @@ function _ensureDefaults() {
     nav_articles: 'Статьи',
     nav_giveaways: 'Розыгрыши',
     nav_contacts: 'Контакты',
+    nav_rating: 'Рейтинг',
 
     // Global SEO
     seo_title_suffix: ' — ПРОМОКОДЫЧ',
@@ -210,10 +252,45 @@ function _ensureDefaults() {
     { page: 'services', h1: 'Сайты',     title: '' },
     { page: 'giveaways',h1: '🎁 Розыгрыши', title: '' },
     { page: 'articles', h1: 'Статьи',    title: '' },
+    { page: 'rating',   h1: 'Рейтинг сайтов', title: '' },
     { page: 'contacts', h1: 'Контакты',  title: '' },
   ];
   const ins = db.prepare('INSERT OR IGNORE INTO page_seo (page, h1, title) VALUES (@page, @h1, @title)');
   for (const p of pages) ins.run(p);
+
+  _seedRatings();
+}
+
+// Seed a couple of sample rating entries once (only if the table is empty).
+function _seedRatings() {
+  if (getSetting('seeded_ratings') === '1') return;
+  const count = db.prepare('SELECT COUNT(*) c FROM ratings').get().c;
+  if (count === 0) {
+    const ins = db.prepare(`INSERT INTO ratings
+      (slug,name,image_url,hero_image,category,rating,featured,site_link,button_text,bonus_label,pros,cons,blocks,enabled,sort_order)
+      VALUES (@slug,@name,@image_url,@hero_image,@category,@rating,@featured,@site_link,@button_text,@bonus_label,@pros,@cons,@blocks,1,@sort_order)`);
+    const samples = [
+      { slug: 'mycsgo', name: 'MyCSGO', category: 'cases', rating: 3.3, featured: 1, bonus_label: '+25% к депозиту',
+        pros: ['Популярный сайт', 'Красивое оформление', 'Большой выбор кейсов'], cons: [],
+        intro: 'MyCSGO — одна из популярных площадок для открытия кейсов CS2 и CS:GO.' },
+      { slug: 'ggdrop', name: 'GGDROP', category: 'cases', rating: 4.1, featured: 1, bonus_label: '+10% к пополнению',
+        pros: ['Быстрый вывод', 'Частые акции'], cons: ['Нужна регистрация'],
+        intro: 'GGDROP — сайт открытия кейсов с регулярными розыгрышами.' },
+      { slug: 'magicdrop', name: 'MagicDrop', category: 'cases', rating: 4.1, featured: 0, bonus_label: '',
+        pros: ['Удобный интерфейс'], cons: ['Мало бонусов'],
+        intro: 'MagicDrop — площадка для открытия кейсов.' },
+    ];
+    samples.forEach((sm, i) => ins.run({
+      slug: sm.slug, name: sm.name, image_url: '', hero_image: '', category: sm.category,
+      rating: sm.rating, featured: sm.featured, site_link: '#', button_text: 'Перейти на сайт',
+      bonus_label: sm.bonus_label,
+      pros: JSON.stringify(sm.pros), cons: JSON.stringify(sm.cons),
+      blocks: JSON.stringify([{ type: 'paragraph', html: sm.intro }]),
+      sort_order: i,
+    }));
+  }
+  setSetting('seeded_ratings', '1');
+  setSetting('dirty', '1');
 }
 
 function _seedV2() {
@@ -497,4 +574,6 @@ module.exports = {
   markDirty,
   CATEGORIES,
   CATEGORY_TITLES,
+  RATING_CATEGORIES,
+  RATING_CATEGORY_TITLES,
 };

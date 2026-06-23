@@ -1,0 +1,51 @@
+<%- include('partials/header') %>
+
+<section class="section section--page-hero">
+  <div class="container">
+    <nav class="crumbs"><a href="/">Главная</a> / <span><%= pageH1 %></span></nav>
+    <div class="page-hero-head page-hero-head--left">
+      <h1 class="page-hero-title"><%= pageH1 %></h1>
+    </div>
+
+    <div class="cat-tabs">
+      <a href="/rating" class="cat-tab <%= !activeCategory ? 'active' : '' %>">Все</a>
+      <% (ratingCategories || []).forEach(function(c){ %>
+        <a href="/rating?category=<%= c.slug %>" class="cat-tab <%= activeCategory === c.slug ? 'active' : '' %>"><%= c.title %></a>
+      <% }); %>
+    </div>
+  </div>
+</section>
+
+<section class="section section--tight">
+  <div class="container">
+    <% if (!ratings.length) { %>
+      <p class="empty-note">В этой категории пока нет сайтов.</p>
+    <% } %>
+
+    <div class="rating-list">
+      <% ratings.forEach(function(item){
+           var full = Math.round(item.rating || 0); %>
+        <a class="rating-row<%= item.featured ? ' is-featured' : '' %>" href="/rating/<%= item.slug %>">
+          <span class="rating-mark"><%= item.featured ? '✓' : '!' %></span>
+          <div class="rating-logo">
+            <% if (item.image_url) { %>
+              <img src="<%= item.image_url %>" alt="<%= item.name %>">
+            <% } else { %>
+              <span class="rating-logo-text"><%= item.name %></span>
+            <% } %>
+          </div>
+          <div class="rating-stars">
+            <span class="stars">
+              <% for (var i=1;i<=5;i++){ %><span class="star <%= i<=full ? 'on':'' %>">★</span><% } %>
+            </span>
+            <span class="rating-num"><%= (item.rating || 0).toFixed(1) %></span>
+          </div>
+          <div class="rating-cat"><span class="rating-cat-pill"><%= item.categoryTitle %></span></div>
+          <span class="rating-cta">О проекте</span>
+        </a>
+      <% }); %>
+    </div>
+  </div>
+</section>
+
+<%- include('partials/footer') %>

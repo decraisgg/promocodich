@@ -1,0 +1,149 @@
+<%- include('partials/admin-header') %>
+
+<div class="page-head">
+  <h1><%= isNew ? 'Новый сайт в рейтинге' : 'Редактирование: ' + item.name %></h1>
+  <a href="/admin/ratings" class="btn btn-sm">← К списку</a>
+  <% if (!isNew) { %><a href="/rating/<%= item.slug %>" target="_blank" class="btn btn-sm">Открыть ↗</a><% } %>
+</div>
+
+<form method="post" action="<%= isNew ? '/admin/ratings' : '/admin/ratings/' + item.id %>" id="articleForm" class="article-editor">
+  <div class="editor-cols">
+    <div class="editor-main card">
+      <div class="field">
+        <label>Название сайта</label>
+        <input type="text" name="name" class="input input-lg" value="<%= item.name %>" placeholder="MyCSGO" required>
+      </div>
+
+      <div class="form-grid">
+        <%- include('partials/image-field', { name: 'image_url', value: item.image_url, label: 'Логотип сайта' }) %>
+        <%- include('partials/image-field', { name: 'hero_image', value: item.hero_image, label: 'Баннер на странице обзора (необязательно)' }) %>
+      </div>
+
+      <div class="form-grid">
+        <div class="field">
+          <label>Плюсы проекта (по одному на строку)</label>
+          <textarea name="pros" class="input" rows="4" placeholder="Популярный сайт&#10;Красивое оформление&#10;Большой выбор кейсов"><%= (item.pros || []).join('\n') %></textarea>
+        </div>
+        <div class="field">
+          <label>Минусы проекта (по одному на строку)</label>
+          <textarea name="cons" class="input" rows="4" placeholder="Оставьте пустым, если минусов нет"><%= (item.cons || []).join('\n') %></textarea>
+        </div>
+      </div>
+
+      <h3 class="editor-section-title">Обзор / статья</h3>
+      <p class="hint">Содержание страницы-обзора: абзацы, заголовки, кнопки (с выбором цвета текста) и картинки.</p>
+
+      <div id="blocks" class="blocks"></div>
+      <div class="add-block-bar">
+        <button type="button" class="btn btn-sm" data-add="paragraph">+ Абзац</button>
+        <button type="button" class="btn btn-sm" data-add="heading">+ Заголовок</button>
+        <button type="button" class="btn btn-sm" data-add="button">+ Кнопка</button>
+        <button type="button" class="btn btn-sm" data-add="image">+ Картинка</button>
+      </div>
+      <input type="hidden" name="blocks" id="blocksInput">
+    </div>
+
+    <aside class="editor-side card">
+      <div class="field field--switch">
+        <label class="switch">
+          <input type="checkbox" name="enabled" <%= item.enabled ? 'checked' : '' %>>
+          <span class="slider"></span>
+        </label>
+        <span>Показывать в рейтинге</span>
+      </div>
+
+      <div class="field field--switch">
+        <label class="switch">
+          <input type="checkbox" name="featured" <%= item.featured ? 'checked' : '' %>>
+          <span class="slider"></span>
+        </label>
+        <span>Выделить (подсветка строки)</span>
+      </div>
+
+      <div class="field">
+        <label>Категория</label>
+        <select name="category" class="input">
+          <% ratingCategories.forEach(function(c){ %>
+            <option value="<%= c.slug %>" <%= item.category === c.slug ? 'selected' : '' %>><%= c.title %></option>
+          <% }); %>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Оценка (0–5, например 4.0)</label>
+        <input type="number" name="rating" class="input" value="<%= item.rating || 0 %>" min="0" max="5" step="0.1">
+      </div>
+
+      <div class="field">
+        <label>Ссылка на сайт (кнопка «Перейти»)</label>
+        <input type="text" name="site_link" class="input" value="<%= item.site_link %>" placeholder="https://...">
+      </div>
+      <div class="field">
+        <label>Текст кнопки</label>
+        <input type="text" name="button_text" class="input" value="<%= item.button_text || 'Перейти на сайт' %>">
+      </div>
+      <div class="field">
+        <label>Бонус (плашка, напр. «+25% к депозиту»)</label>
+        <input type="text" name="bonus_label" class="input" value="<%= item.bonus_label %>">
+      </div>
+
+      <div class="field">
+        <label>URL (slug, латиницей)</label>
+        <input type="text" name="slug" class="input" value="<%= item.slug %>" placeholder="mycsgo">
+      </div>
+
+      <div class="seo-side-block">
+        <div class="seo-side-title">🔍 SEO страницы</div>
+        <div class="field">
+          <label>Meta Title</label>
+          <input type="text" name="meta_title" class="input" value="<%= item.meta_title || '' %>" placeholder="по умолчанию — «Обзор {название}…»">
+        </div>
+        <div class="field">
+          <label>Meta Description</label>
+          <textarea name="meta_description" class="input" rows="3" placeholder="Описание для сниппета в поиске"><%= item.meta_description || '' %></textarea>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Порядок</label>
+        <input type="number" name="sort_order" class="input" value="<%= item.sort_order || 0 %>">
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block">💾 Сохранить</button>
+      <p class="hint">После сохранения нажмите «⟳ Обновить сайт».</p>
+    </aside>
+  </div>
+</form>
+
+<% if (!isNew) { %>
+  <div class="card">
+    <h3>Отзывы (<%= reviews.length %>)</h3>
+    <% if (!reviews.length) { %>
+      <p class="empty-note">Отзывов пока нет.</p>
+    <% } else { %>
+      <div class="admin-reviews">
+        <% reviews.forEach(function(rv){ %>
+          <div class="admin-review">
+            <div class="admin-review-head">
+              <b><%= rv.author || 'Аноним' %></b>
+              <span class="badge size"><%= rv.stars %>★</span>
+              <span class="muted"><%= (rv.created_at || '').slice(0,16) %></span>
+              <form method="post" action="/admin/ratings/<%= item.id %>/reviews/<%= rv.id %>/delete" onsubmit="return confirm('Удалить отзыв?')" style="margin-left:auto">
+                <button class="btn btn-sm btn-danger" type="submit">Удалить</button>
+              </form>
+            </div>
+            <p class="admin-review-text"><%= rv.text %></p>
+          </div>
+        <% }); %>
+      </div>
+    <% } %>
+  </div>
+<% } %>
+
+<%- include('partials/block-templates') %>
+
+<script>
+  window.__ARTICLE_BLOCKS__ = <%- JSON.stringify(item.blocks || []).replace(/</g, '\\u003c') %>;
+</script>
+
+<%- include('partials/admin-footer') %>

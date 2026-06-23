@@ -6,7 +6,7 @@ const crypto = require('crypto');
 const express = require('express');
 const multer = require('multer');
 
-const { db, getSetting, setSetting, markDirty, CATEGORIES, CATEGORY_TITLES } = require('../db');
+const { db, getSetting, setSetting, markDirty, CATEGORIES, CATEGORY_TITLES, RATING_CATEGORIES } = require('../db');
 const { publish } = require('../publish');
 const { sanitizeBlocks } = require('../sanitize');
 const { checkPassword, requireAuth, requireAuthApi } = require('../auth');
@@ -529,6 +529,118 @@ router.post('/giveaways/:id/delete', (req, res) => {
   res.redirect('/admin/giveaways');
 });
 
+// --- Ratings (Рейтинг сайтов) -------------------------------------------
+const RATING_CAT_SLUGS = RATING_CATEGORIES.map((c) => c.slug);
+function ratingCat(v) { return RATING_CAT_SLUGS.includes(v) ? v : 'cases'; }
+function linesToArray(text) {
+  return String(text || '').split('\n').map((l) => l.trim()).filter(Boolean).slice(0, 30);
+}
+function clampRating(v) {
+  let n = parseFloat(String(v).replace(',', '.'));
+  if (!isFinite(n)) n = 0;
+  n = Math.max(0, Math.min(5, n));
+  return Math.round(n * 10) / 10;
+}
+
+router.get('/ratings', (req, res) => {
+  const ratings = db.prepare('SELECT * FROM ratings ORDER BY featured DESC, sort_order, id').all().map((r) => ({
+    ...r,
+    reviewCount: db.prepare('SELECT COUNT(*) c FROM rating_reviews WHERE rating_id = ?').get(r.id).c,
+  }));
+  renderAdmin(req, res, 'admin/ratings', { active: 'ratings', ratings, ratingCategories: RATING_CATEGORIES });
+});
+
+router.get('/ratings/new', (req, res) => {
+  renderAdmin(req, res, 'admin/rating-edit', {
+    active: 'ratings',
+    ratingCategories: RATING_CATEGORIES,
+    item: { id: '', slug: '', name: '', image_url: '', hero_image: '', category: 'cases', rating: 0, featured: 0,
+      site_link: '', button_text: 'Перейти на сайт', bonus_label: '', pros: [], cons: [], blocks: [],
+      meta_title: '', meta_description: '', enabled: 1, sort_order: 0 },
+    reviews: [],
+    isNew: true,
+  });
+});
+
+router.get('/ratings/:id/edit', (req, res) => {
+  const row = db.prepare('SELECT * FROM ratings WHERE id = ?').get(req.params.id);
+  if (!row) return res.redirect('/admin/ratings');
+  let blocks = []; let pros = []; let cons = [];
+  try { blocks = JSON.parse(row.blocks || '[]'); } catch (_) {}
+  try { pros = JSON.parse(row.pros || '[]'); } catch (_) {}
+  try { cons = JSON.parse(row.cons || '[]'); } catch (_) {}
+  const reviews = db.prepare('SELECT * FROM rating_reviews WHERE rating_id = ? ORDER BY datetime(created_at) DESC, id DESC').all(row.id);
+  renderAdmin(req, res, 'admin/rating-edit', {
+    active: 'ratings',
+    ratingCategories: RATING_CATEGORIES,
+    item: { ...row, blocks, pros, cons },
+    reviews,
+    isNew: false,
+  });
+});
+
+function ratingFromBody(body) {
+  return {
+    name: s(body.name) || 'Без названия',
+    image_url: s(body.image_url),
+    hero_image: s(body.hero_image),
+    category: ratingCat(s(body.category)),
+    rating: clampRating(body.rating),
+    featured: b(body.featured),
+    site_link: s(body.site_link),
+    button_text: s(body.button_text) || 'Перейти на сайт',
+    bonus_label: s(body.bonus_label),
+    pros: JSON.stringify(linesToArray(body.pros)),
+    cons: JSON.stringify(linesToArray(body.cons)),
+    blocks: JSON.stringify(parseBlocks(body.blocks)),
+    meta_title: s(body.meta_title),
+    meta_description: s(body.meta_description),
+    enabled: b(body.enabled),
+    sort_order: parseInt(body.sort_order, 10) || 0,
+  };
+}
+
+router.post('/ratings', (req, res) => {
+  const d = ratingFromBody(req.body);
+  const slug = uniqueSlugFor('ratings', s(req.body.slug) || d.name);
+  db.prepare(`INSERT INTO ratings
+    (slug,name,image_url,hero_image,category,rating,featured,site_link,button_text,bonus_label,pros,cons,blocks,meta_title,meta_description,enabled,sort_order)
+    VALUES (@slug,@name,@image_url,@hero_image,@category,@rating,@featured,@site_link,@button_text,@bonus_label,@pros,@cons,@blocks,@meta_title,@meta_description,@enabled,@sort_order)`)
+    .run({ ...d, slug });
+  markDirty();
+  flash(req, 'success', 'Сайт добавлен в рейтинг.');
+  res.redirect('/admin/ratings');
+});
+
+router.post('/ratings/:id', (req, res) => {
+  const id = req.params.id;
+  const existing = db.prepare('SELECT id FROM ratings WHERE id = ?').get(id);
+  if (!existing) return res.redirect('/admin/ratings');
+  const d = ratingFromBody(req.body);
+  const slug = uniqueSlugFor('ratings', s(req.body.slug) || d.name, Number(id));
+  db.prepare(`UPDATE ratings SET slug=@slug,name=@name,image_url=@image_url,hero_image=@hero_image,category=@category,
+    rating=@rating,featured=@featured,site_link=@site_link,button_text=@button_text,bonus_label=@bonus_label,
+    pros=@pros,cons=@cons,blocks=@blocks,meta_title=@meta_title,meta_description=@meta_description,
+    enabled=@enabled,sort_order=@sort_order WHERE id=@id`).run({ ...d, slug, id });
+  markDirty();
+  flash(req, 'success', 'Сайт в рейтинге сохранён.');
+  res.redirect('/admin/ratings');
+});
+
+router.post('/ratings/:id/delete', (req, res) => {
+  db.prepare('DELETE FROM rating_reviews WHERE rating_id = ?').run(req.params.id);
+  db.prepare('DELETE FROM ratings WHERE id = ?').run(req.params.id);
+  markDirty();
+  flash(req, 'success', 'Сайт удалён из рейтинга.');
+  res.redirect('/admin/ratings');
+});
+
+router.post('/ratings/:id/reviews/:rid/delete', (req, res) => {
+  db.prepare('DELETE FROM rating_reviews WHERE id = ? AND rating_id = ?').run(req.params.rid, req.params.id);
+  flash(req, 'success', 'Отзыв удалён.');
+  res.redirect('/admin/ratings/' + req.params.id + '/edit');
+});
+
 // --- Settings -----------------------------------------------------------
 const SETTINGS_KEYS = [
   'site_title', 'tagline', 'intro_text', 'logo_url', 'favicon_url',
@@ -580,7 +692,7 @@ router.post('/settings', (req, res) => {
 
 // --- Header (navigation labels) -----------------------------------------
 const NAV_KEYS = [
-  'nav_home', 'nav_promocodes', 'nav_services', 'nav_articles', 'nav_giveaways', 'nav_contacts',
+  'nav_home', 'nav_promocodes', 'nav_rating', 'nav_services', 'nav_articles', 'nav_giveaways', 'nav_contacts',
 ];
 
 router.get('/header', (req, res) => {
@@ -610,6 +722,7 @@ const PAGE_SEO_PAGES = [
   { page: 'services',  label: 'Сайты (список)',    hasH1: true },
   { page: 'giveaways', label: 'Розыгрыши (список)', hasH1: true },
   { page: 'articles',  label: 'Статьи (список)',   hasH1: true },
+  { page: 'rating',    label: 'Рейтинг (список)',  hasH1: true },
   { page: 'contacts',  label: 'Контакты',          hasH1: true },
 ];
 

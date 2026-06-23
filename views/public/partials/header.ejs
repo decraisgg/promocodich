@@ -62,25 +62,9 @@
         <nav class="main-nav" id="mainNav">
           <a href="/" class="<%= page === 'home' ? 'active' : '' %>"><%= site.nav_home || 'Главная' %></a>
           <a href="/#promocodes"><%= site.nav_promocodes || 'Промокоды' %></a>
-          <% if ((services || []).length) { %>
-            <div class="nav-dropdown">
-              <a href="/services" class="<%= page === 'services' ? 'active' : '' %>"><%= site.nav_services || 'Сайты' %> ▾</a>
-              <div class="dropdown-menu">
-                <% (services || []).forEach(function(svc){ %>
-                  <a href="/services/<%= svc.slug %>"><%= svc.name %></a>
-                <% }); %>
-                <a href="/services" class="dropdown-all">Все сайты →</a>
-              </div>
-            </div>
-          <% } %>
-          <div class="nav-dropdown">
-            <a href="/articles" class="<%= page === 'articles' ? 'active' : '' %>"><%= site.nav_articles || 'Статьи' %> ▾</a>
-            <div class="dropdown-menu">
-              <% (categories || []).forEach(function(c){ %>
-                <a href="/articles?category=<%= c.slug %>"><%= c.title %></a>
-              <% }); %>
-            </div>
-          </div>
+          <a href="/rating" class="<%= page === 'rating' ? 'active' : '' %>"><%= site.nav_rating || 'Рейтинг' %></a>
+          <a href="/services" class="<%= page === 'services' ? 'active' : '' %>"><%= site.nav_services || 'Сайты' %></a>
+          <a href="/articles" class="<%= page === 'articles' ? 'active' : '' %>"><%= site.nav_articles || 'Статьи' %></a>
           <a href="/giveaways" class="<%= page === 'giveaways' ? 'active' : '' %> nav-giveaways">
             <% if (site.giveaways_icon_image) { %>
               <img class="nav-giveaways-img" src="<%= site.giveaways_icon_image %>" alt="">

@@ -150,6 +150,12 @@ textarea.input { resize: vertical; }
 .seo-side-title { font-weight: 800; font-size: 13px; margin-bottom: 10px; color: #555b66; }
 textarea.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 13px; }
 
+/* ---------- Admin reviews ---------- */
+.admin-reviews { display: flex; flex-direction: column; gap: 10px; }
+.admin-review { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+.admin-review-head { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; flex-wrap: wrap; }
+.admin-review-text { margin: 0; font-size: 14px; color: #3a3f49; white-space: pre-wrap; }
+
 /* ---------- Reorder list (home sections) ---------- */
 .reorder-list { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
 .reorder-item {

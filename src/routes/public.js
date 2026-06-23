@@ -295,6 +295,88 @@ router.post('/giveaways/:slug/join', (req, res) => {
   res.redirect(`/giveaways/${giveaway.slug}`);
 });
 
+// --- Rating -------------------------------------------------------------
+router.get('/rating', (req, res) => {
+  const snap = getPublishedSnapshot();
+  const all = snap.ratings || [];
+  const activeCategory = req.query.category || '';
+  const list = activeCategory ? all.filter((r) => r.category === activeCategory) : all;
+  const ps = (snap.pageSeo || {}).rating || {};
+  const h1 = ps.h1 || 'Рейтинг сайтов';
+
+  res.render('public/rating', {
+    ...baseLocals(snap),
+    page: 'rating',
+    ratings: list,
+    ratingCategories: snap.ratingCategories || [],
+    activeCategory,
+    pageH1: h1,
+    seo: seoFor(snap, req, { pageKey: 'rating', defaultTitle: h1, path: '/rating' }),
+  });
+});
+
+router.get('/rating/:slug', (req, res) => {
+  const snap = getPublishedSnapshot();
+  const item = (snap.ratings || []).find((r) => r.slug === req.params.slug);
+  if (!item) {
+    return res.status(404).render('public/404', {
+      ...baseLocals(snap),
+      page: 'rating',
+      seo: seoFor(snap, req, { pageKey: 'rating', defaultTitle: 'Страница не найдена', noindex: true }),
+    });
+  }
+
+  const reviews = db
+    .prepare('SELECT * FROM rating_reviews WHERE rating_id = ? ORDER BY datetime(created_at) DESC, id DESC')
+    .all(item.id);
+  const reviewAgg = db
+    .prepare('SELECT COUNT(*) c, AVG(stars) avg FROM rating_reviews WHERE rating_id = ?')
+    .get(item.id);
+
+  const justReviewed = req.session._reviewAddedFor === item.slug;
+  delete req.session._reviewAddedFor;
+
+  const defaultTitle = 'Обзор ' + item.name + ' — плюсы, минусы и отзывы';
+
+  res.render('public/rating-item', {
+    ...baseLocals(snap),
+    page: 'rating',
+    item,
+    ratingCategories: snap.ratingCategories || [],
+    reviews,
+    reviewCount: reviewAgg ? reviewAgg.c : 0,
+    reviewAvg: reviewAgg && reviewAgg.avg ? Math.round(reviewAgg.avg * 10) / 10 : 0,
+    justReviewed,
+    seo: seoFor(snap, req, {
+      pageKey: 'rating-item',
+      title: item.meta_title || '',
+      defaultTitle,
+      description: item.meta_description || ('Обзор сайта ' + item.name + ': плюсы, минусы, рейтинг и отзывы пользователей.'),
+      image: item.image_url || item.hero_image || '',
+      type: 'article',
+      path: '/rating/' + item.slug,
+    }),
+  });
+});
+
+router.post('/rating/:slug/review', (req, res) => {
+  const snap = getPublishedSnapshot();
+  const item = (snap.ratings || []).find((r) => r.slug === req.params.slug);
+  if (!item) return res.redirect('/rating');
+
+  const author = String(req.body.author || '').trim().slice(0, 60) || 'Аноним';
+  const text = String(req.body.text || '').trim().slice(0, 2000);
+  let stars = parseInt(req.body.stars, 10);
+  if (!(stars >= 1 && stars <= 5)) stars = 5;
+
+  if (text) {
+    db.prepare('INSERT INTO rating_reviews (rating_id, author, text, stars) VALUES (?, ?, ?, ?)')
+      .run(item.id, author, text, stars);
+    req.session._reviewAddedFor = item.slug;
+  }
+  res.redirect('/rating/' + item.slug + '#reviews');
+});
+
 // --- Contacts -----------------------------------------------------------
 router.get('/contacts', (req, res) => {
   const snap = getPublishedSnapshot();
@@ -343,6 +425,8 @@ router.get('/sitemap.xml', (req, res) => {
   (snap.services || []).forEach((s) => add('/services/' + s.slug, '0.7', 'weekly'));
   add('/giveaways', '0.7', 'weekly');
   (snap.giveaways || []).forEach((g) => add('/giveaways/' + g.slug, '0.6', 'weekly'));
+  add('/rating', '0.8', 'weekly');
+  (snap.ratings || []).forEach((r) => add('/rating/' + r.slug, '0.6', 'weekly'));
   add('/articles', '0.7', 'weekly');
   (snap.articles || []).forEach((a) => add('/articles/' + a.slug, '0.6', 'monthly'));
   add('/contacts', '0.4', 'monthly');
