@@ -50,6 +50,20 @@
       </label>
       <span>Сервис включён</span>
     </div>
+
+    <div class="seo-page-block field--full">
+      <div class="seo-page-title">🔍 SEO страницы сервиса</div>
+      <div class="form-grid">
+        <div class="field field--full">
+          <label>Meta Title</label>
+          <input type="text" name="meta_title" class="input" value="<%= service.meta_title || '' %>" placeholder="по умолчанию — «Название — ПРОМОКОДЫЧ»">
+        </div>
+        <div class="field field--full">
+          <label>Meta Description</label>
+          <textarea name="meta_description" class="input" rows="3" placeholder="Описание страницы сервиса для поисковой выдачи"><%= service.meta_description || '' %></textarea>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div class="form-actions">

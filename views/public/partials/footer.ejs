@@ -44,37 +44,6 @@
     <% }); %>
   </div>
 
-  <!-- Подарок: плавающая иконка + выдвижное окно -->
-  <% if (String(site.gift_enabled) === '1') { %>
-    <div class="gift-widget" id="giftWidget">
-      <button class="gift-fab" id="giftFab" aria-label="Подарок" aria-expanded="false">
-        <% if (site.gift_icon_image) { %>
-          <img src="<%= site.gift_icon_image %>" alt="Подарок">
-        <% } else { %>
-          <span class="gift-fab-emoji"><%= site.gift_icon || '🎁' %></span>
-        <% } %>
-      </button>
-      <div class="gift-panel" id="giftPanel" role="dialog" aria-label="Подарок">
-        <button class="gift-close" id="giftClose" aria-label="Закрыть">×</button>
-        <% if (site.gift_image) { %>
-          <div class="gift-panel-image" style="background-image:url('<%= site.gift_image %>')"></div>
-        <% } %>
-        <div class="gift-panel-body">
-          <% if (site.gift_text) { %><p class="gift-panel-text"><%= site.gift_text %></p><% } %>
-          <% if (site.gift_code) { %>
-            <div class="gift-panel-code" data-code="<%= site.gift_code %>">
-              <span class="gift-code-value"><%= site.gift_code %></span>
-              <button class="gift-code-copy" type="button">Копировать</button>
-            </div>
-          <% } %>
-          <% if (site.gift_button_text) { %>
-            <a class="gift-panel-btn" href="<%= site.gift_button_link || '#' %>" target="_blank" rel="nofollow noopener"><%= site.gift_button_text %></a>
-          <% } %>
-        </div>
-      </div>
-    </div>
-  <% } %>
-
   <script src="/static/js/site.js"></script>
 </body>
 </html>

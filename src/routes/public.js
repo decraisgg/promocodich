@@ -68,6 +68,16 @@ function seoFor(snap, req, opts = {}) {
   };
 }
 
+// Overall rating shown to visitors: the admin score acts as one baseline
+// vote, blended with every user review's stars. This way the star rating
+// visibly changes as people leave reviews.
+function effectiveRating(baseRating, reviewCount, reviewStarsSum) {
+  const base = Number(baseRating) || 0;
+  const denom = (reviewCount || 0) + (base ? 1 : 0);
+  if (!denom) return 0;
+  return Math.round((((reviewStarsSum || 0) + base) / denom) * 10) / 10;
+}
+
 // Editable home-page section headings.
 function sectionHeadings(st) {
   return {
@@ -210,8 +220,9 @@ router.get('/services/:slug', (req, res) => {
     promocodes: servicePromos,
     seo: seoFor(snap, req, {
       pageKey: 'service',
+      title: service.meta_title || '',
       defaultTitle: service.name,
-      description: service.description || '',
+      description: service.meta_description || service.description || '',
       image: service.hero_image || service.image_url || '',
       path: '/services/' + service.slug,
     }),
@@ -300,7 +311,10 @@ router.get('/rating', (req, res) => {
   const snap = getPublishedSnapshot();
   const all = snap.ratings || [];
   const activeCategory = req.query.category || '';
-  const list = activeCategory ? all.filter((r) => r.category === activeCategory) : all;
+  const list = (activeCategory ? all.filter((r) => r.category === activeCategory) : all).map((item) => {
+    const agg = db.prepare('SELECT COUNT(*) c, COALESCE(SUM(stars),0) s FROM rating_reviews WHERE rating_id = ?').get(item.id);
+    return { ...item, displayRating: effectiveRating(item.rating, agg.c, agg.s), reviewCount: agg.c };
+  });
   const ps = (snap.pageSeo || {}).rating || {};
   const h1 = ps.h1 || 'Рейтинг сайтов';
 
@@ -330,8 +344,10 @@ router.get('/rating/:slug', (req, res) => {
     .prepare('SELECT * FROM rating_reviews WHERE rating_id = ? ORDER BY datetime(created_at) DESC, id DESC')
     .all(item.id);
   const reviewAgg = db
-    .prepare('SELECT COUNT(*) c, AVG(stars) avg FROM rating_reviews WHERE rating_id = ?')
+    .prepare('SELECT COUNT(*) c, COALESCE(SUM(stars),0) s FROM rating_reviews WHERE rating_id = ?')
     .get(item.id);
+  const reviewCount = reviewAgg ? reviewAgg.c : 0;
+  const displayRating = effectiveRating(item.rating, reviewCount, reviewAgg ? reviewAgg.s : 0);
 
   const justReviewed = req.session._reviewAddedFor === item.slug;
   delete req.session._reviewAddedFor;
@@ -344,8 +360,8 @@ router.get('/rating/:slug', (req, res) => {
     item,
     ratingCategories: snap.ratingCategories || [],
     reviews,
-    reviewCount: reviewAgg ? reviewAgg.c : 0,
-    reviewAvg: reviewAgg && reviewAgg.avg ? Math.round(reviewAgg.avg * 10) / 10 : 0,
+    reviewCount,
+    displayRating,
     justReviewed,
     seo: seoFor(snap, req, {
       pageKey: 'rating-item',
