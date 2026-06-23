@@ -86,8 +86,9 @@
     var close = card.querySelector('.popup-close');
     if (close) {
       close.addEventListener('click', function () {
-        card.classList.add('hidden');
         try { sessionStorage.setItem(key, '1'); } catch (e) {}
+        card.classList.add('closing');
+        setTimeout(function () { card.classList.add('hidden'); card.classList.remove('closing'); }, 210);
       });
     }
   });

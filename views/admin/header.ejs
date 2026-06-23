@@ -20,6 +20,25 @@
   </div>
   <input type="hidden" name="nav_order" id="navOrderInput" value="<%= navItems.map(function(i){ return i.key; }).join(',') %>">
 
+  <div class="seo-page-block" style="margin-top:18px">
+    <div class="seo-page-title">⭐ Иконка у раздела «Рейтинг»</div>
+    <p class="hint">Иконка ставится над последней буквой слова (чуть правее и выше). Можно использовать символ, картинку или отключить.</p>
+    <div class="form-grid">
+      <div class="field field--switch">
+        <label class="switch">
+          <input type="checkbox" name="nav_rating_icon_enabled" <%= ratingIcon.enabled ? 'checked' : '' %>>
+          <span class="slider"></span>
+        </label>
+        <span>Показывать иконку</span>
+      </div>
+      <div class="field">
+        <label>Символ (эмодзи), если без картинки</label>
+        <input type="text" name="nav_rating_icon" class="input" value="<%= ratingIcon.icon %>" maxlength="8" placeholder="★">
+      </div>
+      <%- include('partials/image-field', { name: 'nav_rating_icon_image', value: ratingIcon.image, label: 'Картинка-иконка (PNG, вместо символа)' }) %>
+    </div>
+  </div>
+
   <div class="form-actions"><button class="btn btn-primary" type="submit">Сохранить</button></div>
 </form>
 

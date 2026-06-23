@@ -84,9 +84,10 @@ function sectionHeadings(st) {
     promocodes: {
       title: st.sec_promocodes_title || 'Актуальные промокоды и бонусы',
       sub: st.sec_promocodes_sub || 'Активируй коды и получай скидки на любимых цифровых сервисах',
+      icon: st.sec_promocodes_icon || '',
     },
-    sites: { title: st.sec_sites_title || 'Популярные сайты' },
-    articles: { title: st.sec_articles_title || 'Последние статьи' },
+    sites: { title: st.sec_sites_title || 'Популярные сайты', icon: st.sec_sites_icon || '' },
+    articles: { title: st.sec_articles_title || 'Последние статьи', icon: st.sec_articles_icon || '' },
   };
 }
 

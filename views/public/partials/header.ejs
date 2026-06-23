@@ -80,7 +80,13 @@
         </a>
         <nav class="main-nav" id="mainNav">
           <% __navOrder.forEach(function (k) { var it = __navItems[k]; %>
-            <a href="<%= it.href %>" class="<%= it.active ? 'active' : '' %>"><%= it.label %></a>
+            <% if (k === 'rating') { %>
+              <a href="<%= it.href %>" class="<%= it.active ? 'active' : '' %> nav-rating">
+                <span class="nav-rating-inner"><%= it.label %><% if (String(site.nav_rating_icon_enabled) === '1') { %><% if (site.nav_rating_icon_image) { %><img class="nav-rating-star-img" src="<%= site.nav_rating_icon_image %>" alt=""><% } else { %><span class="nav-rating-star"><%= site.nav_rating_icon || '★' %></span><% } %><% } %></span>
+              </a>
+            <% } else { %>
+              <a href="<%= it.href %>" class="<%= it.active ? 'active' : '' %>"><%= it.label %></a>
+            <% } %>
           <% }); %>
         </nav>
         <% if (String(site.gift_enabled) === '1') { %>

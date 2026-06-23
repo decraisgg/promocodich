@@ -260,6 +260,15 @@ function _ensureDefaults() {
     sec_promocodes_sub: 'Активируй коды и получай скидки на любимых цифровых сервисах',
     sec_sites_title: 'Популярные сайты',
     sec_articles_title: 'Последние статьи',
+    // PNG icons for home section headings (empty = default % badge)
+    sec_promocodes_icon: '',
+    sec_sites_icon: '',
+    sec_articles_icon: '',
+
+    // Star icon on the "Рейтинг" header item
+    nav_rating_icon_enabled: '1',
+    nav_rating_icon: '★',
+    nav_rating_icon_image: '',
   };
   for (const [k, v] of Object.entries(defaults)) {
     if (getSettingStmt.get(k) === undefined) setSetting(k, v);

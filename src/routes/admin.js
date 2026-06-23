@@ -24,9 +24,10 @@ const storage = multer.diskStorage({
     cb(null, `${Date.now()}-${crypto.randomBytes(6).toString('hex')}${ext || '.img'}`);
   },
 });
+const UPLOAD_MAX_MB = 200;
 const upload = multer({
   storage,
-  limits: { fileSize: 64 * 1024 * 1024 },
+  limits: { fileSize: UPLOAD_MAX_MB * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     if (/^(image|video)\//.test(file.mimetype)) return cb(null, true);
     cb(new Error('Можно загружать только изображения и видео'));
@@ -133,7 +134,12 @@ router.post('/publish', (req, res) => {
 // --- Upload (AJAX) ------------------------------------------------------
 router.post('/upload', requireAuthApi, (req, res) => {
   upload.single('file')(req, res, (err) => {
-    if (err) return res.status(400).json({ ok: false, error: err.message });
+    if (err) {
+      const msg = err.code === 'LIMIT_FILE_SIZE'
+        ? `Файл слишком большой (максимум ${UPLOAD_MAX_MB} МБ)`
+        : err.message;
+      return res.status(400).json({ ok: false, error: msg });
+    }
     if (!req.file) return res.status(400).json({ ok: false, error: 'Файл не получен' });
     res.json({ ok: true, url: `/uploads/${req.file.filename}` });
   });
@@ -710,13 +716,21 @@ function normalizeNavOrder(raw) {
 router.get('/header', (req, res) => {
   const order = normalizeNavOrder(getSetting('nav_order', ''));
   const navItems = order.map((k) => ({ key: k, label: getSetting('nav_' + k, NAV_LABELS[k]) }));
-  renderAdmin(req, res, 'admin/header', { active: 'header', navItems });
+  const ratingIcon = {
+    enabled: getSetting('nav_rating_icon_enabled', '1') === '1',
+    icon: getSetting('nav_rating_icon', '★'),
+    image: getSetting('nav_rating_icon_image', ''),
+  };
+  renderAdmin(req, res, 'admin/header', { active: 'header', navItems, ratingIcon });
 });
 
 router.post('/header', (req, res) => {
   const order = normalizeNavOrder(req.body.nav_order);
   setSetting('nav_order', order.join(','));
   for (const k of NAV_ORDER_KEYS) setSetting('nav_' + k, s(req.body['nav_' + k]));
+  setSetting('nav_rating_icon_enabled', b(req.body.nav_rating_icon_enabled) ? '1' : '0');
+  setSetting('nav_rating_icon', s(req.body.nav_rating_icon));
+  setSetting('nav_rating_icon_image', s(req.body.nav_rating_icon_image));
   markDirty();
   flash(req, 'success', 'Шапка сохранена.');
   res.redirect('/admin/header');
@@ -748,6 +762,7 @@ const SEO_TEXT_KEYS = [
 ];
 const SECTION_KEYS = [
   'sec_promocodes_title', 'sec_promocodes_sub', 'sec_sites_title', 'sec_articles_title',
+  'sec_promocodes_icon', 'sec_sites_icon', 'sec_articles_icon',
 ];
 const PAGE_SEO_PAGES = [
   { page: 'home',      label: 'Главная',           hasH1: false },

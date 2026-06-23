@@ -78,14 +78,19 @@
         <label>Промокоды — подзаголовок</label>
         <input type="text" name="sec_promocodes_sub" class="input" value="<%= sectionValues.sec_promocodes_sub %>">
       </div>
+      <%- include('partials/image-field', { name: 'sec_promocodes_icon', value: sectionValues.sec_promocodes_icon, label: 'Промокоды — иконка (PNG, вместо значка %)' }) %>
+
       <div class="field">
         <label>Сайты — заголовок</label>
         <input type="text" name="sec_sites_title" class="input" value="<%= sectionValues.sec_sites_title %>">
       </div>
+      <%- include('partials/image-field', { name: 'sec_sites_icon', value: sectionValues.sec_sites_icon, label: 'Сайты — иконка (PNG)' }) %>
+
       <div class="field">
         <label>Статьи — заголовок</label>
         <input type="text" name="sec_articles_title" class="input" value="<%= sectionValues.sec_articles_title %>">
       </div>
+      <%- include('partials/image-field', { name: 'sec_articles_icon', value: sectionValues.sec_articles_icon, label: 'Статьи — иконка (PNG)' }) %>
     </div>
   </div>
 

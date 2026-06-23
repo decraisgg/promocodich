@@ -95,6 +95,11 @@ img { max-width: 100%; display: block; }
 .main-nav a.active { color: var(--accent); }
 .nav-giveaways { display: inline-flex; align-items: center; gap: 5px; background: rgba(255,45,85,.07); color: var(--accent) !important; }
 .nav-giveaways:hover { background: rgba(255,45,85,.14) !important; }
+/* Star badge over the last letter of the "Рейтинг" nav item */
+.nav-rating-inner { position: relative; }
+.nav-rating-star { position: absolute; top: -0.7em; right: -0.85em; font-size: 11px; line-height: 1; color: var(--gold); pointer-events: none; }
+.nav-rating-star-img { position: absolute; top: -0.85em; right: -0.95em; width: 15px; height: 15px; object-fit: contain; pointer-events: none; }
+
 .nav-giveaways-icon { font-size: 15px; line-height: 1; }
 /* Bigger giveaways icon image. The negative vertical margins cancel the image
    height (margin ≈ -height/2 per side) so its margin-box is ~0 and it never
@@ -179,6 +184,7 @@ img { max-width: 100%; display: block; }
   display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 8px;
   background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #fff; font-size: 14px; font-weight: 900;
 }
+.section-title .ico-img { width: 30px; height: 30px; object-fit: contain; border-radius: 8px; flex: none; vertical-align: middle; }
 .section-sub { color: var(--muted); margin: 4px 0 0; font-weight: 500; }
 .section-link { color: var(--accent); font-weight: 700; }
 .empty-note { color: var(--muted); padding: 20px 0; }
@@ -539,6 +545,8 @@ img { max-width: 100%; display: block; }
   animation: popIn .35s ease;
 }
 @keyframes popIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+.popup-card.closing { animation: popZoomOut .2s ease forwards; }
+@keyframes popZoomOut { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(.55); } }
 .popup-card.hidden { display: none; }
 .popup-close {
   position: absolute; top: 8px; right: 8px; z-index: 3; width: 26px; height: 26px; border-radius: 50%;
@@ -693,10 +701,10 @@ img { max-width: 100%; display: block; }
   position: absolute; top: calc(100% + 16px); right: 0; width: 300px; max-width: calc(100vw - 32px);
   background: var(--card-dark); color: #fff; border-radius: 16px; overflow: hidden; z-index: 120;
   box-shadow: 0 24px 54px rgba(0,0,0,.5); border: 1px solid rgba(255,255,255,.08);
-  opacity: 0; visibility: hidden; transform: translateY(-12px) scale(.95); transform-origin: top right;
-  transition: opacity .22s ease, transform .22s ease, visibility .22s;
+  opacity: 0; visibility: hidden; transform: scale(.55); transform-origin: top right;
+  transition: opacity .16s ease, transform .2s cubic-bezier(.2,.8,.3,1.45), visibility .2s;
 }
-.header-gift.open .gift-panel { opacity: 1; visibility: visible; transform: translateY(0) scale(1); }
+.header-gift.open .gift-panel { opacity: 1; visibility: visible; transform: scale(1); }
 .gift-close { position: absolute; top: 8px; right: 8px; z-index: 3; width: 28px; height: 28px; border-radius: 50%; border: 0; background: rgba(0,0,0,.45); color: #fff; font-size: 18px; line-height: 1; cursor: pointer; }
 .gift-close:hover { background: var(--accent); }
 .gift-panel-image { height: 120px; background-size: cover; background-position: center; }
