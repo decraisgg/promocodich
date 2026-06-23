@@ -175,6 +175,14 @@ function _ensureDefaults() {
     giveaways_icon_image: '',
     home_sections: 'promocodes,sites,articles',
 
+    // Header navigation labels (editable section names)
+    nav_home: 'Главная',
+    nav_promocodes: 'Промокоды',
+    nav_services: 'Сайты',
+    nav_articles: 'Статьи',
+    nav_giveaways: 'Розыгрыши',
+    nav_contacts: 'Контакты',
+
     // Global SEO
     seo_title_suffix: ' — ПРОМОКОДЫЧ',
     seo_default_description: 'Актуальные промокоды и бонусы для Playerok, Kupikod, Lis-Skins и десятков других цифровых сервисов.',

@@ -60,11 +60,11 @@
           <span class="brand-name"><%= site.site_title || 'ПРОМОКОДЫЧ' %></span>
         </a>
         <nav class="main-nav" id="mainNav">
-          <a href="/" class="<%= page === 'home' ? 'active' : '' %>">Главная</a>
-          <a href="/#promocodes">Промокоды</a>
+          <a href="/" class="<%= page === 'home' ? 'active' : '' %>"><%= site.nav_home || 'Главная' %></a>
+          <a href="/#promocodes"><%= site.nav_promocodes || 'Промокоды' %></a>
           <% if ((services || []).length) { %>
             <div class="nav-dropdown">
-              <a href="/services" class="<%= page === 'services' ? 'active' : '' %>">Сайты ▾</a>
+              <a href="/services" class="<%= page === 'services' ? 'active' : '' %>"><%= site.nav_services || 'Сайты' %> ▾</a>
               <div class="dropdown-menu">
                 <% (services || []).forEach(function(svc){ %>
                   <a href="/services/<%= svc.slug %>"><%= svc.name %></a>
@@ -74,7 +74,7 @@
             </div>
           <% } %>
           <div class="nav-dropdown">
-            <a href="/articles" class="<%= page === 'articles' ? 'active' : '' %>">Статьи ▾</a>
+            <a href="/articles" class="<%= page === 'articles' ? 'active' : '' %>"><%= site.nav_articles || 'Статьи' %> ▾</a>
             <div class="dropdown-menu">
               <% (categories || []).forEach(function(c){ %>
                 <a href="/articles?category=<%= c.slug %>"><%= c.title %></a>
@@ -87,9 +87,9 @@
             <% } else { %>
               <span class="nav-giveaways-icon"><%= site.giveaways_icon || '🎁' %></span>
             <% } %>
-            Розыгрыши
+            <%= site.nav_giveaways || 'Розыгрыши' %>
           </a>
-          <a href="/contacts" class="<%= page === 'contacts' ? 'active' : '' %>">Контакты</a>
+          <a href="/contacts" class="<%= page === 'contacts' ? 'active' : '' %>"><%= site.nav_contacts || 'Контакты' %></a>
         </nav>
         <button class="nav-toggle" id="navToggle" aria-label="Меню" aria-expanded="false">☰</button>
       </div>

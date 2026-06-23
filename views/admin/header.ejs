@@ -1,0 +1,44 @@
+<%- include('partials/admin-header') %>
+
+<div class="page-head">
+  <h1>Шапка</h1>
+  <p class="page-sub">Названия разделов в верхнем меню сайта. Пустое поле — раздел получит название по умолчанию.</p>
+</div>
+
+<form method="post" action="/admin/header" class="card form">
+  <div class="form-grid">
+    <div class="field">
+      <label>Главная</label>
+      <input type="text" name="nav_home" class="input" value="<%= values.nav_home %>" placeholder="Главная">
+    </div>
+    <div class="field">
+      <label>Промокоды</label>
+      <input type="text" name="nav_promocodes" class="input" value="<%= values.nav_promocodes %>" placeholder="Промокоды">
+    </div>
+    <div class="field">
+      <label>Сайты (выпадающий список)</label>
+      <input type="text" name="nav_services" class="input" value="<%= values.nav_services %>" placeholder="Сайты">
+    </div>
+    <div class="field">
+      <label>Статьи (выпадающий список)</label>
+      <input type="text" name="nav_articles" class="input" value="<%= values.nav_articles %>" placeholder="Статьи">
+    </div>
+    <div class="field">
+      <label>Розыгрыши</label>
+      <input type="text" name="nav_giveaways" class="input" value="<%= values.nav_giveaways %>" placeholder="Розыгрыши">
+    </div>
+    <div class="field">
+      <label>Контакты</label>
+      <input type="text" name="nav_contacts" class="input" value="<%= values.nav_contacts %>" placeholder="Контакты">
+    </div>
+  </div>
+  <div class="form-actions"><button class="btn btn-primary" type="submit">Сохранить</button></div>
+</form>
+
+<div class="info-card" style="margin-top:18px">
+  <h3>Связанные настройки</h3>
+  <p>Логотип, фавикон и иконку «Розыгрыши» можно изменить в разделе <a href="/admin/settings">Настройки</a>.
+     Заголовки блоков на главной (промокоды, сайты, статьи) и мета-теги — в разделе <a href="/admin/seo">SEO</a>.</p>
+</div>
+
+<%- include('partials/admin-footer') %>

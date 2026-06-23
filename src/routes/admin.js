@@ -578,6 +578,24 @@ router.post('/settings', (req, res) => {
   res.redirect('/admin/settings');
 });
 
+// --- Header (navigation labels) -----------------------------------------
+const NAV_KEYS = [
+  'nav_home', 'nav_promocodes', 'nav_services', 'nav_articles', 'nav_giveaways', 'nav_contacts',
+];
+
+router.get('/header', (req, res) => {
+  const values = {};
+  for (const k of NAV_KEYS) values[k] = getSetting(k, '');
+  renderAdmin(req, res, 'admin/header', { active: 'header', values });
+});
+
+router.post('/header', (req, res) => {
+  for (const k of NAV_KEYS) setSetting(k, s(req.body[k]));
+  markDirty();
+  flash(req, 'success', 'Шапка сохранена.');
+  res.redirect('/admin/header');
+});
+
 // --- SEO ----------------------------------------------------------------
 const SEO_TEXT_KEYS = [
   'seo_title_suffix', 'seo_default_description', 'seo_default_keywords',
