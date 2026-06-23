@@ -119,6 +119,7 @@ router.get('/', (req, res) => {
     popups: db.prepare('SELECT COUNT(*) c FROM popups').get().c,
     services: db.prepare('SELECT COUNT(*) c FROM services').get().c,
     giveaways: db.prepare('SELECT COUNT(*) c FROM giveaways').get().c,
+    ratings: db.prepare('SELECT COUNT(*) c FROM ratings').get().c,
   };
   renderAdmin(req, res, 'admin/dashboard', { active: 'dashboard', counts });
 });
@@ -706,6 +707,24 @@ router.post('/header', (req, res) => {
   markDirty();
   flash(req, 'success', 'Шапка сохранена.');
   res.redirect('/admin/header');
+});
+
+// --- Gift (Подарок) -----------------------------------------------------
+const GIFT_TEXT_KEYS = ['gift_icon', 'gift_icon_image', 'gift_image', 'gift_text', 'gift_code', 'gift_button_text', 'gift_button_link'];
+
+router.get('/gift', (req, res) => {
+  const values = {};
+  for (const k of GIFT_TEXT_KEYS) values[k] = getSetting(k, '');
+  values.gift_enabled = getSetting('gift_enabled', '1') === '1';
+  renderAdmin(req, res, 'admin/gift', { active: 'gift', values });
+});
+
+router.post('/gift', (req, res) => {
+  for (const k of GIFT_TEXT_KEYS) setSetting(k, s(req.body[k]));
+  setSetting('gift_enabled', b(req.body.gift_enabled) ? '1' : '0');
+  markDirty();
+  flash(req, 'success', 'Подарок сохранён.');
+  res.redirect('/admin/gift');
 });
 
 // --- SEO ----------------------------------------------------------------

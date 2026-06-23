@@ -26,7 +26,7 @@
         <% } else if (block.type === 'button') { %>
           <div class="content-btn-wrap">
             <a class="content-btn" href="<%= block.link || '#' %>" target="_blank" rel="nofollow noopener"
-               style="<%= block.bgColor ? 'background:' + block.bgColor + ';' : '' %><%= block.textColor ? 'color:' + block.textColor + ';' : '' %>"><%= block.text || 'Перейти' %></a>
+               style="<%= block.bgColor ? 'background:' + block.bgColor + ';' : '' %><%= block.textColor ? 'color:' + block.textColor + ';' : '' %>"><%- block.text || 'Перейти' %></a>
           </div>
         <% } else if (block.type === 'image' && block.url) { %>
           <figure class="content-figure">

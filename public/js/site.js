@@ -40,6 +40,44 @@
     });
   });
 
+  // Gift widget: toggle the slide-out panel + copy code
+  var giftWidget = document.getElementById('giftWidget');
+  if (giftWidget) {
+    var fab = document.getElementById('giftFab');
+    var closeBtn = document.getElementById('giftClose');
+    function setGift(open) {
+      giftWidget.classList.toggle('open', open);
+      if (fab) fab.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+    if (fab) fab.addEventListener('click', function (e) {
+      e.stopPropagation();
+      setGift(!giftWidget.classList.contains('open'));
+    });
+    if (closeBtn) closeBtn.addEventListener('click', function () { setGift(false); });
+    // Close when clicking outside the widget.
+    document.addEventListener('click', function (e) {
+      if (giftWidget.classList.contains('open') && !giftWidget.contains(e.target)) setGift(false);
+    });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') setGift(false); });
+
+    var giftCodeBox = giftWidget.querySelector('.gift-panel-code');
+    if (giftCodeBox) {
+      var gbtn = giftCodeBox.querySelector('.gift-code-copy');
+      if (gbtn) gbtn.addEventListener('click', function () {
+        var code = giftCodeBox.getAttribute('data-code') || '';
+        var done = function () {
+          var prev = gbtn.textContent;
+          giftCodeBox.classList.add('copied');
+          gbtn.textContent = 'Скопировано!';
+          setTimeout(function () { gbtn.textContent = prev; giftCodeBox.classList.remove('copied'); }, 1600);
+        };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(code).then(done).catch(done);
+        } else { done(); }
+      });
+    }
+  }
+
   // Popups: close + remember dismissal for the session
   document.querySelectorAll('.popup-card').forEach(function (card) {
     var id = card.getAttribute('data-popup-id');

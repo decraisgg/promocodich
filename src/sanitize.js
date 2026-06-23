@@ -59,6 +59,21 @@ function sanitizeHtml(input) {
   return html;
 }
 
+// Inline formatting only (no links/attributes) — used for button labels.
+const ALLOWED_INLINE = new Set(['b', 'strong', 'i', 'em', 'u', 'br']);
+function sanitizeInline(input) {
+  let html = String(input || '');
+  html = html.replace(/<\s*(script|style|iframe|object|embed|svg|math)[\s\S]*?<\s*\/\s*\1\s*>/gi, '');
+  html = html.replace(/<\s*(\/?)\s*([a-zA-Z0-9]+)((?:[^>"']|"[^"]*"|'[^']*')*)>/g,
+    (match, closing, rawName) => {
+      const name = rawName.toLowerCase();
+      if (!ALLOWED_INLINE.has(name)) return '';
+      if (name === 'br') return '<br>';
+      return closing ? `</${name}>` : `<${name}>`;
+    });
+  return html;
+}
+
 // Normalize a full article blocks array into a safe, predictable structure.
 function sanitizeBlocks(blocks) {
   if (!Array.isArray(blocks)) return [];
@@ -75,7 +90,7 @@ function sanitizeBlocks(blocks) {
     } else if (type === 'button') {
       out.push({
         type,
-        text: escapeHtml(raw.text).slice(0, 120),
+        text: sanitizeInline(raw.text).slice(0, 300),
         link: safeUrl(raw.link),
         textColor: safeColor(raw.textColor),
         bgColor: safeColor(raw.bgColor),
@@ -95,4 +110,4 @@ function sanitizeBlocks(blocks) {
   return out;
 }
 
-module.exports = { sanitizeHtml, sanitizeBlocks, escapeHtml, safeUrl, safeColor };
+module.exports = { sanitizeHtml, sanitizeInline, sanitizeBlocks, escapeHtml, safeUrl, safeColor };

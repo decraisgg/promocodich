@@ -1,0 +1,56 @@
+<%- include('partials/admin-header') %>
+
+<div class="page-head">
+  <h1>Подарок</h1>
+  <p class="page-sub">Плавающая иконка-подарок на сайте. Слегка покачивается, привлекая внимание; по клику выдвигается окно с картинкой, текстом, промокодом и кнопкой.</p>
+</div>
+
+<form method="post" action="/admin/gift" class="card form">
+  <div class="form-grid">
+    <div class="field field--switch">
+      <label class="switch">
+        <input type="checkbox" name="gift_enabled" <%= values.gift_enabled ? 'checked' : '' %>>
+        <span class="slider"></span>
+      </label>
+      <span>Показывать подарок на сайте</span>
+    </div>
+
+    <div class="field">
+      <label>Иконка (эмодзи)</label>
+      <input type="text" name="gift_icon" class="input" value="<%= values.gift_icon %>" placeholder="🎁" maxlength="8">
+      <span class="field-hint">Используется, если не загружена картинка-иконка.</span>
+    </div>
+
+    <%- include('partials/image-field', { name: 'gift_icon_image', value: values.gift_icon_image, label: 'Картинка-иконка (вместо эмодзи)' }) %>
+    <div class="field field--full field-hint-standalone">
+      Рекомендуемый размер иконки: 64×64 или 128×128 пикселей, PNG с прозрачным фоном.
+    </div>
+
+    <h3 class="seo-side-title" style="grid-column:1/-1;margin:6px 0 0">Содержимое выдвижного окна</h3>
+
+    <%- include('partials/image-field', { name: 'gift_image', value: values.gift_image, label: 'Картинка в окне' }) %>
+
+    <div class="field field--full">
+      <label>Текст</label>
+      <textarea name="gift_text" class="input" rows="2" placeholder="Используй промокод ниже и получи бонус!"><%= values.gift_text %></textarea>
+    </div>
+
+    <div class="field">
+      <label>Промокод (необязательно)</label>
+      <input type="text" name="gift_code" class="input code-input" value="<%= values.gift_code %>" placeholder="PROMO35">
+    </div>
+
+    <div class="field">
+      <label>Текст кнопки</label>
+      <input type="text" name="gift_button_text" class="input" value="<%= values.gift_button_text %>" placeholder="Забрать">
+    </div>
+
+    <div class="field field--full">
+      <label>Ссылка кнопки</label>
+      <input type="text" name="gift_button_link" class="input" value="<%= values.gift_button_link %>" placeholder="https://...">
+    </div>
+  </div>
+  <div class="form-actions"><button class="btn btn-primary" type="submit">Сохранить</button></div>
+</form>
+
+<%- include('partials/admin-footer') %>

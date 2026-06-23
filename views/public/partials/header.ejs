@@ -65,14 +65,6 @@
           <a href="/rating" class="<%= page === 'rating' ? 'active' : '' %>"><%= site.nav_rating || 'Рейтинг' %></a>
           <a href="/services" class="<%= page === 'services' ? 'active' : '' %>"><%= site.nav_services || 'Сайты' %></a>
           <a href="/articles" class="<%= page === 'articles' ? 'active' : '' %>"><%= site.nav_articles || 'Статьи' %></a>
-          <a href="/giveaways" class="<%= page === 'giveaways' ? 'active' : '' %> nav-giveaways">
-            <% if (site.giveaways_icon_image) { %>
-              <img class="nav-giveaways-img" src="<%= site.giveaways_icon_image %>" alt="">
-            <% } else { %>
-              <span class="nav-giveaways-icon"><%= site.giveaways_icon || '🎁' %></span>
-            <% } %>
-            <%= site.nav_giveaways || 'Розыгрыши' %>
-          </a>
           <a href="/contacts" class="<%= page === 'contacts' ? 'active' : '' %>"><%= site.nav_contacts || 'Контакты' %></a>
         </nav>
         <button class="nav-toggle" id="navToggle" aria-label="Меню" aria-expanded="false">☰</button>

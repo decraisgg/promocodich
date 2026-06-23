@@ -6,6 +6,7 @@
       <div class="block-tools">
         <button type="button" class="rte-cmd" data-cmd="bold" title="Жирный"><b>Ж</b></button>
         <button type="button" class="rte-cmd" data-cmd="italic" title="Курсив"><i>К</i></button>
+        <button type="button" class="rte-cmd" data-cmd="underline" title="Подчёркнутый"><u>П</u></button>
         <button type="button" class="rte-cmd" data-cmd="link" title="Ссылка">🔗</button>
         <span class="block-sep"></span>
         <button type="button" class="blk-up" title="Выше">↑</button>
@@ -42,13 +43,20 @@
     <div class="block-bar">
       <span class="block-type">▭ Кнопка</span>
       <div class="block-tools">
+        <button type="button" class="rte-cmd" data-cmd="bold" title="Жирный"><b>Ж</b></button>
+        <button type="button" class="rte-cmd" data-cmd="italic" title="Курсив"><i>К</i></button>
+        <button type="button" class="rte-cmd" data-cmd="underline" title="Подчёркнутый"><u>П</u></button>
+        <span class="block-sep"></span>
         <button type="button" class="blk-up" title="Выше">↑</button>
         <button type="button" class="blk-down" title="Ниже">↓</button>
         <button type="button" class="blk-del" title="Удалить">✕</button>
       </div>
     </div>
     <div class="form-grid">
-      <div class="field"><label>Текст кнопки</label><input type="text" class="blk-btn-text input" placeholder="Перейти"></div>
+      <div class="field">
+        <label>Текст кнопки (можно Ж / К / подчёркнутый)</label>
+        <div class="block-rte blk-btn-text" contenteditable="true" data-placeholder="Перейти"></div>
+      </div>
       <div class="field"><label>Ссылка</label><input type="text" class="blk-btn-link input" placeholder="https://..."></div>
       <div class="field">
         <label>Цвет текста</label>

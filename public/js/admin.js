@@ -102,7 +102,7 @@
       node.querySelector('.blk-level').value = String(v.level || 2);
       node.querySelector('.blk-text').value = v.text || '';
     } else if (type === 'button') {
-      node.querySelector('.blk-btn-text').value = v.text || '';
+      node.querySelector('.blk-btn-text').innerHTML = v.text || '';
       node.querySelector('.blk-btn-link').value = v.link || '';
       var tc = node.querySelector('.blk-btn-textcolor');
       var bc = node.querySelector('.blk-btn-bgcolor');
@@ -135,7 +135,7 @@
       } else if (type === 'button') {
         out.push({
           type: 'button',
-          text: block.querySelector('.blk-btn-text').value,
+          text: block.querySelector('.blk-btn-text').innerHTML.trim(),
           link: block.querySelector('.blk-btn-link').value,
           textColor: (block.querySelector('.blk-btn-textcolor') || {}).value || '',
           bgColor: (block.querySelector('.blk-btn-bgcolor') || {}).value || '',

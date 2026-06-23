@@ -423,8 +423,6 @@ router.get('/sitemap.xml', (req, res) => {
   add('/', '1.0', 'daily');
   add('/services', '0.8', 'weekly');
   (snap.services || []).forEach((s) => add('/services/' + s.slug, '0.7', 'weekly'));
-  add('/giveaways', '0.7', 'weekly');
-  (snap.giveaways || []).forEach((g) => add('/giveaways/' + g.slug, '0.6', 'weekly'));
   add('/rating', '0.8', 'weekly');
   (snap.ratings || []).forEach((r) => add('/rating/' + r.slug, '0.6', 'weekly'));
   add('/articles', '0.7', 'weekly');

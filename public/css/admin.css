@@ -224,6 +224,7 @@ textarea.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, mono
 .block-rte { min-height: 70px; border: 1px solid var(--line); border-radius: 10px; padding: 11px 13px; background: #fff; font-size: 15px; line-height: 1.6; }
 .block-rte:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(255,45,85,.1); }
 .block-rte:empty::before { content: attr(data-placeholder); color: #aab0bb; }
+.block-rte.blk-btn-text { min-height: 0; padding: 10px 13px; }
 .block-rte a { color: var(--accent); text-decoration: underline; }
 .add-block-bar { display: flex; flex-wrap: wrap; gap: 8px; padding: 14px; border: 2px dashed var(--line); border-radius: 12px; }
 .add-block-bar .btn { background: #fff; }

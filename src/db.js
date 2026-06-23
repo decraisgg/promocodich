@@ -216,6 +216,16 @@ function _ensureDefaults() {
     giveaways_icon_image: '',
     home_sections: 'promocodes,sites,articles',
 
+    // Floating gift widget ("Подарок")
+    gift_enabled: '1',
+    gift_icon: '🎁',
+    gift_icon_image: '',
+    gift_image: '',
+    gift_text: 'Лови подарок — забери бонус прямо сейчас!',
+    gift_code: '',
+    gift_button_text: 'Забрать',
+    gift_button_link: '#',
+
     // Header navigation labels (editable section names)
     nav_home: 'Главная',
     nav_promocodes: 'Промокоды',
