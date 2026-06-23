@@ -97,8 +97,8 @@ img { max-width: 100%; display: block; }
 .nav-giveaways:hover { background: rgba(255,45,85,.14) !important; }
 /* Star badge over the last letter of the "Рейтинг" nav item */
 .nav-rating-inner { position: relative; }
-.nav-rating-star { position: absolute; top: -0.7em; right: -0.85em; font-size: 11px; line-height: 1; color: var(--gold); pointer-events: none; }
-.nav-rating-star-img { position: absolute; top: -0.85em; right: -0.95em; width: 15px; height: 15px; object-fit: contain; pointer-events: none; }
+.nav-rating-star { position: absolute; top: -4px; right: -0.85em; font-size: 11px; line-height: 1; color: var(--gold); pointer-events: none; }
+.nav-rating-star-img { position: absolute; top: -7px; right: -0.95em; width: 15px; height: 15px; object-fit: contain; pointer-events: none; }
 
 .nav-giveaways-icon { font-size: 15px; line-height: 1; }
 /* Bigger giveaways icon image. The negative vertical margins cancel the image
