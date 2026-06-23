@@ -317,14 +317,16 @@ router.post('/articles', (req, res) => {
   const title = s(req.body.title) || 'Без названия';
   const slug = uniqueSlugFor('articles', s(req.body.slug) || title);
   const blocks = parseBlocks(req.body.blocks);
-  db.prepare(`INSERT INTO articles (slug,title,category,excerpt,featured_image,blocks,enabled,sort_order)
-    VALUES (@slug,@title,@category,@excerpt,@featured_image,@blocks,@enabled,@sort_order)`).run({
+  db.prepare(`INSERT INTO articles (slug,title,category,excerpt,featured_image,blocks,meta_title,meta_description,enabled,sort_order)
+    VALUES (@slug,@title,@category,@excerpt,@featured_image,@blocks,@meta_title,@meta_description,@enabled,@sort_order)`).run({
     slug,
     title,
     category: s(req.body.category) || 'games',
     excerpt: s(req.body.excerpt),
     featured_image: s(req.body.featured_image),
     blocks: JSON.stringify(blocks),
+    meta_title: s(req.body.meta_title),
+    meta_description: s(req.body.meta_description),
     enabled: b(req.body.enabled),
     sort_order: parseInt(req.body.sort_order, 10) || 0,
   });
@@ -341,7 +343,8 @@ router.post('/articles/:id', (req, res) => {
   const slug = uniqueSlugFor('articles', s(req.body.slug) || title, Number(id));
   const blocks = parseBlocks(req.body.blocks);
   db.prepare(`UPDATE articles SET slug=@slug,title=@title,category=@category,excerpt=@excerpt,
-    featured_image=@featured_image,blocks=@blocks,enabled=@enabled,sort_order=@sort_order WHERE id=@id`).run({
+    featured_image=@featured_image,blocks=@blocks,meta_title=@meta_title,meta_description=@meta_description,
+    enabled=@enabled,sort_order=@sort_order WHERE id=@id`).run({
     id,
     slug,
     title,
@@ -349,6 +352,8 @@ router.post('/articles/:id', (req, res) => {
     excerpt: s(req.body.excerpt),
     featured_image: s(req.body.featured_image),
     blocks: JSON.stringify(blocks),
+    meta_title: s(req.body.meta_title),
+    meta_description: s(req.body.meta_description),
     enabled: b(req.body.enabled),
     sort_order: parseInt(req.body.sort_order, 10) || 0,
   });
@@ -527,7 +532,7 @@ router.post('/giveaways/:id/delete', (req, res) => {
 // --- Settings -----------------------------------------------------------
 const SETTINGS_KEYS = [
   'site_title', 'tagline', 'intro_text', 'logo_url', 'favicon_url',
-  'giveaways_icon', 'home_sections',
+  'giveaways_icon', 'giveaways_icon_image', 'home_sections',
   'contacts_telegram', 'contacts_email', 'contacts_text',
 ];
 const HOME_SECTION_DEFS = [
@@ -571,6 +576,69 @@ router.post('/settings', (req, res) => {
   markDirty();
   flash(req, 'success', 'Настройки сохранены.');
   res.redirect('/admin/settings');
+});
+
+// --- SEO ----------------------------------------------------------------
+const SEO_TEXT_KEYS = [
+  'seo_title_suffix', 'seo_default_description', 'seo_default_keywords',
+  'seo_og_image', 'seo_canonical_host', 'seo_yandex_verification',
+  'seo_google_verification', 'seo_robots_txt',
+];
+const SECTION_KEYS = [
+  'sec_promocodes_title', 'sec_promocodes_sub', 'sec_sites_title', 'sec_articles_title',
+];
+const PAGE_SEO_PAGES = [
+  { page: 'home',      label: 'Главная',           hasH1: false },
+  { page: 'services',  label: 'Сайты (список)',    hasH1: true },
+  { page: 'giveaways', label: 'Розыгрыши (список)', hasH1: true },
+  { page: 'articles',  label: 'Статьи (список)',   hasH1: true },
+  { page: 'contacts',  label: 'Контакты',          hasH1: true },
+];
+
+router.get('/seo', (req, res) => {
+  const seoValues = {};
+  for (const k of SEO_TEXT_KEYS) seoValues[k] = getSetting(k, '');
+  seoValues.seo_noindex = getSetting('seo_noindex', '0') === '1';
+  const sectionValues = {};
+  for (const k of SECTION_KEYS) sectionValues[k] = getSetting(k, '');
+
+  const rows = {};
+  for (const r of db.prepare('SELECT * FROM page_seo').all()) rows[r.page] = r;
+  const pageSeoList = PAGE_SEO_PAGES.map((p) => ({ ...p, data: rows[p.page] || {} }));
+
+  renderAdmin(req, res, 'admin/seo', {
+    active: 'seo',
+    seoValues,
+    sectionValues,
+    pageSeoList,
+    canonicalHost: getSetting('seo_canonical_host', ''),
+  });
+});
+
+router.post('/seo', (req, res) => {
+  for (const k of SEO_TEXT_KEYS) setSetting(k, s(req.body[k]));
+  setSetting('seo_noindex', b(req.body.seo_noindex) ? '1' : '0');
+  for (const k of SECTION_KEYS) setSetting(k, s(req.body[k]));
+
+  const upsert = db.prepare(`INSERT INTO page_seo (page,title,description,keywords,h1,og_image,noindex)
+    VALUES (@page,@title,@description,@keywords,@h1,@og_image,@noindex)
+    ON CONFLICT(page) DO UPDATE SET
+      title=@title, description=@description, keywords=@keywords,
+      h1=@h1, og_image=@og_image, noindex=@noindex`);
+  for (const p of PAGE_SEO_PAGES) {
+    upsert.run({
+      page: p.page,
+      title: s(req.body[p.page + '_title']),
+      description: s(req.body[p.page + '_description']),
+      keywords: s(req.body[p.page + '_keywords']),
+      h1: p.hasH1 ? s(req.body[p.page + '_h1']) : '',
+      og_image: s(req.body[p.page + '_og_image']),
+      noindex: b(req.body[p.page + '_noindex']),
+    });
+  }
+  markDirty();
+  flash(req, 'success', 'SEO-настройки сохранены.');
+  res.redirect('/admin/seo');
 });
 
 module.exports = router;

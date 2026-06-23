@@ -1,9 +1,9 @@
-<%- include('partials/header', { pageTitle: 'Статьи — ' + (site.site_title || 'ПРОМОКОДЫЧ') }) %>
+<%- include('partials/header') %>
 
 <section class="section">
   <div class="container">
     <div class="section-head">
-      <h2 class="section-title"><span class="ico">%</span> Статьи</h2>
+      <h1 class="section-title"><span class="ico">%</span> <%= typeof pageH1 !== 'undefined' ? pageH1 : 'Статьи' %></h1>
       <p class="section-sub">Гайды, новости и обзоры по цифровым сервисам</p>
     </div>
 

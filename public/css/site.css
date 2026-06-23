@@ -95,6 +95,7 @@ img { max-width: 100%; display: block; }
 .nav-giveaways { display: inline-flex; align-items: center; gap: 5px; background: rgba(255,45,85,.07); color: var(--accent) !important; }
 .nav-giveaways:hover { background: rgba(255,45,85,.14) !important; }
 .nav-giveaways-icon { font-size: 15px; line-height: 1; }
+.nav-giveaways-img { width: 18px; height: 18px; object-fit: contain; border-radius: 4px; }
 .nav-dropdown { position: relative; }
 .dropdown-menu {
   position: absolute; top: 100%; left: 0; min-width: 200px;
@@ -549,36 +550,88 @@ img { max-width: 100%; display: block; }
 .popup-btn:hover { filter: brightness(1.08); }
 
 /* ---------- Responsive ---------- */
-@media (max-width: 960px) {
-  .hero-grid { grid-template-columns: 1fr; }
-  .hero-side { display: none; }
-  .banner--big { min-height: 320px; }
-  .promo-grid { grid-template-columns: repeat(2, 1fr); }
-  .article-grid { grid-template-columns: repeat(2, 1fr); }
-  .services-grid { grid-template-columns: repeat(2, 1fr); }
-  .giveaway-grid { grid-template-columns: repeat(2, 1fr); }
-  .giveaway-strip { grid-template-columns: repeat(2, 1fr); }
-  .sites-tiles { grid-template-columns: repeat(4, 1fr); }
+
+/* Large laptops / small desktops */
+@media (max-width: 1100px) {
+  .sites-tiles { grid-template-columns: repeat(5, 1fr); }
 }
-@media (max-width: 720px) {
+
+/* Small laptops / large tablets (landscape) */
+@media (max-width: 992px) {
+  .hero-grid { grid-template-columns: 1fr 1.8fr; }
+  .hero-grid .hero-side:last-child { display: none; }
+  .banner--big, .banner--small { min-height: 360px; }
+  .sites-tiles { grid-template-columns: repeat(4, 1fr); }
+  .services-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* Tablets (portrait) */
+@media (max-width: 860px) {
+  /* Collapse the nav into a mobile menu earlier so the bar never overflows */
   .main-nav {
-    position: fixed; inset: 88px 16px auto 16px; flex-direction: column; align-items: stretch;
-    background: #fff; padding: 12px 16px; gap: 4px; box-shadow: var(--shadow-lg);
+    position: fixed; inset: 86px 14px auto 14px; flex-direction: column; align-items: stretch;
+    background: #fff; padding: 12px 14px; gap: 4px; box-shadow: var(--shadow-lg);
     border-radius: 16px; border: 1px solid rgba(0,0,0,.06);
-    transform: translateY(-130%); transition: transform .25s; max-height: calc(100vh - 100px); overflow:auto;
+    transform: translateY(-160%); transition: transform .25s; max-height: calc(100vh - 110px); overflow: auto;
   }
   .main-nav.open { transform: translateY(0); }
-  .nav-dropdown .dropdown-menu { position: static; opacity: 1; visibility: visible; transform: none; box-shadow: none; padding-left: 12px; }
+  .nav-dropdown { width: 100%; }
+  .nav-dropdown .dropdown-menu {
+    position: static; opacity: 1; visibility: visible; transform: none;
+    box-shadow: none; padding-left: 12px; min-width: 0; border: 0;
+  }
+  .nav-giveaways { justify-content: flex-start; }
   .nav-toggle { display: block; }
-  .promo-grid, .article-grid, .services-grid, .giveaway-grid, .giveaway-strip { grid-template-columns: 1fr; }
+
+  .hero-grid { grid-template-columns: 1fr; }
+  .hero-side { display: none; }
+  .banner--big { min-height: 300px; }
+  .promo-grid { grid-template-columns: repeat(2, 1fr); }
+  .article-grid { grid-template-columns: repeat(2, 1fr); }
+  .giveaway-grid, .giveaway-strip { grid-template-columns: repeat(2, 1fr); }
   .sites-tiles { grid-template-columns: repeat(3, 1fr); }
-  .banner--big .banner-title { font-size: 28px; max-width: 100%; }
-  .banner--big .banner-subtitle { max-width: 100%; }
-  .article-title { font-size: 28px; }
-  .giveaway-title { font-size: 26px; }
-  .popup-card { width: 260px; }
-  .page-hero-title { font-size: 28px; }
 }
-@media (max-width: 460px) {
-  .sites-tiles { grid-template-columns: repeat(2, 1fr); }
+
+/* Large phones */
+@media (max-width: 640px) {
+  .section { padding: 30px 0; }
+  .section-title { font-size: 21px; }
+  .promo-grid, .article-grid, .services-grid, .giveaway-grid, .giveaway-strip { grid-template-columns: 1fr; }
+  .sites-tiles { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .banner--big .banner-title { font-size: 26px; max-width: 100%; }
+  .banner--big .banner-subtitle { max-width: 100%; }
+  .article-title { font-size: 26px; }
+  .giveaway-title { font-size: 24px; }
+  .page-hero-title { font-size: 26px; }
+
+  /* Service hero banner stacks the icon above the text */
+  .service-hero-banner { min-height: 0; padding: 20px; }
+  .service-hero-inner { flex-direction: column; align-items: flex-start; gap: 14px; }
+  .service-hero-title { font-size: 26px; }
+
+  /* Popups dock to the full bottom width and shrink */
+  .popup-stack { left: 12px; right: 12px; bottom: 12px; }
+  .popup-card { width: 100%; max-width: 320px; }
+}
+
+/* Small phones */
+@media (max-width: 480px) {
+  .container { padding: 0 14px; }
+  .site-header-wrap { padding: 10px 12px 4px; }
+  .header-inner { height: 58px; padding: 0 14px; gap: 12px; }
+  .brand-logo, .brand-logo-img { width: 42px; height: 42px; font-size: 24px; }
+  .brand-name { font-size: 17px; }
+  .section { padding: 24px 0; }
+  .section-head { margin-bottom: 16px; }
+  .banner-content { padding: 20px; }
+  .banner--big .banner-title { font-size: 22px; }
+  .promo-card { padding: 16px; }
+  .article-title { font-size: 22px; }
+  .page-hero-title { font-size: 22px; }
+}
+
+/* Very small phones */
+@media (max-width: 360px) {
+  .sites-tiles { grid-template-columns: 1fr; }
+  .brand-name { font-size: 15px; }
 }

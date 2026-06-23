@@ -66,9 +66,21 @@ CREATE TABLE IF NOT EXISTS articles (
   excerpt        TEXT    DEFAULT '',
   featured_image TEXT    DEFAULT '',
   blocks         TEXT    DEFAULT '[]',
+  meta_title     TEXT    DEFAULT '',
+  meta_description TEXT  DEFAULT '',
   enabled        INTEGER NOT NULL DEFAULT 1,
   created_at     TEXT    DEFAULT (datetime('now')),
   sort_order     INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS page_seo (
+  page        TEXT PRIMARY KEY,
+  title       TEXT    DEFAULT '',
+  description TEXT    DEFAULT '',
+  keywords    TEXT    DEFAULT '',
+  h1          TEXT    DEFAULT '',
+  og_image    TEXT    DEFAULT '',
+  noindex     INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS popups (
@@ -115,6 +127,8 @@ const addColIfMissing = (table, col, def) => {
 addColIfMissing('banners', 'service_id', 'INTEGER REFERENCES services(id) ON DELETE SET NULL');
 addColIfMissing('promocodes', 'service_id', 'INTEGER REFERENCES services(id) ON DELETE SET NULL');
 addColIfMissing('services', 'hero_image', "TEXT DEFAULT ''");
+addColIfMissing('articles', 'meta_title', "TEXT DEFAULT ''");
+addColIfMissing('articles', 'meta_description', "TEXT DEFAULT ''");
 
 // --- Settings helpers ---------------------------------------------------
 const getSettingStmt = db.prepare('SELECT value FROM settings WHERE key = ?');
@@ -158,11 +172,40 @@ function _ensureDefaults() {
   const defaults = {
     favicon_url: '',
     giveaways_icon: '🎁',
+    giveaways_icon_image: '',
     home_sections: 'promocodes,sites,articles',
+
+    // Global SEO
+    seo_title_suffix: ' — ПРОМОКОДЫЧ',
+    seo_default_description: 'Актуальные промокоды и бонусы для Playerok, Kupikod, Lis-Skins и десятков других цифровых сервисов.',
+    seo_default_keywords: 'промокоды, бонусы, скидки, playerok, kupikod, lis-skins',
+    seo_og_image: '',
+    seo_canonical_host: '',
+    seo_yandex_verification: '',
+    seo_google_verification: '',
+    seo_noindex: '0',
+    seo_robots_txt: '',
+
+    // Editable section headings (home page)
+    sec_promocodes_title: 'Актуальные промокоды и бонусы',
+    sec_promocodes_sub: 'Активируй коды и получай скидки на любимых цифровых сервисах',
+    sec_sites_title: 'Популярные сайты',
+    sec_articles_title: 'Последние статьи',
   };
   for (const [k, v] of Object.entries(defaults)) {
     if (getSettingStmt.get(k) === undefined) setSetting(k, v);
   }
+
+  // Seed default per-page SEO rows (page H1 / titles) once.
+  const pages = [
+    { page: 'home',     h1: '',          title: '' },
+    { page: 'services', h1: 'Сайты',     title: '' },
+    { page: 'giveaways',h1: '🎁 Розыгрыши', title: '' },
+    { page: 'articles', h1: 'Статьи',    title: '' },
+    { page: 'contacts', h1: 'Контакты',  title: '' },
+  ];
+  const ins = db.prepare('INSERT OR IGNORE INTO page_seo (page, h1, title) VALUES (@page, @h1, @title)');
+  for (const p of pages) ins.run(p);
 }
 
 function _seedV2() {

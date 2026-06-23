@@ -1,9 +1,9 @@
-<%- include('partials/header', { pageTitle: 'Контакты — ' + (site.site_title || 'ПРОМОКОДЫЧ') }) %>
+<%- include('partials/header') %>
 
 <section class="section">
   <div class="container container--narrow">
     <div class="section-head">
-      <h2 class="section-title"><span class="ico">%</span> Контакты</h2>
+      <h1 class="section-title"><span class="ico">%</span> <%= typeof pageH1 !== 'undefined' ? pageH1 : 'Контакты' %></h1>
     </div>
     <div class="contacts-card">
       <% if (site.contacts_text) { %><p class="contacts-text"><%= site.contacts_text %></p><% } %>

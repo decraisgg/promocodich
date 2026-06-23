@@ -44,8 +44,8 @@
     <section class="section" id="promocodes">
       <div class="container">
         <div class="section-head">
-          <h2 class="section-title"><span class="ico">%</span> Актуальные промокоды и бонусы</h2>
-          <p class="section-sub">Активируй коды и получай скидки на любимых цифровых сервисах</p>
+          <h2 class="section-title"><span class="ico">%</span> <%= sections.promocodes.title %></h2>
+          <% if (sections.promocodes.sub) { %><p class="section-sub"><%= sections.promocodes.sub %></p><% } %>
         </div>
 
         <div class="promo-grid">
@@ -87,7 +87,7 @@
     <section class="section section--sites">
       <div class="container">
         <div class="section-head">
-          <h2 class="section-title"><span class="ico">%</span> Популярные сайты</h2>
+          <h2 class="section-title"><span class="ico">%</span> <%= sections.sites.title %></h2>
           <a class="section-link" href="/services">Все сайты →</a>
         </div>
         <div class="sites-tiles">
@@ -113,7 +113,7 @@
     <section class="section">
       <div class="container">
         <div class="section-head">
-          <h2 class="section-title"><span class="ico">%</span> Последние статьи</h2>
+          <h2 class="section-title"><span class="ico">%</span> <%= sections.articles.title %></h2>
           <a class="section-link" href="/articles">Все статьи →</a>
         </div>
         <div class="article-grid">

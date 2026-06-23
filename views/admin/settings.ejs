@@ -31,9 +31,14 @@
     </div>
 
     <div class="field">
-      <label>Иконка раздела «Розыгрыши» в шапке</label>
+      <label>Иконка раздела «Розыгрыши» в шапке (эмодзи)</label>
       <input type="text" name="giveaways_icon" class="input" value="<%= values.giveaways_icon %>" placeholder="🎁" maxlength="8">
       <span class="field-hint">Эмодзи или символ слева от текста «Розыгрыши». По умолчанию 🎁.</span>
+    </div>
+
+    <%- include('partials/image-field', { name: 'giveaways_icon_image', value: values.giveaways_icon_image, label: 'Картинка-иконка «Розыгрыши» (вместо эмодзи)' }) %>
+    <div class="field field--full field-hint-standalone">
+      Если загружена картинка — она показывается вместо эмодзи. Рекомендуемый размер: 24×24 или 32×32 пикселя.
     </div>
 
     <div class="field">

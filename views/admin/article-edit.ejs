@@ -54,8 +54,22 @@
       </div>
 
       <div class="field">
-        <label>URL (slug, необязательно)</label>
-        <input type="text" name="slug" class="input" value="<%= article.slug %>" placeholder="будет создан из заголовка">
+        <label>URL (slug, латиницей)</label>
+        <input type="text" name="slug" class="input" value="<%= article.slug %>" placeholder="kak-aktivirovat-promokod">
+        <span class="field-hint">Латиницей, через дефис. Если пусто — создаётся из заголовка автоматически.</span>
+      </div>
+
+      <div class="seo-side-block">
+        <div class="seo-side-title">🔍 SEO статьи</div>
+        <div class="field">
+          <label>Meta Title (необязательно)</label>
+          <input type="text" name="meta_title" class="input" value="<%= article.meta_title || '' %>" placeholder="по умолчанию — заголовок статьи">
+        </div>
+        <div class="field">
+          <label>Meta Description</label>
+          <textarea name="meta_description" class="input" rows="3" placeholder="Краткое описание для сниппета в поиске (до ~160 символов)"><%= article.meta_description || '' %></textarea>
+          <span class="field-hint">Важно для сниппета в выдаче. Если пусто — берётся краткое описание.</span>
+        </div>
       </div>
 
       <div class="field">

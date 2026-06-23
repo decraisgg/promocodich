@@ -16,6 +16,70 @@ function baseLocals(snapshot) {
   };
 }
 
+// Base origin for canonical URLs / sitemap. Prefers the admin-configured
+// canonical host; falls back to the current request origin.
+function baseUrl(snap, req) {
+  const host = String((snap.settings || {}).seo_canonical_host || '').trim().replace(/\/+$/, '');
+  if (host) return host;
+  return req.protocol + '://' + req.get('host');
+}
+
+// Build the per-page SEO object consumed by the header partial.
+function seoFor(snap, req, opts = {}) {
+  const st = snap.settings || {};
+  const ps = (snap.pageSeo || {})[opts.pageKey] || {};
+  const siteTitle = st.site_title || 'ПРОМОКОДЫЧ';
+  const suffix = st.seo_title_suffix || '';
+
+  let title = String(opts.title || ps.title || '').trim();
+  if (!title) {
+    title = String(opts.defaultTitle || siteTitle).trim();
+    if (suffix && opts.appendSuffix !== false) title += suffix;
+  }
+
+  const description = String(
+    opts.description || ps.description || st.seo_default_description || st.tagline || ''
+  ).trim();
+  const keywords = String(ps.keywords || st.seo_default_keywords || '').trim();
+  const ogImage = String(opts.image || ps.og_image || st.seo_og_image || '').trim();
+
+  const noindex = opts.noindex != null
+    ? !!opts.noindex
+    : (String(ps.noindex) === '1' || String(st.seo_noindex) === '1');
+
+  const base = baseUrl(snap, req);
+  const path = opts.path || req.path || '/';
+  const ogImageAbs = ogImage
+    ? (/^https?:\/\//.test(ogImage) ? ogImage : base + ogImage)
+    : '';
+
+  return {
+    title,
+    description,
+    keywords,
+    ogImage,
+    ogImageAbs,
+    ogType: opts.type || 'website',
+    canonical: base + path,
+    noindex,
+    yandexVerification: st.seo_yandex_verification || '',
+    googleVerification: st.seo_google_verification || '',
+    siteName: siteTitle,
+  };
+}
+
+// Editable home-page section headings.
+function sectionHeadings(st) {
+  return {
+    promocodes: {
+      title: st.sec_promocodes_title || 'Актуальные промокоды и бонусы',
+      sub: st.sec_promocodes_sub || 'Активируй коды и получай скидки на любимых цифровых сервисах',
+    },
+    sites: { title: st.sec_sites_title || 'Популярные сайты' },
+    articles: { title: st.sec_articles_title || 'Последние статьи' },
+  };
+}
+
 // Known home-page content sections and their default order.
 const HOME_SECTIONS = ['promocodes', 'sites', 'articles'];
 function parseHomeSections(raw) {
@@ -33,6 +97,7 @@ function parseHomeSections(raw) {
 
 router.get('/', (req, res) => {
   const snap = getPublishedSnapshot();
+  const st = snap.settings || {};
   const allBanners = snap.banners || [];
   // Global banners: service_id is null/0/falsy
   const globalBanners = allBanners.filter((b) => !b.service_id);
@@ -42,6 +107,8 @@ router.get('/', (req, res) => {
   // Global promos: no service_id
   const globalPromos = (snap.promocodes || []).filter((p) => !p.service_id);
 
+  const defaultTitle = (st.site_title || 'ПРОМОКОДЫЧ') + (st.tagline ? ' — ' + st.tagline : '');
+
   res.render('public/home', {
     ...baseLocals(snap),
     page: 'home',
@@ -49,7 +116,9 @@ router.get('/', (req, res) => {
     smallBanners,
     promocodes: globalPromos,
     latestArticles,
-    homeSections: parseHomeSections((snap.settings || {}).home_sections),
+    homeSections: parseHomeSections(st.home_sections),
+    sections: sectionHeadings(st),
+    seo: seoFor(snap, req, { pageKey: 'home', defaultTitle, appendSuffix: false, path: '/' }),
   });
 });
 
@@ -58,12 +127,16 @@ router.get('/articles', (req, res) => {
   const all = snap.articles || [];
   const activeCategory = req.query.category || '';
   const list = activeCategory ? all.filter((a) => a.category === activeCategory) : all;
+  const ps = (snap.pageSeo || {}).articles || {};
+  const h1 = ps.h1 || 'Статьи';
 
   res.render('public/articles', {
     ...baseLocals(snap),
     page: 'articles',
     articles: list,
     activeCategory,
+    pageH1: h1,
+    seo: seoFor(snap, req, { pageKey: 'articles', defaultTitle: h1, path: '/articles' }),
   });
 });
 
@@ -74,6 +147,7 @@ router.get('/articles/:slug', (req, res) => {
     return res.status(404).render('public/404', {
       ...baseLocals(snap),
       page: 'articles',
+      seo: seoFor(snap, req, { pageKey: 'articles', defaultTitle: 'Страница не найдена', noindex: true }),
     });
   }
   const related = (snap.articles || [])
@@ -85,16 +159,29 @@ router.get('/articles/:slug', (req, res) => {
     page: 'articles',
     article,
     related,
+    seo: seoFor(snap, req, {
+      pageKey: 'article',
+      title: article.meta_title || '',
+      defaultTitle: article.title,
+      description: article.meta_description || article.excerpt || '',
+      image: article.featured_image || '',
+      type: 'article',
+      path: '/articles/' + article.slug,
+    }),
   });
 });
 
 // --- Services -----------------------------------------------------------
 router.get('/services', (req, res) => {
   const snap = getPublishedSnapshot();
+  const ps = (snap.pageSeo || {}).services || {};
+  const h1 = ps.h1 || 'Сайты';
   res.render('public/services', {
     ...baseLocals(snap),
     page: 'services',
     services: snap.services || [],
+    pageH1: h1,
+    seo: seoFor(snap, req, { pageKey: 'services', defaultTitle: h1, path: '/services' }),
   });
 });
 
@@ -105,6 +192,7 @@ router.get('/services/:slug', (req, res) => {
     return res.status(404).render('public/404', {
       ...baseLocals(snap),
       page: 'services',
+      seo: seoFor(snap, req, { pageKey: 'services', defaultTitle: 'Страница не найдена', noindex: true }),
     });
   }
 
@@ -120,6 +208,13 @@ router.get('/services/:slug', (req, res) => {
     bigBanner,
     smallBanners,
     promocodes: servicePromos,
+    seo: seoFor(snap, req, {
+      pageKey: 'service',
+      defaultTitle: service.name,
+      description: service.description || '',
+      image: service.hero_image || service.image_url || '',
+      path: '/services/' + service.slug,
+    }),
   });
 });
 
@@ -127,6 +222,8 @@ router.get('/services/:slug', (req, res) => {
 router.get('/giveaways', (req, res) => {
   const snap = getPublishedSnapshot();
   const giveaways = snap.giveaways || [];
+  const ps = (snap.pageSeo || {}).giveaways || {};
+  const h1 = ps.h1 || '🎁 Розыгрыши';
 
   // Attach entry counts (live from DB)
   const withCounts = giveaways.map((g) => {
@@ -138,6 +235,8 @@ router.get('/giveaways', (req, res) => {
     ...baseLocals(snap),
     page: 'giveaways',
     giveaways: withCounts,
+    pageH1: h1,
+    seo: seoFor(snap, req, { pageKey: 'giveaways', defaultTitle: 'Розыгрыши', path: '/giveaways' }),
   });
 });
 
@@ -148,6 +247,7 @@ router.get('/giveaways/:slug', (req, res) => {
     return res.status(404).render('public/404', {
       ...baseLocals(snap),
       page: 'giveaways',
+      seo: seoFor(snap, req, { pageKey: 'giveaways', defaultTitle: 'Страница не найдена', noindex: true }),
     });
   }
 
@@ -170,6 +270,13 @@ router.get('/giveaways/:slug', (req, res) => {
     entryCount,
     alreadyJoined,
     justJoined: joined === giveaway.slug,
+    seo: seoFor(snap, req, {
+      pageKey: 'giveaway',
+      defaultTitle: giveaway.title,
+      description: giveaway.description || '',
+      image: giveaway.image_url || '',
+      path: '/giveaways/' + giveaway.slug,
+    }),
   });
 });
 
@@ -191,10 +298,60 @@ router.post('/giveaways/:slug/join', (req, res) => {
 // --- Contacts -----------------------------------------------------------
 router.get('/contacts', (req, res) => {
   const snap = getPublishedSnapshot();
+  const ps = (snap.pageSeo || {}).contacts || {};
+  const h1 = ps.h1 || 'Контакты';
   res.render('public/contacts', {
     ...baseLocals(snap),
     page: 'contacts',
+    pageH1: h1,
+    seo: seoFor(snap, req, { pageKey: 'contacts', defaultTitle: h1, path: '/contacts' }),
   });
+});
+
+// --- robots.txt & sitemap.xml ------------------------------------------
+function escapeXml(str) {
+  return String(str || '')
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+}
+
+router.get('/robots.txt', (req, res) => {
+  const snap = getPublishedSnapshot();
+  const st = snap.settings || {};
+  res.type('text/plain');
+
+  // Custom robots.txt overrides everything if provided.
+  if (String(st.seo_robots_txt || '').trim()) {
+    return res.send(st.seo_robots_txt);
+  }
+
+  const base = baseUrl(snap, req);
+  if (String(st.seo_noindex) === '1') {
+    return res.send('User-agent: *\nDisallow: /\n');
+  }
+  res.send(`User-agent: *\nAllow: /\n\nSitemap: ${base}/sitemap.xml\n`);
+});
+
+router.get('/sitemap.xml', (req, res) => {
+  const snap = getPublishedSnapshot();
+  const base = baseUrl(snap, req);
+  const urls = [];
+  const add = (path, priority, changefreq) => urls.push({ loc: base + path, priority, changefreq });
+
+  add('/', '1.0', 'daily');
+  add('/services', '0.8', 'weekly');
+  (snap.services || []).forEach((s) => add('/services/' + s.slug, '0.7', 'weekly'));
+  add('/giveaways', '0.7', 'weekly');
+  (snap.giveaways || []).forEach((g) => add('/giveaways/' + g.slug, '0.6', 'weekly'));
+  add('/articles', '0.7', 'weekly');
+  (snap.articles || []).forEach((a) => add('/articles/' + a.slug, '0.6', 'monthly'));
+  add('/contacts', '0.4', 'monthly');
+
+  const body = urls
+    .map((u) => `  <url><loc>${escapeXml(u.loc)}</loc><changefreq>${u.changefreq}</changefreq><priority>${u.priority}</priority></url>`)
+    .join('\n');
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${body}\n</urlset>\n`;
+  res.type('application/xml').send(xml);
 });
 
 module.exports = router;

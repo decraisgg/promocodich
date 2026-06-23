@@ -64,6 +64,7 @@ app.use((req, res) => {
     categories: [],
     popups: [],
     page: '',
+    seo: { title: 'Страница не найдена', noindex: true },
   });
 });
 

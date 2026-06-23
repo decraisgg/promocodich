@@ -1,10 +1,43 @@
-<!DOCTYPE html>
+<%
+  // Resolve SEO with safe fallbacks so views that don't pass `seo` still render.
+  var __seo  = (typeof seo !== 'undefined' && seo) ? seo : {};
+  var __title = __seo.title || (typeof pageTitle !== 'undefined' ? pageTitle : (site.site_title || 'ПРОМОКОДЫЧ'));
+  var __desc  = __seo.description || site.seo_default_description || site.tagline || '';
+  var __kw    = __seo.keywords || site.seo_default_keywords || '';
+  var __canon = __seo.canonical || '';
+  var __ogimg = __seo.ogImageAbs || '';
+  var __ogtype = __seo.ogType || 'website';
+  var __noindex = !!__seo.noindex;
+  var __siteName = __seo.siteName || site.site_title || 'ПРОМОКОДЫЧ';
+  var __yav = (__seo.yandexVerification || site.seo_yandex_verification || '');
+  var __gv  = (__seo.googleVerification || site.seo_google_verification || '');
+%><!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><%= typeof pageTitle !== 'undefined' ? pageTitle : (site.site_title || 'ПРОМОКОДЫЧ') %></title>
-  <meta name="description" content="<%= site.tagline || 'Промокоды на цифровые сервисы' %>">
+  <title><%= __title %></title>
+  <% if (__desc) { %><meta name="description" content="<%= __desc %>"><% } %>
+  <% if (__kw) { %><meta name="keywords" content="<%= __kw %>"><% } %>
+  <meta name="robots" content="<%= __noindex ? 'noindex, nofollow' : 'index, follow' %>">
+  <% if (__canon) { %><link rel="canonical" href="<%= __canon %>"><% } %>
+  <% if (__yav) { %><meta name="yandex-verification" content="<%= __yav %>"><% } %>
+  <% if (__gv)  { %><meta name="google-site-verification" content="<%= __gv %>"><% } %>
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="<%= __ogtype %>">
+  <meta property="og:site_name" content="<%= __siteName %>">
+  <meta property="og:title" content="<%= __title %>">
+  <% if (__desc) { %><meta property="og:description" content="<%= __desc %>"><% } %>
+  <% if (__canon) { %><meta property="og:url" content="<%= __canon %>"><% } %>
+  <% if (__ogimg) { %><meta property="og:image" content="<%= __ogimg %>"><% } %>
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="<%= __ogimg ? 'summary_large_image' : 'summary' %>">
+  <meta name="twitter:title" content="<%= __title %>">
+  <% if (__desc) { %><meta name="twitter:description" content="<%= __desc %>"><% } %>
+  <% if (__ogimg) { %><meta name="twitter:image" content="<%= __ogimg %>"><% } %>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/css/site.css">
@@ -26,7 +59,7 @@
           <% } %>
           <span class="brand-name"><%= site.site_title || 'ПРОМОКОДЫЧ' %></span>
         </a>
-        <nav class="main-nav">
+        <nav class="main-nav" id="mainNav">
           <a href="/" class="<%= page === 'home' ? 'active' : '' %>">Главная</a>
           <a href="/#promocodes">Промокоды</a>
           <% if ((services || []).length) { %>
@@ -49,11 +82,16 @@
             </div>
           </div>
           <a href="/giveaways" class="<%= page === 'giveaways' ? 'active' : '' %> nav-giveaways">
-            <span class="nav-giveaways-icon"><%= site.giveaways_icon || '🎁' %></span> Розыгрыши
+            <% if (site.giveaways_icon_image) { %>
+              <img class="nav-giveaways-img" src="<%= site.giveaways_icon_image %>" alt="">
+            <% } else { %>
+              <span class="nav-giveaways-icon"><%= site.giveaways_icon || '🎁' %></span>
+            <% } %>
+            Розыгрыши
           </a>
           <a href="/contacts" class="<%= page === 'contacts' ? 'active' : '' %>">Контакты</a>
         </nav>
-        <button class="nav-toggle" id="navToggle" aria-label="Меню">☰</button>
+        <button class="nav-toggle" id="navToggle" aria-label="Меню" aria-expanded="false">☰</button>
       </div>
     </header>
   </div>

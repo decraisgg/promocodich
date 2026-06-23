@@ -46,6 +46,12 @@ function buildSnapshot() {
     return { ...g, conditions };
   });
 
+  // Per-page SEO keyed by page id for quick lookup on the public site.
+  const pageSeo = {};
+  for (const row of db.prepare('SELECT * FROM page_seo').all()) {
+    pageSeo[row.page] = row;
+  }
+
   return {
     settings,
     services,
@@ -54,6 +60,7 @@ function buildSnapshot() {
     articles,
     popups,
     giveaways,
+    pageSeo,
     categories: CATEGORIES,
     publishedAt: new Date().toISOString(),
   };

@@ -1,0 +1,145 @@
+<%- include('partials/admin-header') %>
+
+<div class="page-head">
+  <h1>SEO</h1>
+  <p class="page-sub">Мета-теги, заголовки разделов, robots.txt, sitemap.xml и верификация поисковиков.</p>
+</div>
+
+<div class="seo-links card">
+  <b>Служебные файлы:</b>
+  <a href="/robots.txt" target="_blank">/robots.txt ↗</a>
+  <a href="/sitemap.xml" target="_blank">/sitemap.xml ↗</a>
+  <span class="field-hint">Открываются на публичном сайте после публикации изменений.</span>
+</div>
+
+<form method="post" action="/admin/seo" class="form">
+
+  <!-- ОБЩИЕ SEO -->
+  <div class="card">
+    <h3>Общие SEO-настройки</h3>
+    <div class="form-grid">
+      <div class="field">
+        <label>Домен сайта (для canonical и sitemap)</label>
+        <input type="text" name="seo_canonical_host" class="input" value="<%= seoValues.seo_canonical_host %>" placeholder="https://promocodich.ru">
+        <span class="field-hint">Полный адрес с https://. Без него canonical/sitemap строятся по текущему домену запроса.</span>
+      </div>
+      <div class="field">
+        <label>Суффикс заголовков (Title)</label>
+        <input type="text" name="seo_title_suffix" class="input" value="<%= seoValues.seo_title_suffix %>" placeholder=" — ПРОМОКОДЫЧ">
+        <span class="field-hint">Добавляется к заголовкам страниц, например: «Playerok — ПРОМОКОДЫЧ».</span>
+      </div>
+      <div class="field field--full">
+        <label>Мета-описание по умолчанию (description)</label>
+        <textarea name="seo_default_description" class="input" rows="2"><%= seoValues.seo_default_description %></textarea>
+      </div>
+      <div class="field field--full">
+        <label>Ключевые слова по умолчанию (keywords)</label>
+        <input type="text" name="seo_default_keywords" class="input" value="<%= seoValues.seo_default_keywords %>" placeholder="промокоды, бонусы, скидки">
+      </div>
+
+      <%- include('partials/image-field', { name: 'seo_og_image', value: seoValues.seo_og_image, label: 'Картинка для соцсетей по умолчанию (Open Graph)' }) %>
+
+      <div class="field">
+        <label>Yandex Webmaster — код подтверждения</label>
+        <input type="text" name="seo_yandex_verification" class="input" value="<%= seoValues.seo_yandex_verification %>" placeholder="напр. a1b2c3d4e5f6">
+        <span class="field-hint">Только значение content из мета-тега yandex-verification.</span>
+      </div>
+      <div class="field">
+        <label>Google Search Console — код подтверждения</label>
+        <input type="text" name="seo_google_verification" class="input" value="<%= seoValues.seo_google_verification %>" placeholder="напр. ABcd1234...">
+        <span class="field-hint">Только значение content из мета-тега google-site-verification.</span>
+      </div>
+
+      <div class="field field--switch">
+        <label class="switch">
+          <input type="checkbox" name="seo_noindex" <%= seoValues.seo_noindex ? 'checked' : '' %>>
+          <span class="slider"></span>
+        </label>
+        <span>Закрыть весь сайт от индексации (noindex + Disallow в robots.txt)</span>
+      </div>
+
+      <div class="field field--full">
+        <label>Свой robots.txt (необязательно)</label>
+        <textarea name="seo_robots_txt" class="input mono" rows="5" placeholder="Оставьте пустым для автоматического robots.txt"><%= seoValues.seo_robots_txt %></textarea>
+        <span class="field-hint">Если заполнено — отдаётся как есть и переопределяет автоматический robots.txt.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ЗАГОЛОВКИ РАЗДЕЛОВ ГЛАВНОЙ -->
+  <div class="card">
+    <h3>Заголовки разделов главной страницы</h3>
+    <div class="form-grid">
+      <div class="field">
+        <label>Промокоды — заголовок</label>
+        <input type="text" name="sec_promocodes_title" class="input" value="<%= sectionValues.sec_promocodes_title %>">
+      </div>
+      <div class="field">
+        <label>Промокоды — подзаголовок</label>
+        <input type="text" name="sec_promocodes_sub" class="input" value="<%= sectionValues.sec_promocodes_sub %>">
+      </div>
+      <div class="field">
+        <label>Сайты — заголовок</label>
+        <input type="text" name="sec_sites_title" class="input" value="<%= sectionValues.sec_sites_title %>">
+      </div>
+      <div class="field">
+        <label>Статьи — заголовок</label>
+        <input type="text" name="sec_articles_title" class="input" value="<%= sectionValues.sec_articles_title %>">
+      </div>
+    </div>
+  </div>
+
+  <!-- SEO ОТДЕЛЬНЫХ СТРАНИЦ -->
+  <div class="card">
+    <h3>SEO и заголовки страниц</h3>
+    <p class="hint">Для каждой страницы можно задать свой Title, мета-описание, ключевые слова, заголовок H1 и закрыть от индексации. Пустые поля заполняются значениями по умолчанию.</p>
+
+    <% pageSeoList.forEach(function(p){ %>
+      <div class="seo-page-block">
+        <div class="seo-page-title"><%= p.label %></div>
+        <div class="form-grid">
+          <div class="field">
+            <label>Title (заголовок вкладки)</label>
+            <input type="text" name="<%= p.page %>_title" class="input" value="<%= p.data.title || '' %>" placeholder="по умолчанию">
+          </div>
+          <% if (p.hasH1) { %>
+            <div class="field">
+              <label>Заголовок H1 на странице</label>
+              <input type="text" name="<%= p.page %>_h1" class="input" value="<%= p.data.h1 || '' %>">
+            </div>
+          <% } else { %>
+            <div class="field">
+              <label>Ключевые слова (keywords)</label>
+              <input type="text" name="<%= p.page %>_keywords" class="input" value="<%= p.data.keywords || '' %>" placeholder="по умолчанию">
+            </div>
+          <% } %>
+          <div class="field field--full">
+            <label>Мета-описание (description)</label>
+            <textarea name="<%= p.page %>_description" class="input" rows="2" placeholder="по умолчанию"><%= p.data.description || '' %></textarea>
+          </div>
+          <% if (p.hasH1) { %>
+            <div class="field field--full">
+              <label>Ключевые слова (keywords)</label>
+              <input type="text" name="<%= p.page %>_keywords" class="input" value="<%= p.data.keywords || '' %>" placeholder="по умолчанию">
+            </div>
+          <% } %>
+          <div class="field">
+            <label>OG-картинка (ссылка, необязательно)</label>
+            <input type="text" name="<%= p.page %>_og_image" class="input" value="<%= p.data.og_image || '' %>" placeholder="/uploads/...">
+          </div>
+          <div class="field field--switch">
+            <label class="switch">
+              <input type="checkbox" name="<%= p.page %>_noindex" <%= String(p.data.noindex) === '1' ? 'checked' : '' %>>
+              <span class="slider"></span>
+            </label>
+            <span>Закрыть страницу от индексации</span>
+          </div>
+        </div>
+      </div>
+    <% }); %>
+  </div>
+
+  <div class="form-actions"><button class="btn btn-primary" type="submit">Сохранить SEO-настройки</button></div>
+</form>
+
+<%- include('partials/admin-footer') %>
