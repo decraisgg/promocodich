@@ -153,6 +153,16 @@ CREATE TABLE IF NOT EXISTS rating_categories (
   title       TEXT    DEFAULT '',
   sort_order  INTEGER NOT NULL DEFAULT 0
 );
+
+CREATE TABLE IF NOT EXISTS analytics_events (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  type        TEXT    NOT NULL,
+  label       TEXT    DEFAULT '',
+  path        TEXT    DEFAULT '',
+  created_at  TEXT    DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_analytics_type ON analytics_events(type);
+CREATE INDEX IF NOT EXISTS idx_analytics_created ON analytics_events(created_at);
 `);
 
 // Migration: add service_id to existing tables if column is missing
@@ -300,6 +310,10 @@ function _ensureDefaults() {
     // Icon next to "Отзывы о проекте" on rating pages
     reviews_icon: '★',
     reviews_icon_image: '',
+
+    // Web analytics counters (Метрика)
+    metrika_yandex_id: '',
+    metrika_google_id: '',
   };
   for (const [k, v] of Object.entries(defaults)) {
     if (getSettingStmt.get(k) === undefined) setSetting(k, v);

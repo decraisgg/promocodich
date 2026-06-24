@@ -27,7 +27,7 @@
           <% } %>
         </div>
         <% if (item.site_link) { %>
-          <a class="rating-go" href="<%= item.site_link %>" target="_blank" rel="nofollow noopener"><%= item.button_text || 'Перейти на сайт' %></a>
+          <a class="rating-go" href="<%= item.site_link %>" target="_blank" rel="nofollow noopener" data-track="Рейтинг-переход: <%= item.name %>"><%= item.button_text || 'Перейти на сайт' %></a>
         <% } %>
         <div class="rating-stars rating-stars--lg">
           <span class="stars">
@@ -67,7 +67,7 @@
             <button class="promo-code-copy" type="button">Копировать</button>
           </div>
         <% } %>
-        <% if (item.site_link) { %><a class="rating-bonus-btn" href="<%= item.site_link %>" target="_blank" rel="nofollow noopener">Открыть</a><% } %>
+        <% if (item.site_link) { %><a class="rating-bonus-btn" href="<%= item.site_link %>" target="_blank" rel="nofollow noopener" data-track="Рейтинг-бонус: <%= item.name %>">Открыть</a><% } %>
       </div>
     <% } %>
 
@@ -112,6 +112,9 @@
       <% if (justReviewed) { %>
         <div class="review-thanks">Спасибо! Ваш отзыв опубликован.</div>
       <% } %>
+      <% if (typeof reviewError !== 'undefined' && reviewError) { %>
+        <div class="review-error">Неверная капча. Попробуйте ещё раз.</div>
+      <% } %>
 
       <form class="review-form" method="post" action="/rating/<%= item.slug %>/review#reviews">
         <div class="review-form-head">
@@ -126,6 +129,13 @@
         </div>
         <input type="text" name="author" class="review-input" maxlength="60" placeholder="Ваше имя">
         <textarea name="text" class="review-input" rows="3" maxlength="2000" placeholder="Поделитесь впечатлением о проекте…" required></textarea>
+        <div class="captcha-row">
+          <div class="captcha-box">
+            <img class="captcha-img" id="captchaImg" src="/captcha.svg" alt="Капча" width="150" height="54">
+            <button type="button" class="captcha-refresh" id="captchaRefresh" title="Обновить капчу" aria-label="Обновить капчу">⟳</button>
+          </div>
+          <input type="text" name="captcha" class="review-input captcha-input" maxlength="4" placeholder="Капча" autocomplete="off" required>
+        </div>
         <button type="submit" class="btn-review-submit">Оставить отзыв</button>
       </form>
 
@@ -164,6 +174,11 @@
   });
   wrap.addEventListener('mouseleave', function(){ paint(parseInt(input.value,10)); });
   paint(parseInt(input.value,10));
+})();
+(function(){
+  var btn = document.getElementById('captchaRefresh');
+  var img = document.getElementById('captchaImg');
+  if (btn && img) btn.addEventListener('click', function(){ img.src = '/captcha.svg?ts=' + Date.now(); });
 })();
 </script>
 

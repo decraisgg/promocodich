@@ -46,6 +46,25 @@
   <% } else { %>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23ff2d55'/><text x='50' y='72' font-size='66' text-anchor='middle' fill='white' font-family='Arial' font-weight='bold'>%25</text></svg>">
   <% } %>
+
+  <% if (site.metrika_yandex_id) { %>
+  <!-- Yandex.Metrika -->
+  <script type="text/javascript">
+    (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};m[i].l=1*new Date();for(var j=0;j<document.scripts.length;j++){if(document.scripts[j].src===r){return;}}k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})(window,document,"script","https://mc.yandex.ru/metrika/tag.js","ym");
+    ym(<%= site.metrika_yandex_id %>, "init", { clickmap:true, trackLinks:true, accurateTrackBounce:true });
+  </script>
+  <noscript><div><img src="https://mc.yandex.ru/watch/<%= site.metrika_yandex_id %>" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+  <% } %>
+  <% if (site.metrika_google_id) { %>
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=<%= site.metrika_google_id %>"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', '<%= site.metrika_google_id %>');
+  </script>
+  <% } %>
 </head>
 <%
   // Background CSS variables (configurable in admin Settings)
@@ -81,17 +100,17 @@
         <nav class="main-nav" id="mainNav">
           <% __navOrder.forEach(function (k) { var it = __navItems[k]; %>
             <% if (k === 'rating') { %>
-              <a href="<%= it.href %>" class="<%= it.active ? 'active' : '' %> nav-rating">
+              <a href="<%= it.href %>" class="<%= it.active ? 'active' : '' %> nav-rating" data-track="Меню: <%= it.label %>">
                 <span class="nav-rating-inner"><%= it.label %><% if (String(site.nav_rating_icon_enabled) === '1') { %><% if (site.nav_rating_icon_image) { %><img class="nav-rating-star-img" src="<%= site.nav_rating_icon_image %>" alt=""><% } else { %><span class="nav-rating-star"><%= site.nav_rating_icon || '★' %></span><% } %><% } %></span>
               </a>
             <% } else { %>
-              <a href="<%= it.href %>" class="<%= it.active ? 'active' : '' %>"><%= it.label %></a>
+              <a href="<%= it.href %>" class="<%= it.active ? 'active' : '' %>" data-track="Меню: <%= it.label %>"><%= it.label %></a>
             <% } %>
           <% }); %>
         </nav>
         <% if (String(site.gift_enabled) === '1') { %>
           <div class="header-gift" id="giftWidget">
-            <button class="gift-fab" id="giftFab" aria-label="Подарок" aria-expanded="false">
+            <button class="gift-fab" id="giftFab" aria-label="Подарок" aria-expanded="false" data-track="Подарок (иконка)">
               <% if (site.gift_icon_image) { %>
                 <img src="<%= site.gift_icon_image %>" alt="Подарок">
               <% } else { %>
@@ -112,7 +131,7 @@
                   </div>
                 <% } %>
                 <% if (site.gift_button_text) { %>
-                  <a class="gift-panel-btn" href="<%= site.gift_button_link || '#' %>" target="_blank" rel="nofollow noopener"><%= site.gift_button_text %></a>
+                  <a class="gift-panel-btn" href="<%= site.gift_button_link || '#' %>" target="_blank" rel="nofollow noopener" data-track="Подарок (кнопка)"><%= site.gift_button_text %></a>
                 <% } %>
               </div>
             </div>

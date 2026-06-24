@@ -815,6 +815,43 @@ router.post('/gift', (req, res) => {
   res.redirect('/admin/gift');
 });
 
+// --- Метрика / аналитика ------------------------------------------------
+router.get('/metrika', (req, res) => {
+  const tab = req.query.tab === 'clicks' ? 'clicks' : 'overview';
+  const one = (sql) => db.prepare(sql).get().c;
+  const stats = {
+    totalViews: one("SELECT COUNT(*) c FROM analytics_events WHERE type='pageview'"),
+    todayViews: one("SELECT COUNT(*) c FROM analytics_events WHERE type='pageview' AND date(created_at)=date('now')"),
+    weekViews: one("SELECT COUNT(*) c FROM analytics_events WHERE type='pageview' AND created_at >= datetime('now','-7 days')"),
+    totalClicks: one("SELECT COUNT(*) c FROM analytics_events WHERE type='click'"),
+  };
+  const topPages = db.prepare("SELECT path, COUNT(*) n FROM analytics_events WHERE type='pageview' GROUP BY path ORDER BY n DESC LIMIT 30").all();
+  const clicks = db.prepare("SELECT label, COUNT(*) n FROM analytics_events WHERE type='click' AND label <> '' GROUP BY label ORDER BY n DESC LIMIT 200").all();
+  renderAdmin(req, res, 'admin/metrika', {
+    active: 'metrika',
+    tab,
+    values: {
+      metrika_yandex_id: getSetting('metrika_yandex_id', ''),
+      metrika_google_id: getSetting('metrika_google_id', ''),
+    },
+    stats, topPages, clicks,
+  });
+});
+
+router.post('/metrika', (req, res) => {
+  setSetting('metrika_yandex_id', String(req.body.metrika_yandex_id || '').replace(/[^0-9]/g, '').slice(0, 20));
+  setSetting('metrika_google_id', String(req.body.metrika_google_id || '').trim().replace(/[^A-Za-z0-9_-]/g, '').slice(0, 40));
+  markDirty();
+  flash(req, 'success', 'Коды метрики сохранены. Нажмите «Обновить сайт», чтобы они заработали на сайте.');
+  res.redirect('/admin/metrika');
+});
+
+router.post('/metrika/reset', (req, res) => {
+  db.prepare('DELETE FROM analytics_events').run();
+  flash(req, 'success', 'Статистика сброшена.');
+  res.redirect('/admin/metrika');
+});
+
 // --- SEO ----------------------------------------------------------------
 const SEO_TEXT_KEYS = [
   'seo_title_suffix', 'seo_default_description', 'seo_default_keywords',

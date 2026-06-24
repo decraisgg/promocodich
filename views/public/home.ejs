@@ -74,7 +74,7 @@
                   <button class="promo-code-copy" type="button">Копировать</button>
                 </div>
               <% } %>
-              <a class="promo-go" href="<%= p.link || '#' %>" target="_blank" rel="nofollow noopener">Получить бонус</a>
+              <a class="promo-go" href="<%= p.link || '#' %>" target="_blank" rel="nofollow noopener" data-track="Промокод: <%= p.service_name || ('#'+p.id) %>">Получить бонус</a>
             </article>
           <% }); %>
         </div>
@@ -92,7 +92,7 @@
         </div>
         <div class="sites-tiles">
           <% services.forEach(function(svc){ var tile = svc.tile_image || svc.image_url; %>
-            <a class="site-tile" href="/services/<%= svc.slug %>" style="<%= svc.color ? '--svc-color:' + svc.color : '' %>">
+            <a class="site-tile" href="/services/<%= svc.slug %>" style="<%= svc.color ? '--svc-color:' + svc.color : '' %>" data-track="Сайт: <%= svc.name %>">
               <div class="site-tile-logo">
                 <% if (tile) { %>
                   <img src="<%= tile %>" alt="<%= svc.name %>">

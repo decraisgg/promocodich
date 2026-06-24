@@ -1,6 +1,7 @@
 <div class="banner banner--<%= variant %><%= locals.b.image_url ? '' : ' banner--noimg' %>">
   <a class="banner-bg" href="<%= locals.b.image_link || '#' %>" target="_blank" rel="nofollow noopener"
      <% if (locals.b.image_url) { %>style="background-image:url('<%= locals.b.image_url %>')"<% } %>
+     data-track="Баннер: <%= locals.b.title || ('#' + locals.b.id) %>"
      aria-label="<%= locals.b.title || 'Перейти' %>"></a>
   <% if (locals.b.text_enabled) { %>
     <div class="banner-content">
@@ -8,7 +9,7 @@
       <% if (locals.b.subtitle) { %><p class="banner-subtitle"><%= locals.b.subtitle %></p><% } %>
       <% if (locals.b.button_enabled && locals.b.button_text) { %>
         <a class="banner-btn" href="<%= locals.b.button_link || locals.b.image_link || '#' %>"
-           target="_blank" rel="nofollow noopener"><%= locals.b.button_text %></a>
+           target="_blank" rel="nofollow noopener" data-track="Баннер-кнопка: <%= locals.b.title || ('#' + locals.b.id) %>"><%= locals.b.button_text %></a>
       <% } %>
     </div>
   <% } %>

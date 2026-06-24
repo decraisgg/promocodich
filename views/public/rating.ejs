@@ -25,7 +25,7 @@
     <div class="rating-list">
       <% ratings.forEach(function(item){
            var full = Math.round(item.displayRating || 0); %>
-        <a class="rating-row<%= item.featured ? ' is-featured' : '' %>" href="/rating/<%= item.slug %>">
+        <a class="rating-row<%= item.featured ? ' is-featured' : '' %>" href="/rating/<%= item.slug %>" data-track="Рейтинг: <%= item.name %>">
           <span class="rating-mark"><%= item.featured ? '✓' : '!' %></span>
           <div class="rating-logo">
             <% if (item.image_url) { %>

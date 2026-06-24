@@ -37,7 +37,7 @@
           <% if (p.text) { %><p class="popup-text"><%= p.text %></p><% } %>
           <% if (p.code) { %><div class="popup-code"><%= p.code %></div><% } %>
           <% if (p.button_text) { %>
-            <a class="popup-btn" href="<%= p.button_link || '#' %>" target="_blank" rel="nofollow noopener"><%= p.button_text %></a>
+            <a class="popup-btn" href="<%= p.button_link || '#' %>" target="_blank" rel="nofollow noopener" data-track="Попап: <%= p.code || p.button_text %>"><%= p.button_text %></a>
           <% } %>
         </div>
       </div>

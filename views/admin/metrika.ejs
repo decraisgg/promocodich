@@ -1,0 +1,82 @@
+<%- include('partials/admin-header') %>
+
+<div class="page-head">
+  <h1>Метрика</h1>
+  <p class="page-sub">Статистика сайта, клики и подключение Яндекс.Метрики и Google Analytics.</p>
+</div>
+
+<div class="metrika-tabs">
+  <a href="/admin/metrika" class="metrika-tab <%= tab === 'overview' ? 'active' : '' %>">Обзор</a>
+  <a href="/admin/metrika?tab=clicks" class="metrika-tab <%= tab === 'clicks' ? 'active' : '' %>">КЛИКИ</a>
+</div>
+
+<% if (tab === 'overview') { %>
+
+  <div class="stat-grid">
+    <div class="stat-card"><div class="stat-num"><%= stats.totalViews %></div><div class="stat-label">Просмотров всего</div></div>
+    <div class="stat-card"><div class="stat-num"><%= stats.todayViews %></div><div class="stat-label">Сегодня</div></div>
+    <div class="stat-card"><div class="stat-num"><%= stats.weekViews %></div><div class="stat-label">За 7 дней</div></div>
+    <div class="stat-card"><div class="stat-num"><%= stats.totalClicks %></div><div class="stat-label">Кликов всего</div></div>
+  </div>
+
+  <div class="card">
+    <h3>Коды счётчиков</h3>
+    <form method="post" action="/admin/metrika" class="form">
+      <div class="form-grid">
+        <div class="field">
+          <label>Яндекс.Метрика — номер счётчика</label>
+          <input type="text" name="metrika_yandex_id" class="input" value="<%= values.metrika_yandex_id %>" placeholder="например 12345678">
+          <span class="field-hint">Только цифры (ID счётчика). Подключается на всех страницах сайта.</span>
+        </div>
+        <div class="field">
+          <label>Google Analytics — Measurement ID</label>
+          <input type="text" name="metrika_google_id" class="input" value="<%= values.metrika_google_id %>" placeholder="G-XXXXXXXXXX">
+          <span class="field-hint">Идентификатор вида G-XXXXXXXXXX.</span>
+        </div>
+      </div>
+      <div class="form-actions"><button class="btn btn-primary" type="submit">Сохранить коды</button></div>
+      <p class="hint">После сохранения нажмите «⟳ Обновить сайт», чтобы счётчики появились на публичных страницах.</p>
+    </form>
+  </div>
+
+  <div class="card">
+    <h3>Популярные страницы</h3>
+    <% if (!topPages.length) { %>
+      <p class="empty-note">Данных пока нет. Статистика появится после первых заходов на сайт.</p>
+    <% } else { %>
+      <table class="data-table">
+        <thead><tr><th>Страница</th><th>Просмотры</th></tr></thead>
+        <tbody>
+          <% topPages.forEach(function(p){ %>
+            <tr><td><code><%= p.path || '/' %></code></td><td><b><%= p.n %></b></td></tr>
+          <% }); %>
+        </tbody>
+      </table>
+    <% } %>
+  </div>
+
+  <form method="post" action="/admin/metrika/reset" onsubmit="return confirm('Сбросить всю статистику кликов и просмотров? Контент сайта не затрагивается.')">
+    <button class="btn btn-sm btn-danger" type="submit">Сбросить статистику</button>
+  </form>
+
+<% } else { %>
+
+  <div class="card">
+    <h3>Клики по баннерам, кнопкам и разделам</h3>
+    <% if (!clicks.length) { %>
+      <p class="empty-note">Кликов пока не зафиксировано. Данные появятся, когда посетители начнут нажимать на баннеры, кнопки и ссылки.</p>
+    <% } else { %>
+      <table class="data-table">
+        <thead><tr><th>Элемент</th><th>Клики</th></tr></thead>
+        <tbody>
+          <% clicks.forEach(function(c){ %>
+            <tr><td><%= c.label %></td><td><b><%= c.n %></b></td></tr>
+          <% }); %>
+        </tbody>
+      </table>
+    <% } %>
+  </div>
+
+<% } %>
+
+<%- include('partials/admin-footer') %>

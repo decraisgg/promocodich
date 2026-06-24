@@ -3,8 +3,32 @@
 const express = require('express');
 const { db } = require('../db');
 const { getPublishedSnapshot } = require('../publish');
+const { generate: generateCaptcha } = require('../captcha');
 
 const router = express.Router();
+
+// --- Captcha image ------------------------------------------------------
+router.get('/captcha.svg', (req, res) => {
+  const { code, svg } = generateCaptcha();
+  req.session.captcha = code;
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+  res.set('Pragma', 'no-cache');
+  res.type('image/svg+xml').send(svg);
+});
+
+// --- Lightweight self-hosted analytics ----------------------------------
+const insertEventStmt = db.prepare('INSERT INTO analytics_events (type, label, path) VALUES (?, ?, ?)');
+router.post('/api/track', (req, res) => {
+  try {
+    const type = String(req.body && req.body.type || '');
+    if (type === 'pageview' || type === 'click') {
+      const label = String((req.body && req.body.label) || '').slice(0, 160);
+      const path = String((req.body && req.body.path) || '').slice(0, 200);
+      insertEventStmt.run(type, label, path);
+    }
+  } catch (_) { /* never block the page on tracking */ }
+  res.status(204).end();
+});
 
 // Shared locals for every public page (header/footer/popups).
 function baseLocals(snapshot) {
@@ -352,6 +376,8 @@ router.get('/rating/:slug', (req, res) => {
 
   const justReviewed = req.session._reviewAddedFor === item.slug;
   delete req.session._reviewAddedFor;
+  const reviewError = req.session._reviewError === item.slug;
+  delete req.session._reviewError;
 
   const defaultTitle = 'Обзор ' + item.name + ' — плюсы, минусы и отзывы';
 
@@ -364,6 +390,7 @@ router.get('/rating/:slug', (req, res) => {
     reviewCount,
     displayRating,
     justReviewed,
+    reviewError,
     seo: seoFor(snap, req, {
       pageKey: 'rating-item',
       title: item.meta_title || '',
@@ -380,6 +407,15 @@ router.post('/rating/:slug/review', (req, res) => {
   const snap = getPublishedSnapshot();
   const item = (snap.ratings || []).find((r) => r.slug === req.params.slug);
   if (!item) return res.redirect('/rating');
+
+  // Validate the captcha (case-insensitive, one-time use).
+  const expected = req.session.captcha || '';
+  const given = String(req.body.captcha || '').trim().toUpperCase();
+  req.session.captcha = null;
+  if (!expected || given !== expected) {
+    req.session._reviewError = item.slug;
+    return res.redirect('/rating/' + item.slug + '#reviews');
+  }
 
   const author = String(req.body.author || '').trim().slice(0, 60) || 'Аноним';
   const text = String(req.body.text || '').trim().slice(0, 2000);

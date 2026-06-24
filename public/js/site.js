@@ -1,6 +1,23 @@
 (function () {
   'use strict';
 
+  // ---- Self-hosted analytics: page views + tracked clicks ----
+  function track(type, label) {
+    var data = JSON.stringify({ type: type, label: label || '', path: location.pathname });
+    try {
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon('/api/track', new Blob([data], { type: 'application/json' }));
+        return;
+      }
+    } catch (e) { /* fall through */ }
+    try { fetch('/api/track', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: data, keepalive: true }); } catch (e) {}
+  }
+  track('pageview', document.title || location.pathname);
+  document.addEventListener('click', function (e) {
+    var el = e.target.closest ? e.target.closest('[data-track]') : null;
+    if (el) track('click', el.getAttribute('data-track'));
+  }, true);
+
   // Sticky header shadow on scroll
   var header = document.getElementById('siteHeader');
   function onScroll() {

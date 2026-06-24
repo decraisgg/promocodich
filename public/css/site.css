@@ -669,6 +669,13 @@ img { max-width: 100%; display: block; }
 .btn-review-submit::before { content: "★"; font-size: 15px; }
 .btn-review-submit:hover { filter: brightness(1.07); transform: translateY(-2px); box-shadow: 0 14px 30px rgba(255,45,85,.45); }
 .review-thanks { background: rgba(46,194,106,.12); border: 1px solid #2ec26a; color: #1a9650; padding: 13px 18px; border-radius: 12px; margin-bottom: 14px; font-weight: 700; }
+.review-error { background: #fdecef; border: 1px solid #f6c9d2; color: #b4203a; padding: 13px 18px; border-radius: 12px; margin-bottom: 14px; font-weight: 700; }
+.captcha-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.captcha-box { display: inline-flex; align-items: center; gap: 8px; }
+.captcha-img { border: 1px solid var(--bg-2); border-radius: 10px; display: block; user-select: none; }
+.captcha-refresh { border: 1px solid var(--bg-2); background: var(--bg); border-radius: 10px; width: 42px; height: 42px; font-size: 18px; cursor: pointer; color: var(--muted); transition: .15s; }
+.captcha-refresh:hover { color: var(--accent); border-color: var(--accent); }
+.captcha-input { flex: 1; min-width: 120px; max-width: 220px; text-transform: uppercase; letter-spacing: 4px; font-weight: 800; text-align: center; }
 .review-list { display: flex; flex-direction: column; gap: 12px; }
 .review-item { background: var(--card); border: 1px solid rgba(0,0,0,.06); border-radius: 14px; padding: 16px 18px; box-shadow: var(--shadow); }
 .review-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
