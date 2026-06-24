@@ -23,19 +23,30 @@
     <h3>Коды счётчиков</h3>
     <form method="post" action="/admin/metrika" class="form">
       <div class="form-grid">
+        <div class="field field--full">
+          <label>Полный код Яндекс.Метрики</label>
+          <textarea name="metrika_yandex_code" class="input mono" rows="8" placeholder="Вставьте сюда весь код счётчика Яндекс.Метрики (&lt;script&gt;…&lt;/script&gt;)"><%= values.metrika_yandex_code %></textarea>
+          <span class="field-hint">Вставьте код целиком — он подключается как есть. Имеет приоритет над полем «номер счётчика» ниже.</span>
+        </div>
+        <div class="field field--full">
+          <label>Полный код Google Analytics (необязательно)</label>
+          <textarea name="metrika_google_code" class="input mono" rows="6" placeholder="Вставьте сюда код gtag.js целиком (&lt;script&gt;…&lt;/script&gt;)"><%= values.metrika_google_code %></textarea>
+          <span class="field-hint">Если заполнено — используется вместо ID Google ниже.</span>
+        </div>
+
         <div class="field">
-          <label>Яндекс.Метрика — номер счётчика</label>
+          <label>…или просто ID Яндекс.Метрики</label>
           <input type="text" name="metrika_yandex_id" class="input" value="<%= values.metrika_yandex_id %>" placeholder="например 12345678">
-          <span class="field-hint">Только цифры (ID счётчика). Подключается на всех страницах сайта.</span>
+          <span class="field-hint">Используется, только если поле «полный код» выше пустое.</span>
         </div>
         <div class="field">
-          <label>Google Analytics — Measurement ID</label>
+          <label>…или просто Measurement ID Google</label>
           <input type="text" name="metrika_google_id" class="input" value="<%= values.metrika_google_id %>" placeholder="G-XXXXXXXXXX">
-          <span class="field-hint">Идентификатор вида G-XXXXXXXXXX.</span>
+          <span class="field-hint">Используется, только если поле «полный код» выше пустое.</span>
         </div>
       </div>
       <div class="form-actions"><button class="btn btn-primary" type="submit">Сохранить коды</button></div>
-      <p class="hint">После сохранения нажмите «⟳ Обновить сайт», чтобы счётчики появились на публичных страницах.</p>
+      <p class="hint">Коды применяются на сайте сразу после сохранения — публиковать не нужно. Сама статистика (просмотры/клики) видна в кабинете Яндекс.Метрики / Google, а также во вкладках выше.</p>
     </form>
   </div>
 

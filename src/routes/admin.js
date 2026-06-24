@@ -833,6 +833,8 @@ router.get('/metrika', (req, res) => {
     values: {
       metrika_yandex_id: getSetting('metrika_yandex_id', ''),
       metrika_google_id: getSetting('metrika_google_id', ''),
+      metrika_yandex_code: getSetting('metrika_yandex_code', ''),
+      metrika_google_code: getSetting('metrika_google_code', ''),
     },
     stats, topPages, clicks,
   });
@@ -841,8 +843,10 @@ router.get('/metrika', (req, res) => {
 router.post('/metrika', (req, res) => {
   setSetting('metrika_yandex_id', String(req.body.metrika_yandex_id || '').replace(/[^0-9]/g, '').slice(0, 20));
   setSetting('metrika_google_id', String(req.body.metrika_google_id || '').trim().replace(/[^A-Za-z0-9_-]/g, '').slice(0, 40));
-  markDirty();
-  flash(req, 'success', 'Коды метрики сохранены. Нажмите «Обновить сайт», чтобы они заработали на сайте.');
+  // Full pasted snippets (stored verbatim; admin-only trusted input).
+  setSetting('metrika_yandex_code', String(req.body.metrika_yandex_code || '').slice(0, 20000));
+  setSetting('metrika_google_code', String(req.body.metrika_google_code || '').slice(0, 20000));
+  flash(req, 'success', 'Коды метрики сохранены и сразу применяются на сайте.');
   res.redirect('/admin/metrika');
 });
 

@@ -1,11 +1,19 @@
 'use strict';
 
 const express = require('express');
-const { db } = require('../db');
+const { db, getSetting } = require('../db');
 const { getPublishedSnapshot } = require('../publish');
 const { generate: generateCaptcha } = require('../captcha');
 
 const router = express.Router();
+
+// Analytics / verification codes are read live (not from the published
+// snapshot) so they take effect immediately, without "Обновить сайт".
+const LIVE_SETTING_KEYS = [
+  'metrika_yandex_code', 'metrika_google_code',
+  'metrika_yandex_id', 'metrika_google_id',
+  'seo_yandex_verification', 'seo_google_verification',
+];
 
 // --- Captcha image ------------------------------------------------------
 router.get('/captcha.svg', (req, res) => {
@@ -32,8 +40,11 @@ router.post('/api/track', (req, res) => {
 
 // Shared locals for every public page (header/footer/popups).
 function baseLocals(snapshot) {
+  const site = { ...(snapshot.settings || {}) };
+  // Override analytics/verification with live DB values so they apply at once.
+  for (const k of LIVE_SETTING_KEYS) site[k] = getSetting(k, '');
   return {
-    site: snapshot.settings || {},
+    site,
     categories: snapshot.categories || [],
     services: snapshot.services || [],
     popups: snapshot.popups || [],
