@@ -408,6 +408,7 @@ function serviceFromBody(body) {
     slug: slugify(s(body.slug) || s(body.name)),
     description: s(body.description),
     image_url: s(body.image_url),
+    tile_image: s(body.tile_image),
     hero_image: s(body.hero_image),
     color: s(body.color),
     meta_title: s(body.meta_title),
@@ -420,8 +421,8 @@ function serviceFromBody(body) {
 router.post('/services', (req, res) => {
   const d = serviceFromBody(req.body);
   const slug = uniqueSlugFor('services', d.slug);
-  db.prepare(`INSERT INTO services (slug,name,description,image_url,hero_image,color,meta_title,meta_description,enabled,sort_order)
-    VALUES (@slug,@name,@description,@image_url,@hero_image,@color,@meta_title,@meta_description,@enabled,@sort_order)`).run({ ...d, slug });
+  db.prepare(`INSERT INTO services (slug,name,description,image_url,tile_image,hero_image,color,meta_title,meta_description,enabled,sort_order)
+    VALUES (@slug,@name,@description,@image_url,@tile_image,@hero_image,@color,@meta_title,@meta_description,@enabled,@sort_order)`).run({ ...d, slug });
   markDirty();
   flash(req, 'success', 'Сервис добавлен.');
   res.redirect('/admin/services');
@@ -434,7 +435,7 @@ router.post('/services/:id', (req, res) => {
   const d = serviceFromBody(req.body);
   const slug = uniqueSlugFor('services', d.slug, Number(id));
   db.prepare(`UPDATE services SET slug=@slug,name=@name,description=@description,image_url=@image_url,
-    hero_image=@hero_image,color=@color,meta_title=@meta_title,meta_description=@meta_description,
+    tile_image=@tile_image,hero_image=@hero_image,color=@color,meta_title=@meta_title,meta_description=@meta_description,
     enabled=@enabled,sort_order=@sort_order WHERE id=@id`).run({ ...d, slug, id });
   markDirty();
   flash(req, 'success', 'Сервис сохранён.');

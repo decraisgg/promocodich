@@ -98,15 +98,17 @@
     <div class="section-head">
       <h2 class="section-title"><span class="ico">★</span> Другие сайты</h2>
     </div>
-    <div class="services-strip">
-      <% services.filter(function(s){ return s.id !== service.id; }).forEach(function(svc){ %>
-        <a class="service-chip" href="/services/<%= svc.slug %>" style="<%= svc.color ? '--svc-color:' + svc.color : '' %>">
-          <% if (svc.image_url) { %>
-            <img src="<%= svc.image_url %>" alt="<%= svc.name %>">
-          <% } else { %>
-            <span class="service-chip-icon"><%= svc.name.slice(0,2).toUpperCase() %></span>
-          <% } %>
-          <span class="service-chip-name"><%= svc.name %></span>
+    <div class="sites-tiles">
+      <% services.filter(function(s){ return s.id !== service.id; }).forEach(function(svc){ var tile = svc.tile_image || svc.image_url; %>
+        <a class="site-tile" href="/services/<%= svc.slug %>" style="<%= svc.color ? '--svc-color:' + svc.color : '' %>">
+          <div class="site-tile-logo">
+            <% if (tile) { %>
+              <img src="<%= tile %>" alt="<%= svc.name %>">
+            <% } else { %>
+              <span class="site-tile-logo-text"><%= svc.name %></span>
+            <% } %>
+          </div>
+          <div class="site-tile-name"><%= svc.name %></div>
         </a>
       <% }); %>
     </div>

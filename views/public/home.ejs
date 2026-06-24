@@ -91,11 +91,11 @@
           <a class="section-link" href="/services">Все сайты →</a>
         </div>
         <div class="sites-tiles">
-          <% services.forEach(function(svc){ %>
+          <% services.forEach(function(svc){ var tile = svc.tile_image || svc.image_url; %>
             <a class="site-tile" href="/services/<%= svc.slug %>" style="<%= svc.color ? '--svc-color:' + svc.color : '' %>">
               <div class="site-tile-logo">
-                <% if (svc.image_url) { %>
-                  <img src="<%= svc.image_url %>" alt="<%= svc.name %>">
+                <% if (tile) { %>
+                  <img src="<%= tile %>" alt="<%= svc.name %>">
                 <% } else { %>
                   <span class="site-tile-logo-text"><%= svc.name %></span>
                 <% } %>

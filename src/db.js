@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS services (
   name        TEXT    DEFAULT '',
   description TEXT    DEFAULT '',
   image_url   TEXT    DEFAULT '',
+  tile_image  TEXT    DEFAULT '',
   hero_image  TEXT    DEFAULT '',
   color       TEXT    DEFAULT '',
   meta_title       TEXT DEFAULT '',
@@ -163,6 +164,7 @@ const addColIfMissing = (table, col, def) => {
 addColIfMissing('banners', 'service_id', 'INTEGER REFERENCES services(id) ON DELETE SET NULL');
 addColIfMissing('promocodes', 'service_id', 'INTEGER REFERENCES services(id) ON DELETE SET NULL');
 addColIfMissing('services', 'hero_image', "TEXT DEFAULT ''");
+addColIfMissing('services', 'tile_image', "TEXT DEFAULT ''");
 addColIfMissing('services', 'meta_title', "TEXT DEFAULT ''");
 addColIfMissing('services', 'meta_description', "TEXT DEFAULT ''");
 addColIfMissing('articles', 'meta_title', "TEXT DEFAULT ''");

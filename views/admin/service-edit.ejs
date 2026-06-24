@@ -23,7 +23,15 @@
       <textarea name="description" class="input" rows="3"><%= service.description %></textarea>
     </div>
 
-    <%- include('partials/image-field', { name: 'image_url', value: service.image_url, label: 'Логотип / картинка сервиса' }) %>
+    <%- include('partials/image-field', { name: 'image_url', value: service.image_url, label: 'Логотип / иконка (на странице сайта)' }) %>
+    <div class="field field--full field-hint-standalone">
+      Показывается в шапке страницы сайта (иконка рядом с названием).
+    </div>
+
+    <%- include('partials/image-field', { name: 'tile_image', value: service.tile_image, label: 'Картинка для плитки «Популярные сайты»' }) %>
+    <div class="field field--full field-hint-standalone">
+      Показывается в блоках «Популярные сайты» (главная) и «Другие сайты». Если пусто — используется логотип выше.
+    </div>
 
     <%- include('partials/image-field', { name: 'hero_image', value: service.hero_image, label: 'Баннер шапки сервиса (фон под названием и иконкой)' }) %>
     <div class="field field--full field-hint-standalone">
