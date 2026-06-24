@@ -6,15 +6,16 @@ const crypto = require('crypto');
 const express = require('express');
 const multer = require('multer');
 
-const { db, getSetting, setSetting, markDirty, CATEGORIES, CATEGORY_TITLES, RATING_CATEGORIES } = require('../db');
+const { db, getSetting, setSetting, markDirty, CATEGORIES, CATEGORY_TITLES, getRatingCategories } = require('../db');
 const { publish } = require('../publish');
 const { sanitizeBlocks } = require('../sanitize');
 const { checkPassword, requireAuth, requireAuthApi } = require('../auth');
+const { UPLOADS_DIR } = require('../paths');
 
 const router = express.Router();
 
 // --- Uploads ------------------------------------------------------------
-const UPLOAD_DIR = path.join(__dirname, '..', '..', 'uploads');
+const UPLOAD_DIR = UPLOADS_DIR;
 if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 
 const storage = multer.diskStorage({
@@ -540,8 +541,10 @@ router.post('/giveaways/:id/delete', (req, res) => {
 });
 
 // --- Ratings (Рейтинг сайтов) -------------------------------------------
-const RATING_CAT_SLUGS = RATING_CATEGORIES.map((c) => c.slug);
-function ratingCat(v) { return RATING_CAT_SLUGS.includes(v) ? v : 'cases'; }
+function ratingCat(v) {
+  const slugs = getRatingCategories().map((c) => c.slug);
+  return slugs.includes(v) ? v : (slugs[0] || 'cases');
+}
 function linesToArray(text) {
   return String(text || '').split('\n').map((l) => l.trim()).filter(Boolean).slice(0, 30);
 }
@@ -557,14 +560,15 @@ router.get('/ratings', (req, res) => {
     ...r,
     reviewCount: db.prepare('SELECT COUNT(*) c FROM rating_reviews WHERE rating_id = ?').get(r.id).c,
   }));
-  renderAdmin(req, res, 'admin/ratings', { active: 'ratings', ratings, ratingCategories: RATING_CATEGORIES });
+  renderAdmin(req, res, 'admin/ratings', { active: 'ratings', ratings, ratingCategories: getRatingCategories() });
 });
 
 router.get('/ratings/new', (req, res) => {
+  const cats = getRatingCategories();
   renderAdmin(req, res, 'admin/rating-edit', {
     active: 'ratings',
-    ratingCategories: RATING_CATEGORIES,
-    item: { id: '', slug: '', name: '', image_url: '', hero_image: '', category: 'cases', rating: 0, featured: 0,
+    ratingCategories: cats,
+    item: { id: '', slug: '', name: '', image_url: '', hero_image: '', category: (cats[0] && cats[0].slug) || 'cases', rating: 0, featured: 0,
       site_link: '', button_text: 'Перейти на сайт', bonus_label: '', pros: [], cons: [], blocks: [],
       meta_title: '', meta_description: '', enabled: 1, sort_order: 0 },
     reviews: [],
@@ -582,7 +586,7 @@ router.get('/ratings/:id/edit', (req, res) => {
   const reviews = db.prepare('SELECT * FROM rating_reviews WHERE rating_id = ? ORDER BY datetime(created_at) DESC, id DESC').all(row.id);
   renderAdmin(req, res, 'admin/rating-edit', {
     active: 'ratings',
-    ratingCategories: RATING_CATEGORIES,
+    ratingCategories: getRatingCategories(),
     item: { ...row, blocks, pros, cons },
     reviews,
     isNew: false,
@@ -649,6 +653,61 @@ router.post('/ratings/:id/reviews/:rid/delete', (req, res) => {
   db.prepare('DELETE FROM rating_reviews WHERE id = ? AND rating_id = ?').run(req.params.rid, req.params.id);
   flash(req, 'success', 'Отзыв удалён.');
   res.redirect('/admin/ratings/' + req.params.id + '/edit');
+});
+
+// --- Rating categories (add / edit / delete) ----------------------------
+router.get('/rating-categories', (req, res) => {
+  const categories = db.prepare('SELECT * FROM rating_categories ORDER BY sort_order, id').all().map((c) => ({
+    ...c,
+    usedBy: db.prepare('SELECT COUNT(*) n FROM ratings WHERE category = ?').get(c.slug).n,
+  }));
+  renderAdmin(req, res, 'admin/rating-categories', { active: 'ratings', categories });
+});
+
+router.post('/rating-categories', (req, res) => {
+  const title = s(req.body.title);
+  if (title) {
+    const slug = uniqueSlugFor('rating_categories', s(req.body.slug) || title);
+    const maxRow = db.prepare('SELECT COALESCE(MAX(sort_order),-1) m FROM rating_categories').get();
+    db.prepare('INSERT INTO rating_categories (slug, title, sort_order) VALUES (?, ?, ?)')
+      .run(slug, title, (maxRow.m || 0) + 1);
+    markDirty();
+    flash(req, 'success', 'Категория добавлена.');
+  }
+  res.redirect('/admin/rating-categories');
+});
+
+router.post('/rating-categories/:id', (req, res) => {
+  const row = db.prepare('SELECT * FROM rating_categories WHERE id = ?').get(req.params.id);
+  if (!row) return res.redirect('/admin/rating-categories');
+  const title = s(req.body.title) || row.title;
+  const newSlug = uniqueSlugFor('rating_categories', s(req.body.slug) || title, Number(row.id));
+  // Keep ratings pointing at this category in sync when the slug changes.
+  if (newSlug !== row.slug) {
+    db.prepare('UPDATE ratings SET category = ? WHERE category = ?').run(newSlug, row.slug);
+  }
+  db.prepare('UPDATE rating_categories SET slug = ?, title = ?, sort_order = ? WHERE id = ?')
+    .run(newSlug, title, parseInt(req.body.sort_order, 10) || 0, row.id);
+  markDirty();
+  flash(req, 'success', 'Категория сохранена.');
+  res.redirect('/admin/rating-categories');
+});
+
+router.post('/rating-categories/:id/delete', (req, res) => {
+  const row = db.prepare('SELECT * FROM rating_categories WHERE id = ?').get(req.params.id);
+  if (!row) return res.redirect('/admin/rating-categories');
+  const total = db.prepare('SELECT COUNT(*) c FROM rating_categories').get().c;
+  if (total <= 1) {
+    flash(req, 'error', 'Нельзя удалить последнюю категорию.');
+    return res.redirect('/admin/rating-categories');
+  }
+  // Reassign sites from the deleted category to the first remaining one.
+  const fallback = db.prepare('SELECT slug FROM rating_categories WHERE id != ? ORDER BY sort_order, id LIMIT 1').get(row.id);
+  if (fallback) db.prepare('UPDATE ratings SET category = ? WHERE category = ?').run(fallback.slug, row.slug);
+  db.prepare('DELETE FROM rating_categories WHERE id = ?').run(row.id);
+  markDirty();
+  flash(req, 'success', 'Категория удалена.');
+  res.redirect('/admin/rating-categories');
 });
 
 // --- Settings -----------------------------------------------------------

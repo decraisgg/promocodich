@@ -1,0 +1,55 @@
+<%- include('partials/admin-header') %>
+
+<div class="page-head">
+  <h1>Категории рейтинга</h1>
+  <p class="page-sub">Категории сайтов в рейтинге (вкладки на странице «Рейтинг»). Добавляйте, переименовывайте и удаляйте.</p>
+  <a href="/admin/ratings" class="btn btn-sm">← К рейтингу</a>
+</div>
+
+<details class="adder">
+  <summary class="btn btn-primary">+ Добавить категорию</summary>
+  <form method="post" action="/admin/rating-categories" class="card form">
+    <h3>Новая категория</h3>
+    <div class="form-grid">
+      <div class="field">
+        <label>Название</label>
+        <input type="text" name="title" class="input" placeholder="Например: Рулетка" required>
+      </div>
+      <div class="field">
+        <label>Slug (URL, латиницей, необязательно)</label>
+        <input type="text" name="slug" class="input" placeholder="создаётся из названия">
+      </div>
+    </div>
+    <div class="form-actions"><button class="btn btn-primary" type="submit">Добавить</button></div>
+  </form>
+</details>
+
+<div class="card">
+  <% if (!categories.length) { %>
+    <p class="empty-note">Категорий пока нет.</p>
+  <% } else { %>
+    <table class="table">
+      <thead><tr><th>Название</th><th>Slug</th><th>Сайтов</th><th>Порядок</th><th></th></tr></thead>
+      <tbody>
+        <% categories.forEach(function(c){ %>
+          <tr>
+            <form method="post" action="/admin/rating-categories/<%= c.id %>">
+              <td><input type="text" name="title" class="input input-mini" value="<%= c.title %>"></td>
+              <td><input type="text" name="slug" class="input input-mini" value="<%= c.slug %>"></td>
+              <td class="muted"><%= c.usedBy %></td>
+              <td><input type="number" name="sort_order" class="input input-mini" value="<%= c.sort_order %>" style="width:70px"></td>
+              <td class="row-actions">
+                <button class="btn btn-sm btn-primary" type="submit">Сохранить</button>
+            </form>
+                <form method="post" action="/admin/rating-categories/<%= c.id %>/delete" onsubmit="return confirm('Удалить категорию? Сайты из неё перейдут в другую категорию.')" style="display:inline">
+                  <button class="btn btn-sm btn-danger" type="submit">Удалить</button>
+                </form>
+              </td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  <% } %>
+</div>
+
+<%- include('partials/admin-footer') %>

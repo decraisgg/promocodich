@@ -1,13 +1,9 @@
 'use strict';
 
-const path = require('path');
-const fs = require('fs');
 const Database = require('better-sqlite3');
+const { DB_PATH } = require('./paths');
 
-const DATA_DIR = path.join(__dirname, '..', 'data');
-if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
-
-const db = new Database(path.join(DATA_DIR, 'promocodich.db'));
+const db = new Database(DB_PATH);
 db.pragma('journal_mode = WAL');
 
 // --- Schema -------------------------------------------------------------
@@ -148,6 +144,13 @@ CREATE TABLE IF NOT EXISTS rating_reviews (
   stars       INTEGER NOT NULL DEFAULT 5,
   created_at  TEXT    DEFAULT (datetime('now'))
 );
+
+CREATE TABLE IF NOT EXISTS rating_categories (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  slug        TEXT    UNIQUE,
+  title       TEXT    DEFAULT '',
+  sort_order  INTEGER NOT NULL DEFAULT 0
+);
 `);
 
 // Migration: add service_id to existing tables if column is missing
@@ -192,15 +195,23 @@ const CATEGORIES = [
 ];
 const CATEGORY_TITLES = Object.fromEntries(CATEGORIES.map((c) => [c.slug, c.title]));
 
-// --- Rating categories (single source of truth) -------------------------
-const RATING_CATEGORIES = [
+// --- Rating categories (now editable; stored in rating_categories) ------
+const RATING_CATEGORIES_DEFAULT = [
   { slug: 'cases',      title: 'Кейсы' },
   { slug: 'mini-games', title: 'Мини игры' },
   { slug: 'skins',      title: 'Скины' },
   { slug: 'keys',       title: 'Ключи' },
   { slug: 'steam',      title: 'Пополнение Steam' },
 ];
-const RATING_CATEGORY_TITLES = Object.fromEntries(RATING_CATEGORIES.map((c) => [c.slug, c.title]));
+// Read the admin-managed rating categories from the DB (ordered).
+function getRatingCategories() {
+  return db.prepare('SELECT slug, title FROM rating_categories ORDER BY sort_order, id').all();
+}
+function getRatingCategoryTitles() {
+  const m = {};
+  for (const c of getRatingCategories()) m[c.slug] = c.title;
+  return m;
+}
 
 // --- Seed (only on first run / empty DB) --------------------------------
 function seed() {
@@ -208,7 +219,19 @@ function seed() {
     _seedInitial();
   }
   _seedV2();
+  _seedRatingCategories();
   _ensureDefaults();
+}
+
+// Seed the default rating categories once (admin can edit them afterwards).
+function _seedRatingCategories() {
+  if (getSetting('seeded_rating_cats') === '1') return;
+  const count = db.prepare('SELECT COUNT(*) c FROM rating_categories').get().c;
+  if (count === 0) {
+    const ins = db.prepare('INSERT INTO rating_categories (slug, title, sort_order) VALUES (?, ?, ?)');
+    RATING_CATEGORIES_DEFAULT.forEach((c, i) => ins.run(c.slug, c.title, i));
+  }
+  setSetting('seeded_rating_cats', '1');
 }
 
 // Ensure newer settings keys have a sensible default without clobbering
@@ -602,6 +625,7 @@ module.exports = {
   markDirty,
   CATEGORIES,
   CATEGORY_TITLES,
-  RATING_CATEGORIES,
-  RATING_CATEGORY_TITLES,
+  RATING_CATEGORIES_DEFAULT,
+  getRatingCategories,
+  getRatingCategoryTitles,
 };

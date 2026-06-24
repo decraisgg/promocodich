@@ -1,6 +1,6 @@
 'use strict';
 
-const { db, getSetting, setSetting, CATEGORIES, CATEGORY_TITLES, RATING_CATEGORIES, RATING_CATEGORY_TITLES } = require('./db');
+const { db, getSetting, setSetting, CATEGORIES, CATEGORY_TITLES, getRatingCategories, getRatingCategoryTitles } = require('./db');
 
 // Build a complete snapshot of the public-facing site from the DB (draft state).
 function buildSnapshot() {
@@ -46,6 +46,7 @@ function buildSnapshot() {
     return { ...g, conditions };
   });
 
+  const ratingCategoryTitles = getRatingCategoryTitles();
   const ratingsRaw = db
     .prepare('SELECT * FROM ratings WHERE enabled = 1 ORDER BY featured DESC, sort_order, rating DESC, id')
     .all();
@@ -54,7 +55,7 @@ function buildSnapshot() {
     try { blocks = JSON.parse(r.blocks || '[]'); } catch (_) { blocks = []; }
     try { pros = JSON.parse(r.pros || '[]'); } catch (_) { pros = []; }
     try { cons = JSON.parse(r.cons || '[]'); } catch (_) { cons = []; }
-    return { ...r, blocks, pros, cons, categoryTitle: RATING_CATEGORY_TITLES[r.category] || r.category };
+    return { ...r, blocks, pros, cons, categoryTitle: ratingCategoryTitles[r.category] || r.category };
   });
 
   // Per-page SEO keyed by page id for quick lookup on the public site.
@@ -74,7 +75,7 @@ function buildSnapshot() {
     ratings,
     pageSeo,
     categories: CATEGORIES,
-    ratingCategories: RATING_CATEGORIES,
+    ratingCategories: getRatingCategories(),
     publishedAt: new Date().toISOString(),
   };
 }

@@ -27,7 +27,7 @@ app.set('views', path.join(__dirname, 'views'));
 
 // Static assets
 app.use('/static', express.static(path.join(__dirname, 'public')));
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/uploads', express.static(require('./src/paths').UPLOADS_DIR));
 
 // Body parsing
 app.use(express.urlencoded({ extended: true, limit: '2mb' }));
