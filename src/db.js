@@ -127,6 +127,7 @@ CREATE TABLE IF NOT EXISTS ratings (
   site_link       TEXT    DEFAULT '',
   button_text     TEXT    DEFAULT '',
   bonus_label     TEXT    DEFAULT '',
+  bonus_code      TEXT    DEFAULT '',
   pros            TEXT    DEFAULT '[]',
   cons            TEXT    DEFAULT '[]',
   blocks          TEXT    DEFAULT '[]',
@@ -169,6 +170,7 @@ addColIfMissing('services', 'meta_title', "TEXT DEFAULT ''");
 addColIfMissing('services', 'meta_description', "TEXT DEFAULT ''");
 addColIfMissing('articles', 'meta_title', "TEXT DEFAULT ''");
 addColIfMissing('articles', 'meta_description', "TEXT DEFAULT ''");
+addColIfMissing('ratings', 'bonus_code', "TEXT DEFAULT ''");
 
 // --- Settings helpers ---------------------------------------------------
 const getSettingStmt = db.prepare('SELECT value FROM settings WHERE key = ?');
@@ -294,6 +296,10 @@ function _ensureDefaults() {
     nav_rating_icon_enabled: '1',
     nav_rating_icon: '★',
     nav_rating_icon_image: '',
+
+    // Icon next to "Отзывы о проекте" on rating pages
+    reviews_icon: '★',
+    reviews_icon_image: '',
   };
   for (const [k, v] of Object.entries(defaults)) {
     if (getSettingStmt.get(k) === undefined) setSetting(k, v);

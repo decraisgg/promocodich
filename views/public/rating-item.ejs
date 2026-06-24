@@ -58,9 +58,15 @@
       </div>
     </div>
 
-    <% if (item.bonus_label) { %>
+    <% if (item.bonus_label || item.bonus_code) { %>
       <div class="rating-bonus-bar">
-        <span class="rating-bonus-label"><%= item.bonus_label %></span>
+        <% if (item.bonus_label) { %><span class="rating-bonus-label"><%= item.bonus_label %></span><% } %>
+        <% if (item.bonus_code) { %>
+          <div class="promo-code rating-bonus-code" data-code="<%= item.bonus_code %>">
+            <span class="promo-code-value"><%= item.bonus_code %></span>
+            <button class="promo-code-copy" type="button">Копировать</button>
+          </div>
+        <% } %>
         <% if (item.site_link) { %><a class="rating-bonus-btn" href="<%= item.site_link %>" target="_blank" rel="nofollow noopener">Открыть</a><% } %>
       </div>
     <% } %>
@@ -101,7 +107,7 @@
 
     <!-- REVIEWS -->
     <div class="reviews" id="reviews">
-      <h2 class="section-title"><span class="ico">★</span> Отзывы о проекте<% if (reviewCount) { %> (<%= reviewCount %>)<% } %></h2>
+      <h2 class="section-title"><% if (site.reviews_icon_image) { %><img class="ico-img" src="<%= site.reviews_icon_image %>" alt=""><% } else { %><span class="ico"><%= site.reviews_icon || '★' %></span><% } %> Отзывы о проекте<% if (reviewCount) { %> (<%= reviewCount %>)<% } %></h2>
 
       <% if (justReviewed) { %>
         <div class="review-thanks">Спасибо! Ваш отзыв опубликован.</div>

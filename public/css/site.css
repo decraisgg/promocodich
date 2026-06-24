@@ -625,9 +625,12 @@ img { max-width: 100%; display: block; }
 .pros-box .pc-ic { color: #1a9650; }
 .cons-box .pc-ic { color: #d2333f; }
 .pc-empty { margin: 0; color: var(--muted); font-size: 14px; }
-.rating-bonus-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--card); border: 1px solid rgba(0,0,0,.08); border-radius: 12px; padding: 10px 16px; margin-bottom: 16px; box-shadow: var(--shadow); }
+.rating-bonus-bar { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; background: var(--card); border: 1px solid rgba(0,0,0,.08); border-radius: 12px; padding: 12px 16px; margin-bottom: 16px; box-shadow: var(--shadow); }
 .rating-bonus-label { font-weight: 800; color: var(--accent); }
-.rating-bonus-btn { background: #15171e; color: #fff; font-weight: 700; padding: 9px 18px; border-radius: 9px; }
+.rating-bonus-btn { background: #15171e; color: #fff; font-weight: 700; padding: 9px 18px; border-radius: 9px; margin-left: auto; }
+/* Promo code in a clear red frame inside the bonus bar */
+.rating-bonus-code { margin: 0; border: 2px solid var(--accent); background: rgba(255,45,85,.06); }
+.rating-bonus-code .promo-code-value { color: var(--accent); }
 .rating-banner { aspect-ratio: 16 / 4.5; background-size: cover; background-position: center; border-radius: 14px; margin-bottom: 18px; box-shadow: var(--shadow); background-color: #15171e; }
 .rating-content { margin-bottom: 20px; }
 

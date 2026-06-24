@@ -605,6 +605,7 @@ function ratingFromBody(body) {
     site_link: s(body.site_link),
     button_text: s(body.button_text) || 'Перейти на сайт',
     bonus_label: s(body.bonus_label),
+    bonus_code: s(body.bonus_code),
     pros: JSON.stringify(linesToArray(body.pros)),
     cons: JSON.stringify(linesToArray(body.cons)),
     blocks: JSON.stringify(parseBlocks(body.blocks)),
@@ -619,8 +620,8 @@ router.post('/ratings', (req, res) => {
   const d = ratingFromBody(req.body);
   const slug = uniqueSlugFor('ratings', s(req.body.slug) || d.name);
   db.prepare(`INSERT INTO ratings
-    (slug,name,image_url,hero_image,category,rating,featured,site_link,button_text,bonus_label,pros,cons,blocks,meta_title,meta_description,enabled,sort_order)
-    VALUES (@slug,@name,@image_url,@hero_image,@category,@rating,@featured,@site_link,@button_text,@bonus_label,@pros,@cons,@blocks,@meta_title,@meta_description,@enabled,@sort_order)`)
+    (slug,name,image_url,hero_image,category,rating,featured,site_link,button_text,bonus_label,bonus_code,pros,cons,blocks,meta_title,meta_description,enabled,sort_order)
+    VALUES (@slug,@name,@image_url,@hero_image,@category,@rating,@featured,@site_link,@button_text,@bonus_label,@bonus_code,@pros,@cons,@blocks,@meta_title,@meta_description,@enabled,@sort_order)`)
     .run({ ...d, slug });
   markDirty();
   flash(req, 'success', 'Сайт добавлен в рейтинг.');
@@ -634,7 +635,7 @@ router.post('/ratings/:id', (req, res) => {
   const d = ratingFromBody(req.body);
   const slug = uniqueSlugFor('ratings', s(req.body.slug) || d.name, Number(id));
   db.prepare(`UPDATE ratings SET slug=@slug,name=@name,image_url=@image_url,hero_image=@hero_image,category=@category,
-    rating=@rating,featured=@featured,site_link=@site_link,button_text=@button_text,bonus_label=@bonus_label,
+    rating=@rating,featured=@featured,site_link=@site_link,button_text=@button_text,bonus_label=@bonus_label,bonus_code=@bonus_code,
     pros=@pros,cons=@cons,blocks=@blocks,meta_title=@meta_title,meta_description=@meta_description,
     enabled=@enabled,sort_order=@sort_order WHERE id=@id`).run({ ...d, slug, id });
   markDirty();
@@ -715,7 +716,7 @@ router.post('/rating-categories/:id/delete', (req, res) => {
 const SETTINGS_KEYS = [
   'site_title', 'tagline', 'intro_text', 'logo_url', 'favicon_url',
   'giveaways_icon', 'giveaways_icon_image', 'home_sections',
-  'bg_image', 'bg_blur',
+  'bg_image', 'bg_blur', 'reviews_icon', 'reviews_icon_image',
   'contacts_telegram', 'contacts_email', 'contacts_text',
 ];
 const HOME_SECTION_DEFS = [

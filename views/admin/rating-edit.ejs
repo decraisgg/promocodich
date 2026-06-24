@@ -87,6 +87,10 @@
         <label>Бонус (плашка, напр. «+25% к депозиту»)</label>
         <input type="text" name="bonus_label" class="input" value="<%= item.bonus_label %>">
       </div>
+      <div class="field">
+        <label>Промокод (показывается в красной рамке)</label>
+        <input type="text" name="bonus_code" class="input code-input" value="<%= item.bonus_code || '' %>" placeholder="PROMO25">
+      </div>
 
       <div class="field">
         <label>URL (slug, латиницей)</label>
