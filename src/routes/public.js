@@ -155,10 +155,9 @@ router.get('/', (req, res) => {
 
   const homeServices = (snap.services || []).slice(0, homeSitesLimit);
   const latestArticles = (snap.articles || []).slice(0, homeArticlesLimit);
-  // Global promos: no service_id
-  const allGlobalPromos = (snap.promocodes || []).filter((p) => !p.service_id);
-  const globalPromos = homePromosLimit > 0 ? allGlobalPromos.slice(0, homePromosLimit) : allGlobalPromos;
-  const promoPerPage = Math.max(0, parseInt(st.promo_per_page, 10) || 0);
+  // Pass all global promos; home_promos_limit controls how many show per page
+  const globalPromos = (snap.promocodes || []).filter((p) => !p.service_id);
+  const promoPerPage = homePromosLimit;
 
   const defaultTitle = (st.site_title || 'ПРОМОКОДЫЧ') + (st.tagline ? ' — ' + st.tagline : '');
 

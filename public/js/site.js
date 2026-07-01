@@ -159,19 +159,25 @@
         var page = parseInt(btn.getAttribute('data-page'), 10);
         if (page === currentPage) return;
 
-        // Animate scroll to promo section
-        var section = document.getElementById('promocodes');
-        if (section) {
-          section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
+        var dir = page > currentPage ? 1 : -1;
 
-        // Brief fade transition
-        grid.style.transition = 'opacity 0.2s';
+        // Slide current page out (within the block, no window scroll)
+        grid.style.transition = 'transform 0.22s ease, opacity 0.22s ease';
+        grid.style.transform = 'translateX(' + (-dir * 80) + 'px)';
         grid.style.opacity = '0';
+
         setTimeout(function() {
           showPage(page);
+          // Snap to incoming side instantly
+          grid.style.transition = 'none';
+          grid.style.transform = 'translateX(' + (dir * 80) + 'px)';
+          grid.style.opacity = '0';
+          grid.offsetHeight; // force reflow
+          // Slide in
+          grid.style.transition = 'transform 0.22s ease, opacity 0.22s ease';
+          grid.style.transform = 'translateX(0)';
           grid.style.opacity = '1';
-        }, 200);
+        }, 230);
       });
 
       showPage(1);
