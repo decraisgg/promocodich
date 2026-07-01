@@ -731,18 +731,25 @@ img { max-width: 100%; display: block; }
 /* ---------- Inline banner (Межстрочная плашка) ---------- */
 .inline-banner {
   grid-column: 1 / -1;
-  display: flex; align-items: center; gap: 18px;
   background: linear-gradient(135deg, #1d2029, #15171e);
-  border-radius: var(--radius); padding: 14px 22px;
+  border-radius: var(--radius);
   box-shadow: var(--shadow-lg); overflow: hidden;
   position: relative;
+  background-size: cover; background-position: center;
 }
 .inline-banner::before {
   content: ""; position: absolute; inset: 0; z-index: 0;
-  background: linear-gradient(90deg, rgba(255,45,85,.18), transparent 70%);
+  background: linear-gradient(90deg, rgba(0,0,0,.45), rgba(0,0,0,.18) 70%);
   pointer-events: none;
 }
-.inline-banner > * { position: relative; z-index: 1; }
+.inline-banner--bg::before {
+  background: linear-gradient(90deg, rgba(0,0,0,.55), rgba(0,0,0,.25) 80%);
+}
+.inline-banner-content {
+  position: relative; z-index: 1;
+  display: flex; align-items: center; gap: 18px;
+  padding: 14px 22px;
+}
 .inline-banner-img {
   width: 72px; height: 72px; object-fit: contain; border-radius: 10px; flex: none;
 }
@@ -840,7 +847,7 @@ img { max-width: 100%; display: block; }
 
 /* Large phones */
 @media (max-width: 640px) {
-  .inline-banner { flex-direction: column; align-items: flex-start; gap: 10px; padding: 14px; }
+  .inline-banner-content { flex-direction: column; align-items: flex-start; gap: 10px; padding: 14px; }
   .inline-banner-img { width: 52px; height: 52px; }
   .section { padding: 30px 0; }
   .section-title { font-size: 21px; }

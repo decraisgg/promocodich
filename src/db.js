@@ -197,6 +197,7 @@ addColIfMissing('services', 'meta_description', "TEXT DEFAULT ''");
 addColIfMissing('articles', 'meta_title', "TEXT DEFAULT ''");
 addColIfMissing('articles', 'meta_description', "TEXT DEFAULT ''");
 addColIfMissing('ratings', 'bonus_code', "TEXT DEFAULT ''");
+addColIfMissing('inline_banners', 'banner_image', "TEXT DEFAULT ''");
 
 // --- Settings helpers ---------------------------------------------------
 const getSettingStmt = db.prepare('SELECT value FROM settings WHERE key = ?');
@@ -333,6 +334,11 @@ function _ensureDefaults() {
 
     // Contacts page rich content
     contacts_blocks: '[]',
+
+    // Homepage display limits (0 = unlimited)
+    home_promos_limit: '12',
+    home_sites_limit: '12',
+    home_articles_limit: '12',
 
     // Web analytics counters (Метрика)
     metrika_yandex_id: '',

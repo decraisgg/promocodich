@@ -94,6 +94,28 @@
     </div>
   </div>
 
+  <!-- ОТОБРАЖЕНИЕ НА ГЛАВНОЙ СТРАНИЦЕ -->
+  <div class="card">
+    <h3>Отображение на главной странице</h3>
+    <div class="form-grid">
+      <div class="field">
+        <label>Промокодов на главной</label>
+        <input type="number" name="home_promos_limit" class="input" value="<%= seoValues.home_promos_limit || 12 %>" min="0" max="200">
+        <span class="field-hint">Максимум промокодов в разделе «Актуальные промокоды». 0 = показывать все.</span>
+      </div>
+      <div class="field">
+        <label>Сайтов на главной</label>
+        <input type="number" name="home_sites_limit" class="input" value="<%= seoValues.home_sites_limit || 12 %>" min="1" max="200">
+        <span class="field-hint">Сколько сайтов показывать в разделе «Популярные сайты». Остальные — на странице /services.</span>
+      </div>
+      <div class="field">
+        <label>Статей на главной</label>
+        <input type="number" name="home_articles_limit" class="input" value="<%= seoValues.home_articles_limit || 12 %>" min="1" max="200">
+        <span class="field-hint">Сколько статей показывать в разделе «Последние статьи». Остальные — на странице /articles.</span>
+      </div>
+    </div>
+  </div>
+
   <!-- SEO ОТДЕЛЬНЫХ СТРАНИЦ -->
   <div class="card">
     <h3>SEO и заголовки страниц</h3>

@@ -149,9 +149,15 @@ router.get('/', (req, res) => {
   const globalBanners = allBanners.filter((b) => !b.service_id);
   const bigBanner = globalBanners.find((b) => b.size === 'big') || null;
   const smallBanners = globalBanners.filter((b) => b.size === 'small').slice(0, 2);
-  const latestArticles = (snap.articles || []).slice(0, 6);
+  const homeSitesLimit = Math.max(1, parseInt(st.home_sites_limit, 10) || 12);
+  const homeArticlesLimit = Math.max(1, parseInt(st.home_articles_limit, 10) || 12);
+  const homePromosLimit = Math.max(0, parseInt(st.home_promos_limit, 10) || 12);
+
+  const homeServices = (snap.services || []).slice(0, homeSitesLimit);
+  const latestArticles = (snap.articles || []).slice(0, homeArticlesLimit);
   // Global promos: no service_id
-  const globalPromos = (snap.promocodes || []).filter((p) => !p.service_id);
+  const allGlobalPromos = (snap.promocodes || []).filter((p) => !p.service_id);
+  const globalPromos = homePromosLimit > 0 ? allGlobalPromos.slice(0, homePromosLimit) : allGlobalPromos;
   const promoPerPage = Math.max(0, parseInt(st.promo_per_page, 10) || 0);
 
   const defaultTitle = (st.site_title || 'ПРОМОКОДЫЧ') + (st.tagline ? ' — ' + st.tagline : '');
@@ -165,6 +171,7 @@ router.get('/', (req, res) => {
     promoPerPage,
     inlineBanners: snap.inlineBanners || [],
     latestArticles,
+    homeServices,
     homeSections: parseHomeSections(st.home_sections),
     sections: sectionHeadings(st),
     seo: seoFor(snap, req, { pageKey: 'home', defaultTitle, appendSuffix: false, path: '/' }),

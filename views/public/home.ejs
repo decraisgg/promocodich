@@ -99,22 +99,24 @@
                   __inlineBanners.forEach(function(ib) {
                     if (parseInt(ib.after_row, 10) === __completedRow) {
               %>
-                      <div class="inline-banner" data-ib-id="<%= ib.id %>">
-                        <% if (ib.image_enabled && ib.image_url) { %>
-                          <img class="inline-banner-img" src="<%= ib.image_url %>" alt="">
-                        <% } %>
-                        <% if (ib.text_enabled && ib.text) { %>
-                          <span class="inline-banner-text"><%= ib.text %></span>
-                        <% } %>
-                        <% if (ib.code_enabled && ib.code) { %>
-                          <div class="promo-code inline-banner-code" data-code="<%= ib.code %>">
-                            <span class="promo-code-value"><%= ib.code %></span>
-                            <button class="promo-code-copy" type="button">Копировать</button>
-                          </div>
-                        <% } %>
-                        <% if (ib.button_enabled && ib.button_text) { %>
-                          <a class="inline-banner-btn" href="<%= ib.button_link || '#' %>" target="_blank" rel="nofollow noopener" data-track="Межстрочная плашка #<%= ib.id %>"><%= ib.button_text %></a>
-                        <% } %>
+                      <div class="inline-banner<%= ib.banner_image ? ' inline-banner--bg' : '' %>" data-ib-id="<%= ib.id %>"<% if (ib.banner_image) { %> style="background-image:url('<%= ib.banner_image %>')"<% } %>>
+                        <div class="inline-banner-content">
+                          <% if (ib.image_enabled && ib.image_url) { %>
+                            <img class="inline-banner-img" src="<%= ib.image_url %>" alt="">
+                          <% } %>
+                          <% if (ib.text_enabled && ib.text) { %>
+                            <span class="inline-banner-text"><%= ib.text %></span>
+                          <% } %>
+                          <% if (ib.code_enabled && ib.code) { %>
+                            <div class="promo-code inline-banner-code" data-code="<%= ib.code %>">
+                              <span class="promo-code-value"><%= ib.code %></span>
+                              <button class="promo-code-copy" type="button">Копировать</button>
+                            </div>
+                          <% } %>
+                          <% if (ib.button_enabled && ib.button_text) { %>
+                            <a class="inline-banner-btn" href="<%= ib.button_link || '#' %>" target="_blank" rel="nofollow noopener" data-track="Межстрочная плашка #<%= ib.id %>"><%= ib.button_text %></a>
+                          <% } %>
+                        </div>
                       </div>
               <%
                     }
@@ -138,7 +140,7 @@
     </section>
   <% } %>
 
-  <% if (sec === 'sites' && services && services.length) { %>
+  <% if (sec === 'sites' && homeServices && homeServices.length) { %>
     <!-- ПОПУЛЯРНЫЕ САЙТЫ -->
     <section class="section section--sites">
       <div class="container">
@@ -147,7 +149,7 @@
           <a class="section-link" href="/services">Все сайты →</a>
         </div>
         <div class="sites-tiles">
-          <% services.forEach(function(svc){ var tile = svc.tile_image || svc.image_url; %>
+          <% homeServices.forEach(function(svc){ var tile = svc.tile_image || svc.image_url; %>
             <a class="site-tile" href="/services/<%= svc.slug %>" style="<%= svc.color ? '--svc-color:' + svc.color : '' %>" data-track="Сайт: <%= svc.name %>">
               <div class="site-tile-logo">
                 <% if (tile) { %>

@@ -40,12 +40,27 @@
       </div>
 
       <div class="field field--full">
-        <label>Изображение (URL или загрузите файл)</label>
+        <label>Фоновый баннер (картинка на весь размер плашки)</label>
+        <div class="img-field">
+          <div class="img-field-row">
+            <div class="img-preview <%= ib.banner_image ? '' : 'empty' %>" style="<%= ib.banner_image ? 'background-image:url(\'' + ib.banner_image + '\')' : '' %>"></div>
+            <div class="img-field-controls">
+              <input type="text" name="banner_image" class="img-url input" value="<%= ib.banner_image || '' %>" placeholder="Ссылка на фоновую картинку">
+              <label class="btn btn-sm btn-upload">Загрузить<input type="file" class="img-file" accept="image/*" hidden></label>
+              <span class="img-status"></span>
+            </div>
+          </div>
+        </div>
+        <span class="field-hint">Заполняет всю плашку как фон. Логотип, текст, промокод и кнопка накладываются поверх. Если пусто — фон стандартный тёмный.</span>
+      </div>
+
+      <div class="field field--full">
+        <label>Логотип (иконка сайта поверх баннера)</label>
         <div class="img-field">
           <div class="img-field-row">
             <div class="img-preview <%= ib.image_url ? '' : 'empty' %>" style="<%= ib.image_url ? 'background-image:url(\'' + ib.image_url + '\')' : '' %>"></div>
             <div class="img-field-controls">
-              <input type="text" name="image_url" class="img-url input" value="<%= ib.image_url %>" placeholder="Ссылка на картинку">
+              <input type="text" name="image_url" class="img-url input" value="<%= ib.image_url %>" placeholder="Ссылка на логотип">
               <label class="btn btn-sm btn-upload">Загрузить<input type="file" class="img-file" accept="image/*" hidden></label>
               <span class="img-status"></span>
             </div>
@@ -53,7 +68,7 @@
         </div>
         <label class="switch-label" style="margin-top:8px">
           <label class="switch"><input type="checkbox" name="image_enabled" value="on" <%= ib.image_enabled ? 'checked' : '' %>><span class="slider"></span></label>
-          Показывать изображение
+          Показывать логотип
         </label>
       </div>
 
@@ -113,12 +128,26 @@
         <input type="number" name="after_row" class="input" value="1" min="1" max="50">
       </div>
       <div class="field field--full">
-        <label>Изображение (URL или загрузите файл)</label>
+        <label>Фоновый баннер (картинка на весь размер плашки)</label>
         <div class="img-field">
           <div class="img-field-row">
             <div class="img-preview empty"></div>
             <div class="img-field-controls">
-              <input type="text" name="image_url" class="img-url input" placeholder="Ссылка на картинку">
+              <input type="text" name="banner_image" class="img-url input" placeholder="Ссылка на фоновую картинку">
+              <label class="btn btn-sm btn-upload">Загрузить<input type="file" class="img-file" accept="image/*" hidden></label>
+              <span class="img-status"></span>
+            </div>
+          </div>
+        </div>
+        <span class="field-hint">Заполняет всю плашку как фон. Если пусто — используется стандартный тёмный фон.</span>
+      </div>
+      <div class="field field--full">
+        <label>Логотип (иконка сайта поверх баннера)</label>
+        <div class="img-field">
+          <div class="img-field-row">
+            <div class="img-preview empty"></div>
+            <div class="img-field-controls">
+              <input type="text" name="image_url" class="img-url input" placeholder="Ссылка на логотип">
               <label class="btn btn-sm btn-upload">Загрузить<input type="file" class="img-file" accept="image/*" hidden></label>
               <span class="img-status"></span>
             </div>
@@ -126,7 +155,7 @@
         </div>
         <label class="switch-label" style="margin-top:8px">
           <label class="switch"><input type="checkbox" name="image_enabled" value="on" checked><span class="slider"></span></label>
-          Показывать изображение
+          Показывать логотип
         </label>
       </div>
       <div class="field field--full">

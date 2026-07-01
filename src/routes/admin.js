@@ -827,6 +827,7 @@ function inlineBannerFromBody(body) {
   return {
     enabled:        b(body.enabled),
     after_row:      Math.max(1, parseInt(body.after_row, 10) || 1),
+    banner_image:   s(body.banner_image),
     image_url:      s(body.image_url),
     image_enabled:  b(body.image_enabled),
     text:           s(body.text).slice(0, 400),
@@ -843,8 +844,8 @@ function inlineBannerFromBody(body) {
 router.post('/inline-banner', (req, res) => {
   const d = inlineBannerFromBody(req.body);
   db.prepare(`INSERT INTO inline_banners
-    (enabled,after_row,image_url,image_enabled,text,text_enabled,code,code_enabled,button_text,button_link,button_enabled,sort_order)
-    VALUES (@enabled,@after_row,@image_url,@image_enabled,@text,@text_enabled,@code,@code_enabled,@button_text,@button_link,@button_enabled,@sort_order)`).run(d);
+    (enabled,after_row,banner_image,image_url,image_enabled,text,text_enabled,code,code_enabled,button_text,button_link,button_enabled,sort_order)
+    VALUES (@enabled,@after_row,@banner_image,@image_url,@image_enabled,@text,@text_enabled,@code,@code_enabled,@button_text,@button_link,@button_enabled,@sort_order)`).run(d);
   markDirty();
   flash(req, 'success', 'Межстрочная плашка добавлена.');
   res.redirect('/admin/inline-banner');
@@ -853,7 +854,8 @@ router.post('/inline-banner', (req, res) => {
 router.post('/inline-banner/:id', (req, res) => {
   const d = inlineBannerFromBody(req.body);
   db.prepare(`UPDATE inline_banners SET
-    enabled=@enabled,after_row=@after_row,image_url=@image_url,image_enabled=@image_enabled,
+    enabled=@enabled,after_row=@after_row,banner_image=@banner_image,
+    image_url=@image_url,image_enabled=@image_enabled,
     text=@text,text_enabled=@text_enabled,code=@code,code_enabled=@code_enabled,
     button_text=@button_text,button_link=@button_link,button_enabled=@button_enabled,sort_order=@sort_order
     WHERE id=@id`).run({ ...d, id: req.params.id });
@@ -938,6 +940,7 @@ const SEO_TEXT_KEYS = [
   'seo_title_suffix', 'seo_default_description', 'seo_default_keywords',
   'seo_og_image', 'seo_canonical_host', 'seo_yandex_verification',
   'seo_google_verification', 'seo_robots_txt',
+  'home_promos_limit', 'home_sites_limit', 'home_articles_limit',
 ];
 const SECTION_KEYS = [
   'sec_promocodes_title', 'sec_promocodes_sub', 'sec_sites_title', 'sec_articles_title',
