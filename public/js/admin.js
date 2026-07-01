@@ -115,7 +115,11 @@
     if (!tpl) return null;
     var node = tpl.content.firstElementChild.cloneNode(true);
     blocksEl.appendChild(node);
-    if (values) fill(node, type, values);
+    if (values) {
+      fill(node, type, values);
+    } else if (type === 'list') {
+      addListItem(node, '');
+    }
     return node;
   }
 
@@ -136,6 +140,11 @@
       var bcp = node.querySelector('.blk-btn-bgcolor-picker');
       if (tcp && v.textColor && /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(v.textColor)) tcp.value = v.textColor;
       if (bcp && v.bgColor && /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(v.bgColor)) bcp.value = v.bgColor;
+    } else if (type === 'list') {
+      node.querySelector('.blk-list-style').value = v.style || 'unordered';
+      var items = Array.isArray(v.items) ? v.items : [];
+      items.forEach(function(item) { addListItem(node, item); });
+      if (!items.length) addListItem(node, '');
     } else if (type === 'video') {
       node.querySelector('.blk-video-url').value = v.url || '';
     } else if (type === 'image') {
@@ -166,6 +175,13 @@
           textColor: (block.querySelector('.blk-btn-textcolor') || {}).value || '',
           bgColor: (block.querySelector('.blk-btn-bgcolor') || {}).value || '',
         });
+      } else if (type === 'list') {
+        var listItems = [];
+        block.querySelectorAll('.blk-list-item-text').forEach(function(inp) {
+          var val = inp.value.trim();
+          if (val) listItems.push(val);
+        });
+        out.push({ type: 'list', style: block.querySelector('.blk-list-style').value || 'unordered', items: listItems });
       } else if (type === 'video') {
         out.push({ type: 'video', url: block.querySelector('.blk-video-url').value });
       } else if (type === 'image') {
@@ -183,6 +199,14 @@
     return out;
   }
 
+  function addListItem(blockNode, text) {
+    var tpl = document.getElementById('tpl-list-item');
+    if (!tpl) return;
+    var row = tpl.content.firstElementChild.cloneNode(true);
+    row.querySelector('.blk-list-item-text').value = text || '';
+    blockNode.querySelector('.blk-list-items').appendChild(row);
+  }
+
   // Preserve text selection when clicking the rich-text toolbar.
   blocksEl.addEventListener('mousedown', function (e) {
     if (e.target.closest('.rte-cmd')) e.preventDefault();
@@ -193,6 +217,17 @@
     if (!btn) return;
     var block = btn.closest('.block');
     if (!block) return;
+    // List item controls (inside a list block)
+    if (btn.classList.contains('blk-list-item-del')) {
+      var row = btn.closest('.list-item-row');
+      if (row) row.remove();
+      return;
+    }
+    if (btn.classList.contains('blk-list-add')) {
+      addListItem(block, '');
+      return;
+    }
+
     if (btn.classList.contains('blk-del')) {
       if (confirm('Удалить блок?')) block.remove();
     } else if (btn.classList.contains('blk-up')) {

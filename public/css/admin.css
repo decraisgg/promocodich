@@ -254,3 +254,11 @@ textarea.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, mono
   .admin-nav a span { font-size: 16px; width: auto; }
   .admin-content { padding: 16px; }
 }
+
+/* ---------- List block editor ---------- */
+.blk-list-items { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+.list-item-row { display: flex; align-items: center; gap: 8px; }
+.list-item-row .blk-list-item-text { flex: 1; }
+.list-item-row .blk-list-item-del { flex: none; width: 30px; height: 30px; padding: 0; display: grid; place-items: center; font-size: 12px; }
+.blk-list-add { font-size: 12px !important; padding: 0 10px !important; height: 30px !important; }
+.block-tools select.input-mini { height: 30px; padding: 0 8px; font-size: 12px; border-radius: 8px; border: 1px solid var(--line); background: #fff; }

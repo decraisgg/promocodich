@@ -1,0 +1,175 @@
+<%- include('partials/admin-header') %>
+
+<div class="page-head">
+  <h1>Межстрочная плашка</h1>
+  <p class="page-sub">Длинная плашка, которая вставляется между строками промокодов. Рекомендуемые размеры: <strong>1200×120 px</strong> (широкий формат, соотношение ~10:1).</p>
+</div>
+
+<% if (clicks && clicks.length) { %>
+<div class="card" style="margin-bottom:20px">
+  <h3>Клики по плашкам</h3>
+  <table class="data-table">
+    <thead><tr><th>Плашка</th><th>Клики</th></tr></thead>
+    <tbody>
+      <% clicks.forEach(function(c){ %>
+        <tr><td><%= c.label %></td><td><b><%= c.n %></b></td></tr>
+      <% }); %>
+    </tbody>
+  </table>
+</div>
+<% } %>
+
+<% banners.forEach(function(ib){ %>
+<div class="card" style="margin-bottom:20px">
+  <form method="post" action="/admin/inline-banner/<%= ib.id %>">
+    <div class="form-grid">
+      <div class="field field--full">
+        <h3 style="margin:0 0 12px">Плашка #<%= ib.id %></h3>
+      </div>
+
+      <div class="field">
+        <label class="switch-label">
+          <label class="switch"><input type="checkbox" name="enabled" value="on" <%= ib.enabled ? 'checked' : '' %>><span class="slider"></span></label>
+          Включена
+        </label>
+      </div>
+      <div class="field">
+        <label>После строки №</label>
+        <input type="number" name="after_row" class="input" value="<%= ib.after_row %>" min="1" max="50">
+        <span class="field-hint">Плашка появляется после N-й строки промокодов (3 карточки = 1 строка).</span>
+      </div>
+
+      <div class="field field--full">
+        <label>Изображение (URL или загрузите файл)</label>
+        <div class="img-field">
+          <div class="img-field-row">
+            <div class="img-preview <%= ib.image_url ? '' : 'empty' %>" style="<%= ib.image_url ? 'background-image:url(\'' + ib.image_url + '\')' : '' %>"></div>
+            <div class="img-field-controls">
+              <input type="text" name="image_url" class="img-url input" value="<%= ib.image_url %>" placeholder="Ссылка на картинку">
+              <label class="btn btn-sm btn-upload">Загрузить<input type="file" class="img-file" accept="image/*" hidden></label>
+              <span class="img-status"></span>
+            </div>
+          </div>
+        </div>
+        <label class="switch-label" style="margin-top:8px">
+          <label class="switch"><input type="checkbox" name="image_enabled" value="on" <%= ib.image_enabled ? 'checked' : '' %>><span class="slider"></span></label>
+          Показывать изображение
+        </label>
+      </div>
+
+      <div class="field field--full">
+        <label>Текст плашки</label>
+        <input type="text" name="text" class="input" value="<%= ib.text %>" placeholder="Получи бонус прямо сейчас!">
+        <label class="switch-label" style="margin-top:8px">
+          <label class="switch"><input type="checkbox" name="text_enabled" value="on" <%= ib.text_enabled ? 'checked' : '' %>><span class="slider"></span></label>
+          Показывать текст
+        </label>
+      </div>
+
+      <div class="field">
+        <label>Промокод</label>
+        <input type="text" name="code" class="input" value="<%= ib.code %>" placeholder="PROMO10">
+        <label class="switch-label" style="margin-top:8px">
+          <label class="switch"><input type="checkbox" name="code_enabled" value="on" <%= ib.code_enabled ? 'checked' : '' %>><span class="slider"></span></label>
+          Показывать промокод в рамке
+        </label>
+      </div>
+
+      <div class="field">
+        <label>Кнопка — текст</label>
+        <input type="text" name="button_text" class="input" value="<%= ib.button_text %>" placeholder="Получить бонус">
+      </div>
+      <div class="field">
+        <label>Кнопка — ссылка</label>
+        <input type="text" name="button_link" class="input" value="<%= ib.button_link %>" placeholder="https://...">
+      </div>
+      <div class="field">
+        <label class="switch-label">
+          <label class="switch"><input type="checkbox" name="button_enabled" value="on" <%= ib.button_enabled ? 'checked' : '' %>><span class="slider"></span></label>
+          Показывать кнопку
+        </label>
+      </div>
+
+      <div class="field">
+        <label>Порядок</label>
+        <input type="number" name="sort_order" class="input" value="<%= ib.sort_order %>">
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" type="submit">Сохранить</button>
+      <button class="btn btn-sm btn-danger" type="submit" form="del-<%= ib.id %>">Удалить</button>
+    </div>
+  </form>
+  <form id="del-<%= ib.id %>" method="post" action="/admin/inline-banner/<%= ib.id %>/delete" onsubmit="return confirm('Удалить плашку?')"></form>
+</div>
+<% }); %>
+
+<div class="card">
+  <h3>Добавить новую плашку</h3>
+  <form method="post" action="/admin/inline-banner">
+    <div class="form-grid">
+      <div class="field">
+        <label>После строки №</label>
+        <input type="number" name="after_row" class="input" value="1" min="1" max="50">
+      </div>
+      <div class="field field--full">
+        <label>Изображение (URL или загрузите файл)</label>
+        <div class="img-field">
+          <div class="img-field-row">
+            <div class="img-preview empty"></div>
+            <div class="img-field-controls">
+              <input type="text" name="image_url" class="img-url input" placeholder="Ссылка на картинку">
+              <label class="btn btn-sm btn-upload">Загрузить<input type="file" class="img-file" accept="image/*" hidden></label>
+              <span class="img-status"></span>
+            </div>
+          </div>
+        </div>
+        <label class="switch-label" style="margin-top:8px">
+          <label class="switch"><input type="checkbox" name="image_enabled" value="on" checked><span class="slider"></span></label>
+          Показывать изображение
+        </label>
+      </div>
+      <div class="field field--full">
+        <label>Текст плашки</label>
+        <input type="text" name="text" class="input" placeholder="Получи бонус прямо сейчас!">
+        <label class="switch-label" style="margin-top:8px">
+          <label class="switch"><input type="checkbox" name="text_enabled" value="on" checked><span class="slider"></span></label>
+          Показывать текст
+        </label>
+      </div>
+      <div class="field">
+        <label>Промокод</label>
+        <input type="text" name="code" class="input" placeholder="PROMO10">
+        <label class="switch-label" style="margin-top:8px">
+          <label class="switch"><input type="checkbox" name="code_enabled" value="on"><span class="slider"></span></label>
+          Показывать промокод
+        </label>
+      </div>
+      <div class="field">
+        <label>Кнопка — текст</label>
+        <input type="text" name="button_text" class="input" value="Перейти">
+      </div>
+      <div class="field">
+        <label>Кнопка — ссылка</label>
+        <input type="text" name="button_link" class="input" placeholder="https://...">
+      </div>
+      <div class="field">
+        <label class="switch-label">
+          <label class="switch"><input type="checkbox" name="button_enabled" value="on" checked><span class="slider"></span></label>
+          Показывать кнопку
+        </label>
+      </div>
+      <div class="field">
+        <label>Включена</label>
+        <label class="switch"><input type="checkbox" name="enabled" value="on" checked><span class="slider"></span></label>
+      </div>
+      <div class="field">
+        <label>Порядок</label>
+        <input type="number" name="sort_order" class="input" value="0">
+      </div>
+    </div>
+    <div class="form-actions"><button class="btn btn-primary" type="submit">Добавить плашку</button></div>
+  </form>
+</div>
+
+<%- include('partials/admin-footer') %>

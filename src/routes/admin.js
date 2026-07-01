@@ -718,6 +718,7 @@ const SETTINGS_KEYS = [
   'giveaways_icon', 'giveaways_icon_image', 'home_sections',
   'bg_image', 'bg_blur', 'reviews_icon', 'reviews_icon_image',
   'contacts_telegram', 'contacts_email', 'contacts_text',
+  'promo_per_page',
 ];
 const HOME_SECTION_DEFS = [
   { key: 'promocodes', label: 'Актуальные промокоды и бонусы' },
@@ -815,6 +816,59 @@ router.post('/gift', (req, res) => {
   res.redirect('/admin/gift');
 });
 
+// --- Inline banner (Межстрочная плашка) --------------------------------
+router.get('/inline-banner', (req, res) => {
+  const banners = db.prepare('SELECT * FROM inline_banners ORDER BY sort_order, id').all();
+  const clicks = db.prepare("SELECT label, COUNT(*) n FROM analytics_events WHERE type='click' AND label LIKE 'Межстрочная плашка%' GROUP BY label ORDER BY n DESC").all();
+  renderAdmin(req, res, 'admin/inline-banner', { active: 'inline-banner', banners, clicks });
+});
+
+function inlineBannerFromBody(body) {
+  return {
+    enabled:        b(body.enabled),
+    after_row:      Math.max(1, parseInt(body.after_row, 10) || 1),
+    image_url:      s(body.image_url),
+    image_enabled:  b(body.image_enabled),
+    text:           s(body.text).slice(0, 400),
+    text_enabled:   b(body.text_enabled),
+    code:           s(body.code).slice(0, 100),
+    code_enabled:   b(body.code_enabled),
+    button_text:    s(body.button_text).slice(0, 80),
+    button_link:    s(body.button_link),
+    button_enabled: b(body.button_enabled),
+    sort_order:     parseInt(body.sort_order, 10) || 0,
+  };
+}
+
+router.post('/inline-banner', (req, res) => {
+  const d = inlineBannerFromBody(req.body);
+  db.prepare(`INSERT INTO inline_banners
+    (enabled,after_row,image_url,image_enabled,text,text_enabled,code,code_enabled,button_text,button_link,button_enabled,sort_order)
+    VALUES (@enabled,@after_row,@image_url,@image_enabled,@text,@text_enabled,@code,@code_enabled,@button_text,@button_link,@button_enabled,@sort_order)`).run(d);
+  markDirty();
+  flash(req, 'success', 'Межстрочная плашка добавлена.');
+  res.redirect('/admin/inline-banner');
+});
+
+router.post('/inline-banner/:id', (req, res) => {
+  const d = inlineBannerFromBody(req.body);
+  db.prepare(`UPDATE inline_banners SET
+    enabled=@enabled,after_row=@after_row,image_url=@image_url,image_enabled=@image_enabled,
+    text=@text,text_enabled=@text_enabled,code=@code,code_enabled=@code_enabled,
+    button_text=@button_text,button_link=@button_link,button_enabled=@button_enabled,sort_order=@sort_order
+    WHERE id=@id`).run({ ...d, id: req.params.id });
+  markDirty();
+  flash(req, 'success', 'Плашка сохранена.');
+  res.redirect('/admin/inline-banner');
+});
+
+router.post('/inline-banner/:id/delete', (req, res) => {
+  db.prepare('DELETE FROM inline_banners WHERE id = ?').run(req.params.id);
+  markDirty();
+  flash(req, 'success', 'Плашка удалена.');
+  res.redirect('/admin/inline-banner');
+});
+
 // --- Метрика / аналитика ------------------------------------------------
 router.get('/metrika', (req, res) => {
   const tab = req.query.tab === 'clicks' ? 'clicks' : 'overview';
@@ -854,6 +908,29 @@ router.post('/metrika/reset', (req, res) => {
   db.prepare('DELETE FROM analytics_events').run();
   flash(req, 'success', 'Статистика сброшена.');
   res.redirect('/admin/metrika');
+});
+
+// --- Contacts page (rich editor) ----------------------------------------
+router.get('/contacts', (req, res) => {
+  let blocks = [];
+  try { blocks = JSON.parse(getSetting('contacts_blocks', '[]')); } catch (_) {}
+  renderAdmin(req, res, 'admin/contacts-edit', {
+    active: 'settings',
+    blocks,
+    contacts_text:     getSetting('contacts_text', ''),
+    contacts_telegram: getSetting('contacts_telegram', ''),
+    contacts_email:    getSetting('contacts_email', ''),
+  });
+});
+
+router.post('/contacts', (req, res) => {
+  setSetting('contacts_text',     s(req.body.contacts_text));
+  setSetting('contacts_telegram', s(req.body.contacts_telegram));
+  setSetting('contacts_email',    s(req.body.contacts_email));
+  setSetting('contacts_blocks',   JSON.stringify(parseBlocks(req.body.blocks)));
+  markDirty();
+  flash(req, 'success', 'Страница контактов сохранена.');
+  res.redirect('/admin/contacts');
 });
 
 // --- SEO ----------------------------------------------------------------

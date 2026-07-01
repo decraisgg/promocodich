@@ -37,6 +37,10 @@ function buildSnapshot() {
     .prepare('SELECT * FROM popups WHERE enabled = 1 ORDER BY sort_order, id')
     .all();
 
+  const inlineBanners = db
+    .prepare('SELECT * FROM inline_banners WHERE enabled = 1 ORDER BY sort_order, id')
+    .all();
+
   const giveawaysRaw = db
     .prepare('SELECT * FROM giveaways WHERE enabled = 1 ORDER BY sort_order, id')
     .all();
@@ -68,6 +72,7 @@ function buildSnapshot() {
     settings,
     services,
     banners,
+    inlineBanners,
     promocodes,
     articles,
     popups,

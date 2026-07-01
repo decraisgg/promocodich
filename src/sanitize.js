@@ -107,6 +107,12 @@ function sanitizeBlocks(blocks) {
         buttonText: escapeHtml(raw.buttonText).slice(0, 120),
         buttonLink: safeUrl(raw.buttonLink),
       });
+    } else if (type === 'list') {
+      const style = raw.style === 'ordered' ? 'ordered' : 'unordered';
+      const items = Array.isArray(raw.items)
+        ? raw.items.map((item) => sanitizeHtml(String(item || '')).slice(0, 500)).filter(Boolean).slice(0, 100)
+        : [];
+      out.push({ type, style, items });
     }
   }
   return out;

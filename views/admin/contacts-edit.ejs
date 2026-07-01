@@ -1,0 +1,58 @@
+<%- include('partials/admin-header') %>
+
+<div class="page-head">
+  <h1>Страница контактов</h1>
+  <p class="page-sub">Настройте контактную информацию и добавьте произвольный контент (картинки, текст, видео).</p>
+</div>
+
+<form method="post" action="/admin/contacts" id="articleForm" class="article-editor">
+  <div class="editor-cols">
+    <div class="editor-main card">
+
+      <h3 class="editor-section-title">Контактная информация</h3>
+      <div class="form-grid">
+        <div class="field">
+          <label>Telegram (ссылка)</label>
+          <input type="text" name="contacts_telegram" class="input" value="<%= contacts_telegram %>" placeholder="https://t.me/...">
+        </div>
+        <div class="field">
+          <label>E-mail</label>
+          <input type="text" name="contacts_email" class="input" value="<%= contacts_email %>" placeholder="support@example.ru">
+        </div>
+        <div class="field field--full">
+          <label>Вводный текст над контактами</label>
+          <textarea name="contacts_text" class="input" rows="2"><%= contacts_text %></textarea>
+        </div>
+      </div>
+
+      <h3 class="editor-section-title" style="margin-top:24px">Дополнительный контент</h3>
+      <p class="hint">Добавьте любые блоки: абзацы, заголовки, кнопки, картинки, видео, списки — они покажутся ниже контактов.</p>
+
+      <div id="blocks" class="blocks"></div>
+
+      <div class="add-block-bar">
+        <button type="button" class="btn btn-sm" data-add="paragraph">+ Абзац</button>
+        <button type="button" class="btn btn-sm" data-add="heading">+ Заголовок</button>
+        <button type="button" class="btn btn-sm" data-add="list">+ Список</button>
+        <button type="button" class="btn btn-sm" data-add="button">+ Кнопка</button>
+        <button type="button" class="btn btn-sm" data-add="image">+ Картинка</button>
+        <button type="button" class="btn btn-sm" data-add="video">+ Видео</button>
+      </div>
+
+      <input type="hidden" name="blocks" id="blocksInput">
+    </div>
+
+    <aside class="editor-side card">
+      <button type="submit" class="btn btn-primary btn-block">💾 Сохранить контакты</button>
+      <p class="hint">После сохранения нажмите «⟳ Обновить сайт», чтобы изменения появились на сайте.</p>
+    </aside>
+  </div>
+</form>
+
+<%- include('partials/block-templates') %>
+
+<script>
+  window.__ARTICLE_BLOCKS__ = <%- JSON.stringify(blocks || []).replace(/</g, '\\u003c') %>;
+</script>
+
+<%- include('partials/admin-footer') %>

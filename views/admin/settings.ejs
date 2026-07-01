@@ -73,6 +73,12 @@
       <textarea name="contacts_text" class="input" rows="2"><%= values.contacts_text %></textarea>
     </div>
 
+    <div class="field">
+      <label>Промокодов на странице (пагинация)</label>
+      <input type="number" name="promo_per_page" class="input" value="<%= values.promo_per_page || 0 %>" min="0" max="100">
+      <span class="field-hint">Сколько промокодов показывать на одной «странице». 0 = показывать все без пагинации.</span>
+    </div>
+
     <div class="field field--full">
       <label>Порядок разделов на главной странице</label>
       <span class="field-hint">Перетаскивайте разделы кнопками ↑ / ↓. Баннеры всегда показываются сверху.</span>

@@ -152,6 +152,7 @@ router.get('/', (req, res) => {
   const latestArticles = (snap.articles || []).slice(0, 6);
   // Global promos: no service_id
   const globalPromos = (snap.promocodes || []).filter((p) => !p.service_id);
+  const promoPerPage = Math.max(0, parseInt(st.promo_per_page, 10) || 0);
 
   const defaultTitle = (st.site_title || 'ПРОМОКОДЫЧ') + (st.tagline ? ' — ' + st.tagline : '');
 
@@ -161,6 +162,8 @@ router.get('/', (req, res) => {
     bigBanner,
     smallBanners,
     promocodes: globalPromos,
+    promoPerPage,
+    inlineBanners: snap.inlineBanners || [],
     latestArticles,
     homeSections: parseHomeSections(st.home_sections),
     sections: sectionHeadings(st),
@@ -446,10 +449,13 @@ router.get('/contacts', (req, res) => {
   const snap = getPublishedSnapshot();
   const ps = (snap.pageSeo || {}).contacts || {};
   const h1 = ps.h1 || 'Контакты';
+  let contactsBlocks = [];
+  try { contactsBlocks = JSON.parse((snap.settings || {}).contacts_blocks || '[]'); } catch (_) {}
   res.render('public/contacts', {
     ...baseLocals(snap),
     page: 'contacts',
     pageH1: h1,
+    contactsBlocks,
     seo: seoFor(snap, req, { pageKey: 'contacts', defaultTitle: h1, path: '/contacts' }),
   });
 });

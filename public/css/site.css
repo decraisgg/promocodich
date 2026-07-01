@@ -728,6 +728,73 @@ img { max-width: 100%; display: block; }
 .gift-panel-btn { display: block; text-align: center; background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #fff; font-weight: 800; padding: 12px; border-radius: 10px; transition: filter .15s; }
 .gift-panel-btn:hover { filter: brightness(1.08); }
 
+/* ---------- Inline banner (Межстрочная плашка) ---------- */
+.inline-banner {
+  grid-column: 1 / -1;
+  display: flex; align-items: center; gap: 18px;
+  background: linear-gradient(135deg, #1d2029, #15171e);
+  border-radius: var(--radius); padding: 14px 22px;
+  box-shadow: var(--shadow-lg); overflow: hidden;
+  position: relative;
+}
+.inline-banner::before {
+  content: ""; position: absolute; inset: 0; z-index: 0;
+  background: linear-gradient(90deg, rgba(255,45,85,.18), transparent 70%);
+  pointer-events: none;
+}
+.inline-banner > * { position: relative; z-index: 1; }
+.inline-banner-img {
+  width: 72px; height: 72px; object-fit: contain; border-radius: 10px; flex: none;
+}
+.inline-banner-text {
+  flex: 1; color: #fff; font-weight: 700; font-size: 15px; line-height: 1.35;
+}
+.inline-banner-code {
+  margin: 0 4px;
+  border-color: rgba(255,45,85,.6) !important;
+  background: rgba(255,45,85,.1) !important;
+}
+.inline-banner-code .promo-code-value { color: #fff !important; }
+.inline-banner-btn {
+  flex: none; display: inline-block;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #fff; font-weight: 800; font-size: 14px;
+  padding: 11px 22px; border-radius: 12px;
+  white-space: nowrap;
+  box-shadow: 0 8px 20px rgba(255,45,85,.4);
+  transition: transform .15s, box-shadow .15s;
+}
+.inline-banner-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(255,45,85,.55); }
+
+/* ---------- Promo pagination ---------- */
+.promo-pagination {
+  display: flex; justify-content: center; gap: 8px;
+  margin-top: 28px; flex-wrap: wrap;
+}
+.promo-page-btn {
+  min-width: 42px; height: 42px; padding: 0 14px;
+  border: 2px solid rgba(255,45,85,.3); border-radius: 12px;
+  background: var(--card); color: var(--text); font-weight: 800; font-size: 15px;
+  cursor: pointer; transition: .15s;
+}
+.promo-page-btn:hover { border-color: var(--accent); color: var(--accent); }
+.promo-page-btn.active {
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  border-color: transparent; color: #fff;
+  box-shadow: 0 6px 18px rgba(255,45,85,.45);
+}
+
+/* ---------- Content list blocks ---------- */
+.content-list {
+  margin: 14px 0; padding-left: 24px;
+  color: var(--text); font-size: 15px; line-height: 1.7;
+}
+.content-list li { margin-bottom: 6px; }
+.content-list li::marker { color: var(--accent); font-weight: 800; }
+
+/* ---------- Contacts blocks ---------- */
+.contacts-content { margin-top: 28px; }
+
 /* ---------- Responsive ---------- */
 
 /* Large laptops / small desktops */
@@ -773,6 +840,8 @@ img { max-width: 100%; display: block; }
 
 /* Large phones */
 @media (max-width: 640px) {
+  .inline-banner { flex-direction: column; align-items: flex-start; gap: 10px; padding: 14px; }
+  .inline-banner-img { width: 52px; height: 52px; }
   .section { padding: 30px 0; }
   .section-title { font-size: 21px; }
   .promo-grid, .article-grid, .services-grid, .giveaway-grid, .giveaway-strip { grid-template-columns: 1fr; }

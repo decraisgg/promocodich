@@ -97,6 +97,33 @@
   </div>
 </template>
 
+<template id="tpl-list">
+  <div class="block" data-type="list">
+    <div class="block-bar">
+      <span class="block-type">≡ Список</span>
+      <div class="block-tools">
+        <select class="blk-list-style input-mini">
+          <option value="unordered">• Маркированный</option>
+          <option value="ordered">1. Нумерованный</option>
+        </select>
+        <button type="button" class="blk-list-add btn btn-sm" title="Добавить пункт">+ Пункт</button>
+        <span class="block-sep"></span>
+        <button type="button" class="blk-up" title="Выше">↑</button>
+        <button type="button" class="blk-down" title="Ниже">↓</button>
+        <button type="button" class="blk-del" title="Удалить">✕</button>
+      </div>
+    </div>
+    <div class="blk-list-items"></div>
+  </div>
+</template>
+
+<template id="tpl-list-item">
+  <div class="list-item-row">
+    <input type="text" class="blk-list-item-text input" placeholder="Пункт списка">
+    <button type="button" class="blk-list-item-del btn btn-sm" title="Удалить пункт">✕</button>
+  </div>
+</template>
+
 <template id="tpl-image">
   <div class="block" data-type="image">
     <div class="block-bar">

@@ -163,6 +163,22 @@ CREATE TABLE IF NOT EXISTS analytics_events (
 );
 CREATE INDEX IF NOT EXISTS idx_analytics_type ON analytics_events(type);
 CREATE INDEX IF NOT EXISTS idx_analytics_created ON analytics_events(created_at);
+
+CREATE TABLE IF NOT EXISTS inline_banners (
+  id             INTEGER PRIMARY KEY AUTOINCREMENT,
+  enabled        INTEGER NOT NULL DEFAULT 1,
+  after_row      INTEGER NOT NULL DEFAULT 1,
+  image_url      TEXT    DEFAULT '',
+  image_enabled  INTEGER NOT NULL DEFAULT 1,
+  text           TEXT    DEFAULT '',
+  text_enabled   INTEGER NOT NULL DEFAULT 1,
+  code           TEXT    DEFAULT '',
+  code_enabled   INTEGER NOT NULL DEFAULT 0,
+  button_text    TEXT    DEFAULT '',
+  button_link    TEXT    DEFAULT '',
+  button_enabled INTEGER NOT NULL DEFAULT 1,
+  sort_order     INTEGER NOT NULL DEFAULT 0
+);
 `);
 
 // Migration: add service_id to existing tables if column is missing
@@ -235,6 +251,7 @@ function seed() {
   _seedV2();
   _seedRatingCategories();
   _ensureDefaults();
+  // _seedInlineBanner is called from inside _ensureDefaults
 }
 
 // Seed the default rating categories once (admin can edit them afterwards).
@@ -311,6 +328,12 @@ function _ensureDefaults() {
     reviews_icon: '★',
     reviews_icon_image: '',
 
+    // Promo pagination
+    promo_per_page: '0',
+
+    // Contacts page rich content
+    contacts_blocks: '[]',
+
     // Web analytics counters (Метрика)
     metrika_yandex_id: '',
     metrika_google_id: '',
@@ -347,6 +370,18 @@ function _ensureDefaults() {
   for (const p of pages) ins.run(p);
 
   _seedRatings();
+  _seedInlineBanner();
+}
+
+function _seedInlineBanner() {
+  if (getSetting('seeded_inline_banner') === '1') return;
+  const count = db.prepare('SELECT COUNT(*) c FROM inline_banners').get().c;
+  if (count === 0) {
+    db.prepare(`INSERT INTO inline_banners
+      (enabled,after_row,image_url,image_enabled,text,text_enabled,code,code_enabled,button_text,button_link,button_enabled,sort_order)
+      VALUES (1,1,'',1,'Получи бонус прямо сейчас!',1,'',0,'Перейти','#',1,0)`).run();
+  }
+  setSetting('seeded_inline_banner', '1');
 }
 
 // Seed a couple of sample rating entries once (only if the table is empty).
