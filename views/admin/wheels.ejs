@@ -58,25 +58,38 @@
 
   <hr style="margin:22px 0;border:0;border-top:1px solid var(--line)">
 
-  <h3 style="margin-bottom:10px">Relay-сервер (Warsaw)</h3>
-  <p class="hint">Так как сайт находится на московском сервере, Telegram не может доставлять вебхуки напрямую. Запустите <code>relay.js</code> на отдельном Warsaw/EU-сервере — он принимает обновления от Telegram и пересылает их сюда.</p>
+  <h3 style="margin-bottom:10px">Relay-сервер (Warsaw / EU)</h3>
+  <p class="hint">Сайт в Москве не может принимать webhook от Telegram напрямую. На отдельном EU-сервере (Amvera Warsaw) запускается <code>relay.js</code> — он получает сообщения от бота, проверяет подписку на канал и отправляет результат на этот сайт.</p>
 
   <div class="relay-setup-block" style="background:var(--bg-2);border-radius:12px;padding:18px 22px;margin-top:14px">
-    <p style="margin:0 0 12px;font-weight:700">Шаг 1 — скопируйте <code>relay.js</code> на Warsaw-сервер</p>
-    <p class="hint" style="margin:0 0 16px">Файл находится в корне проекта. Node.js должен быть установлен на том сервере.</p>
+    <p style="margin:0 0 12px;font-weight:700">Шаг 1 — Amvera: проект <code>promokodyc-tg</code> (Warsaw)</p>
+    <p class="hint" style="margin:0 0 16px">В панели Amvera откройте Warsaw-проект с ботом → <b>Переменные окружения</b> и добавьте:</p>
 
-    <p style="margin:0 0 8px;font-weight:700">Шаг 2 — запустите relay с переменными окружения</p>
-    <pre class="relay-cmd">BOT_TOKEN=<%= botToken || 'ВАШ_ТОКЕН' %>
+    <pre class="relay-cmd">BOT_TOKEN=<%= botToken || 'ВАШ_ТОКЕН_ИЗ_BOTFATHER' %>
 RELAY_SECRET=<%= relaySecret %>
 MOSCOW_URL=<%= siteUrl || webhookUrl %>
-WARSAW_URL=https://адрес-warsaw-сервера
-PORT=3001
-node relay.js</pre>
+WARSAW_URL=https://ваш-warsaw-проект.amvera.app</pre>
 
-    <p style="margin:12px 0 8px;font-weight:700">Шаг 3 — зарегистрируйте webhook (один раз)</p>
-    <pre class="relay-cmd">curl -X POST "https://адрес-warsaw-сервера/set-webhook?secret=<%= relaySecret %>"</pre>
+    <p class="hint" style="margin:8px 0 16px">
+      <b>BOT_TOKEN</b> — тот же токен, что выше в настройках бота.<br>
+      <b>RELAY_SECRET</b> — скопируйте отсюда (общий секрет для связи Москва ↔ Warsaw).<br>
+      <b>MOSCOW_URL</b> — публичный URL этого сайта (сохраните ниже).<br>
+      <b>WARSAW_URL</b> — публичный URL Warsaw-проекта в Amvera (без слэша в конце).
+    </p>
 
-    <p class="hint" style="margin:12px 0 0">После успешной регистрации в консоли relay появится: <code>✅  Webhook set to …/telegram/webhook</code></p>
+    <p style="margin:0 0 8px;font-weight:700">Шаг 2 — Перезапустите Warsaw-проект</p>
+    <p class="hint" style="margin:0 0 16px">После сохранения переменных relay стартует сам. В логах должно появиться:<br>
+      <code>✅  Связь с Москвой OK</code> и <code>✅  Webhook зарегистрирован</code></p>
+
+    <p style="margin:0 0 8px;font-weight:700">Шаг 3 — Проверьте связь</p>
+    <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-top:8px">
+      <div class="field" style="flex:1;min-width:220px;margin:0">
+        <label>URL Warsaw relay</label>
+        <input type="url" id="warsawRelayUrl" class="input" placeholder="https://promokodyc-tg.amvera.app">
+      </div>
+      <button type="button" class="btn btn-secondary" id="relayCheckBtn" style="flex-shrink:0">Проверить связь</button>
+    </div>
+    <p id="relayCheckResult" class="hint" style="margin:10px 0 0"></p>
   </div>
 
   <div class="field" style="margin-top:16px">
@@ -451,6 +464,34 @@ document.querySelectorAll('.adder form').forEach(function(form) {
     if (/^#[0-9a-fA-F]{6}$/.test(textInput.value)) picker.value = textInput.value;
   });
 });
+
+var relayCheckBtn = document.getElementById('relayCheckBtn');
+if (relayCheckBtn) {
+  relayCheckBtn.addEventListener('click', function() {
+    var url = (document.getElementById('warsawRelayUrl') || {}).value || '';
+    var result = document.getElementById('relayCheckResult');
+    if (!url) {
+      if (result) result.textContent = 'Укажите URL Warsaw relay.';
+      return;
+    }
+    if (result) result.textContent = 'Проверяем…';
+    relayCheckBtn.disabled = true;
+    fetch('/admin/wheel-relay-check?url=' + encodeURIComponent(url.replace(/\/$/, '')))
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (!result) return;
+        if (data.ok) {
+          result.innerHTML = '✅ Relay работает. Moscow: <code>' + (data.moscow || '—') + '</code>, Warsaw: <code>' + (data.warsaw || '—') + '</code>';
+        } else {
+          result.textContent = '❌ ' + (data.error || 'Relay недоступен. Проверьте переменные окружения в Warsaw-проекте.');
+        }
+      })
+      .catch(function() {
+        if (result) result.textContent = '❌ Ошибка запроса. Проверьте URL Warsaw relay.';
+      })
+      .finally(function() { relayCheckBtn.disabled = false; });
+  });
+}
 </script>
 
 <%- include('partials/admin-footer') %>

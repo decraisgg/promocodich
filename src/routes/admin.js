@@ -1134,4 +1134,41 @@ router.post('/wheel-webhook', (req, res) => {
   res.redirect('/admin/wheels');
 });
 
+router.get('/wheel-relay-check', async (req, res) => {
+  const relayUrl = s(req.query.url).replace(/\/$/, '');
+  if (!relayUrl || !/^https?:\/\//i.test(relayUrl)) {
+    return res.json({ ok: false, error: 'Некорректный URL Warsaw relay' });
+  }
+  const https = require('https');
+  const http = require('http');
+  const { URL } = require('url');
+  try {
+    const parsed = new URL(relayUrl + '/health');
+    const mod = parsed.protocol === 'https:' ? https : http;
+    const data = await new Promise((resolve, reject) => {
+      const r = mod.get(parsed, resp => {
+        let d = '';
+        resp.on('data', c => { d += c; });
+        resp.on('end', () => {
+          try { resolve(JSON.parse(d)); } catch (e) { reject(new Error('Неверный ответ relay')); }
+        });
+      });
+      r.on('error', reject);
+      r.setTimeout(8000, () => { r.destroy(); reject(new Error('Таймаут')); });
+    });
+    const moscowUrl = getSetting('tg_site_url', '') || '';
+    if (data.ok && moscowUrl && data.moscow && data.moscow !== moscowUrl.replace(/\/$/, '')) {
+      return res.json({
+        ok: false,
+        error: 'Relay работает, но MOSCOW_URL не совпадает с URL сайта. В Warsaw задайте MOSCOW_URL=' + moscowUrl,
+        moscow: data.moscow,
+        warsaw: data.warsaw,
+      });
+    }
+    res.json({ ok: !!data.ok, moscow: data.moscow, warsaw: data.warsaw });
+  } catch (e) {
+    res.json({ ok: false, error: 'Relay недоступен: ' + e.message });
+  }
+});
+
 module.exports = router;

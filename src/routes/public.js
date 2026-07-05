@@ -598,7 +598,7 @@ router.post('/api/wheel/spin', (req, res) => {
   const key = db.prepare('SELECT * FROM wheel_keys WHERE prize_id = ? AND used = 0 ORDER BY id LIMIT 1').get(selected.id);
   let keyId = null;
   if (key) {
-    db.prepare('UPDATE wheel_keys SET used = 1, used_by_tg_id = ?, used_at = datetime("now") WHERE id = ?').run(tgId, key.id);
+    db.prepare("UPDATE wheel_keys SET used = 1, used_by_tg_id = ?, used_at = datetime('now') WHERE id = ?").run(tgId, key.id);
     keyId = key.id;
   }
   const tgUsername = req.session.tg_username || '';
