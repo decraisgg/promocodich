@@ -502,10 +502,12 @@ router.post('/telegram/webhook', express.json(), async (req, res) => {
         } catch (_) { allMet = false; failed.push(cond.label || cond.channel_url); }
       }
       if (allMet) {
-        db.prepare('UPDATE tg_sessions SET verified = 1 WHERE code = ?').run(code);
-        await sendMessage(token, chatId, '✅ Отлично! Вы можете крутить колесо фортуны.');
+        db.prepare('UPDATE tg_sessions SET verified = 1, reject_reason = ? WHERE code = ?').run('', code);
+        await sendMessage(token, chatId, '✅ Отлично! Вы можете крутить колесо фортуны. Вернитесь на сайт — страница обновится автоматически.');
       } else {
-        await sendMessage(token, chatId, '❌ Вы не выполнили условие:\n' + failed.map(f => '• ' + f).join('\n') + '\n\nПодпишитесь и попробуйте снова.');
+        const reason = 'Вы не выполнили условие:\n' + failed.map(f => '• ' + f).join('\n');
+        db.prepare('UPDATE tg_sessions SET reject_reason = ? WHERE code = ?').run(reason, code);
+        await sendMessage(token, chatId, '❌ ' + reason + '\n\nПодпишитесь на каналы и нажмите кнопку верификации на сайте снова.');
       }
     }
   } catch (e) { console.error('TG webhook error:', e); }
@@ -567,6 +569,10 @@ router.get('/api/wheel/verify', (req, res) => {
     req.session.tg_username = sess.tg_username || '';
     db.prepare('DELETE FROM tg_sessions WHERE code = ?').run(code);
     return res.json({ ok: true, tg_id: sess.tg_id, tg_username: sess.tg_username });
+  }
+  if (sess.reject_reason) {
+    db.prepare('DELETE FROM tg_sessions WHERE code = ?').run(code);
+    return res.json({ ok: false, rejected: true, reason: sess.reject_reason });
   }
   res.json({ ok: false, pending: true });
 });

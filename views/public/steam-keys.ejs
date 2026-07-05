@@ -78,6 +78,14 @@
             <p>Ожидаем подтверждение от Telegram-бота…</p>
             <p class="tg-verify-hint" style="margin-top:4px">Если окно бота не открылось, <a href="#" id="tgRetryLink">нажмите здесь</a>.</p>
           </div>
+          <div class="tg-rejected-state" id="tgRejectedState" style="display:none">
+            <div class="tg-verify-icon" style="color:#ff3b30">❌</div>
+            <h3 class="tg-verify-title" style="color:#ff3b30">Вы не выполнили условие</h3>
+            <p class="tg-rejected-reason" id="tgRejectedReason"></p>
+            <button class="tg-verify-btn" id="tgRetryBtn" type="button" style="margin-top:12px">
+              <span class="tg-verify-btn-icon">↩</span> Попробовать снова
+            </button>
+          </div>
         <% } %>
       </div>
     </div>
@@ -391,28 +399,62 @@
   // ---- Telegram verification ----
   var _verifyCode = null;
   var _verifyInterval = null;
-  var _verifyBotUrl = null;
+  var _verifyTimeout = null;
+
+  function showUnverified() {
+    var u = document.getElementById('tgUnverifiedState');
+    var l = document.getElementById('tgLoadingState');
+    var r = document.getElementById('tgRejectedState');
+    if (u) u.style.display = '';
+    if (l) l.style.display = 'none';
+    if (r) r.style.display = 'none';
+    var verifyBtn = document.getElementById('tgVerifyBtn');
+    if (verifyBtn) { verifyBtn.disabled = false; verifyBtn.innerHTML = '<span class="tg-verify-btn-icon">✈</span> Подтвердить через Telegram'; }
+  }
+
+  function stopPolling() {
+    if (_verifyInterval) { clearInterval(_verifyInterval); _verifyInterval = null; }
+    if (_verifyTimeout) { clearTimeout(_verifyTimeout); _verifyTimeout = null; }
+    _verifyCode = null;
+  }
 
   var verifyBtn = document.getElementById('tgVerifyBtn');
   if (verifyBtn) {
-    verifyBtn.addEventListener('click', function() {
-      verifyBtn.disabled = true;
-      verifyBtn.textContent = '⏳ Получаем ссылку…';
-      fetch('/api/wheel/start-verify', { method: 'POST' })
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-          if (!data.ok) { verifyBtn.disabled = false; verifyBtn.innerHTML = '<span class="tg-verify-btn-icon">✈</span> Подтвердить через Telegram'; return; }
-          _verifyCode = data.code;
-          _verifyBotUrl = data.url;
-          window.open(data.url, '_blank');
-          document.getElementById('tgUnverifiedState').style.display = 'none';
-          document.getElementById('tgLoadingState').style.display = '';
-          var retryLink = document.getElementById('tgRetryLink');
-          if (retryLink) retryLink.href = data.url;
-          _verifyInterval = setInterval(pollVerify, 2000);
-        })
-        .catch(function() { verifyBtn.disabled = false; verifyBtn.innerHTML = '<span class="tg-verify-btn-icon">✈</span> Подтвердить через Telegram'; });
+    verifyBtn.addEventListener('click', startVerify);
+  }
+  var retryBtn = document.getElementById('tgRetryBtn');
+  if (retryBtn) {
+    retryBtn.addEventListener('click', function() {
+      document.getElementById('tgRejectedState').style.display = 'none';
+      document.getElementById('tgUnverifiedState').style.display = '';
     });
+  }
+
+  function startVerify() {
+    var btn = document.getElementById('tgVerifyBtn');
+    if (btn) { btn.disabled = true; btn.textContent = '⏳ Получаем ссылку…'; }
+    fetch('/api/wheel/start-verify', { method: 'POST' })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (!data.ok) { showUnverified(); return; }
+        _verifyCode = data.code;
+        window.open(data.url, '_blank');
+        var u = document.getElementById('tgUnverifiedState');
+        var l = document.getElementById('tgLoadingState');
+        if (u) u.style.display = 'none';
+        if (l) l.style.display = '';
+        var retryLink = document.getElementById('tgRetryLink');
+        if (retryLink) retryLink.href = data.url;
+        _verifyInterval = setInterval(pollVerify, 2000);
+        // 3-minute timeout
+        _verifyTimeout = setTimeout(function() {
+          stopPolling();
+          showUnverified();
+          var hint = document.getElementById('tgVerifyHint');
+          if (hint) { hint.textContent = 'Время ожидания истекло. Попробуйте снова.'; hint.style.display = ''; }
+        }, 180000);
+      })
+      .catch(function() { showUnverified(); });
   }
 
   function pollVerify() {
@@ -421,8 +463,18 @@
       .then(function(r) { return r.json(); })
       .then(function(data) {
         if (data.ok) {
-          clearInterval(_verifyInterval);
+          stopPolling();
           location.reload();
+        } else if (data.rejected) {
+          stopPolling();
+          var l = document.getElementById('tgLoadingState');
+          var r = document.getElementById('tgRejectedState');
+          if (l) l.style.display = 'none';
+          if (r) {
+            r.style.display = '';
+            var reasonEl = document.getElementById('tgRejectedReason');
+            if (reasonEl) reasonEl.textContent = data.reason || 'Условия участия не выполнены.';
+          }
         }
       })
       .catch(function() {});

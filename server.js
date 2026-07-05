@@ -21,6 +21,9 @@ if (!getSetting('published_snapshot', '')) {
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Trust reverse proxy (needed so req.protocol returns 'https' behind nginx/cloudflare)
+app.set('trust proxy', 1);
+
 // Views
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));

@@ -971,7 +971,9 @@ img { max-width: 100%; display: block; }
 }
 .tg-logout-btn:hover { border-color: var(--accent); color: var(--accent); }
 
-.tg-unverified-state, .tg-loading-state { max-width: 500px; margin: 0 auto; }
+.tg-unverified-state, .tg-loading-state, .tg-rejected-state { max-width: 500px; margin: 0 auto; }
+.tg-rejected-state { text-align: center; }
+.tg-rejected-reason { color: var(--muted); font-size: 14px; margin: 0 0 8px; white-space: pre-line; }
 .tg-verify-icon { font-size: 52px; margin-bottom: 14px; }
 .tg-verify-title { margin: 0 0 10px; font-size: 22px; font-weight: 900; }
 .tg-verify-desc { color: var(--muted); font-size: 15px; margin: 0 0 20px; }

@@ -49,12 +49,17 @@
   <hr style="margin:22px 0;border:0;border-top:1px solid var(--line)">
 
   <h3 style="margin-bottom:10px">Webhook Telegram</h3>
-  <p class="hint">После сохранения токена нажмите кнопку, чтобы зарегистрировать webhook у Telegram.</p>
-  <form method="post" action="/admin/wheel-webhook">
-    <button type="submit" class="btn btn-primary">Установить Webhook</button>
+  <p class="hint">Telegram требует публичный HTTPS-адрес сайта. Укажите URL сайта и нажмите кнопку.</p>
+  <form method="post" action="/admin/wheel-webhook" style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
+    <div class="field" style="flex:1;min-width:260px;margin:0">
+      <label>URL сайта (HTTPS)</label>
+      <input type="url" name="site_url" class="input" value="<%= siteUrl || webhookUrl %>" placeholder="https://example.com">
+      <span class="field-hint">Публичный адрес сайта — Telegram отправит сюда обновления.</span>
+    </div>
+    <button type="submit" class="btn btn-primary" style="flex-shrink:0">Установить Webhook</button>
   </form>
   <% if (botToken) { %>
-    <p class="hint" style="margin-top:8px">Webhook будет установлен на: <code><%= req ? req.protocol + '://' + req.headers.host : '' %>/telegram/webhook</code></p>
+    <p class="hint" style="margin-top:8px">Webhook: <code><%= siteUrl || webhookUrl %>/telegram/webhook</code></p>
   <% } %>
 </div>
 

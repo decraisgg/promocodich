@@ -246,6 +246,7 @@ addColIfMissing('articles', 'meta_title', "TEXT DEFAULT ''");
 addColIfMissing('articles', 'meta_description', "TEXT DEFAULT ''");
 addColIfMissing('ratings', 'bonus_code', "TEXT DEFAULT ''");
 addColIfMissing('inline_banners', 'banner_image', "TEXT DEFAULT ''");
+addColIfMissing('tg_sessions', 'reject_reason', "TEXT DEFAULT ''");
 
 // --- Settings helpers ---------------------------------------------------
 const getSettingStmt = db.prepare('SELECT value FROM settings WHERE key = ?');
@@ -391,6 +392,7 @@ function _ensureDefaults() {
     // Telegram bot (for wheel verification)
     tg_bot_token: '8819786475:AAGPVn-p8GSvxyA0wABDeDt8ZEvvlxKQ0yM',
     tg_bot_link: 't.me/promocodichbot',
+    tg_site_url: '',
 
     // Steam Keys nav item
     nav_steamkeys: 'Ключи Steam',
