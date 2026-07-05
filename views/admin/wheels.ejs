@@ -40,6 +40,16 @@
         <label class="switch"><input type="checkbox" name="nav_steamkeys_enabled" value="1" <%= navSteamkeysEnabled ? 'checked' : '' %>><span class="slider"></span></label>
         <span>Показывать в меню</span>
       </div>
+      <div class="field field--full" style="grid-column:1/-1;border-top:1px solid var(--line);padding-top:16px;margin-top:6px">
+        <b style="font-size:15px">Интерфейс страницы «Ключи Steam»</b>
+      </div>
+      <div class="field field--full">
+        <label>Описание страницы</label>
+        <textarea name="steam_keys_subtitle" class="input" rows="2"><%= steamKeysSubtitle %></textarea>
+        <span class="field-hint">Текст под заголовком страницы.</span>
+      </div>
+      <%- include('partials/image-field', { name: 'tg_verified_image', value: tgVerifiedImage, label: 'Картинка верификации (заменяет галочку)' }) %>
+      <%- include('partials/image-field', { name: 'tg_verify_btn_image', value: tgVerifyBtnImage, label: 'Картинка на кнопке Подтвердить (заменяет иконку)' }) %>
     </div>
     <div class="form-actions">
       <button type="submit" class="btn btn-primary">Сохранить настройки</button>
@@ -180,6 +190,7 @@ node relay.js</pre>
             <label>Порядок</label>
             <input type="number" name="sort_order" class="input" value="0" style="max-width:100px">
           </div>
+          <%- include('partials/image-field', { name: 'icon_url', value: '', label: 'Иконка раздела (необязательно)' }) %>
         </div>
         <div class="form-actions">
           <button type="submit" class="btn btn-primary">Добавить</button>
@@ -220,6 +231,7 @@ node relay.js</pre>
             <label>Порядок</label>
             <input type="number" name="sort_order" class="input" value="<%= wheel.sort_order %>" style="max-width:100px">
           </div>
+          <%- include('partials/image-field', { name: 'icon_url', value: wheel.icon_url || '', label: 'Иконка раздела' }) %>
           <div class="field--switch field">
             <label class="switch"><input type="checkbox" name="enabled" value="1" <%= wheel.enabled ? 'checked' : '' %>><span class="slider"></span></label>
             <span>Активно</span>

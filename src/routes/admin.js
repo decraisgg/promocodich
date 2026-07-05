@@ -156,6 +156,7 @@ function bannerFromBody(body) {
   return {
     enabled: b(body.enabled),
     service_id: body.service_id ? parseInt(body.service_id, 10) : null,
+    page_key: s(body.page_key) || '',
     size: body.size === 'big' ? 'big' : 'small',
     image_url: s(body.image_url),
     image_link: s(body.image_link),
@@ -172,8 +173,8 @@ function bannerFromBody(body) {
 router.post('/banners', (req, res) => {
   const d = bannerFromBody(req.body);
   db.prepare(`INSERT INTO banners
-    (enabled,service_id,size,image_url,image_link,text_enabled,title,subtitle,button_enabled,button_text,button_link,sort_order)
-    VALUES (@enabled,@service_id,@size,@image_url,@image_link,@text_enabled,@title,@subtitle,@button_enabled,@button_text,@button_link,@sort_order)`).run(d);
+    (enabled,service_id,page_key,size,image_url,image_link,text_enabled,title,subtitle,button_enabled,button_text,button_link,sort_order)
+    VALUES (@enabled,@service_id,@page_key,@size,@image_url,@image_link,@text_enabled,@title,@subtitle,@button_enabled,@button_text,@button_link,@sort_order)`).run(d);
   markDirty();
   flash(req, 'success', 'Баннер добавлен.');
   res.redirect('/admin/banners');
@@ -182,7 +183,7 @@ router.post('/banners', (req, res) => {
 router.post('/banners/:id', (req, res) => {
   const d = bannerFromBody(req.body);
   db.prepare(`UPDATE banners SET
-    enabled=@enabled,service_id=@service_id,size=@size,image_url=@image_url,image_link=@image_link,text_enabled=@text_enabled,
+    enabled=@enabled,service_id=@service_id,page_key=@page_key,size=@size,image_url=@image_url,image_link=@image_link,text_enabled=@text_enabled,
     title=@title,subtitle=@subtitle,button_enabled=@button_enabled,button_text=@button_text,button_link=@button_link,sort_order=@sort_order
     WHERE id=@id`).run({ ...d, id: req.params.id });
   markDirty();
@@ -1029,6 +1030,9 @@ router.get('/wheels', (req, res) => {
     active: 'wheels', wheels, conditions, spinStats, totalSpins,
     botToken: getSetting('tg_bot_token', ''),
     botLink: getSetting('tg_bot_link', 't.me/promocodichbot'),
+    steamKeysSubtitle: getSetting('steam_keys_subtitle', 'Крути колесо фортуны и выигрывай ключи Steam. 1 попытка в день.'),
+    tgVerifiedImage: getSetting('tg_verified_image', ''),
+    tgVerifyBtnImage: getSetting('tg_verify_btn_image', ''),
     navSteamkeys: getSetting('nav_steamkeys', 'Ключи Steam'),
     navSteamkeysIcon: getSetting('nav_steamkeys_icon', '🎮'),
     navSteamkeysIconImage: getSetting('nav_steamkeys_icon_image', ''),
@@ -1041,13 +1045,13 @@ router.get('/wheels', (req, res) => {
 });
 
 router.post('/wheels', (req, res) => {
-  db.prepare('INSERT INTO wheels (name, enabled, sort_order) VALUES (?, ?, ?)').run(
-    s(req.body.name) || 'Колесо фортуны', 1, parseInt(req.body.sort_order, 10) || 0);
+  db.prepare('INSERT INTO wheels (name, icon_url, enabled, sort_order) VALUES (?, ?, ?, ?)').run(
+    s(req.body.name) || 'Колесо фортуны', s(req.body.icon_url), 1, parseInt(req.body.sort_order, 10) || 0);
   markDirty(); flash(req, 'success', 'Колесо добавлено.'); res.redirect('/admin/wheels');
 });
 router.post('/wheels/:id', (req, res) => {
-  db.prepare('UPDATE wheels SET name=?, enabled=?, sort_order=? WHERE id=?').run(
-    s(req.body.name) || 'Колесо фортуны', b(req.body.enabled), parseInt(req.body.sort_order, 10) || 0, req.params.id);
+  db.prepare('UPDATE wheels SET name=?, icon_url=?, enabled=?, sort_order=? WHERE id=?').run(
+    s(req.body.name) || 'Колесо фортуны', s(req.body.icon_url), b(req.body.enabled), parseInt(req.body.sort_order, 10) || 0, req.params.id);
   markDirty(); flash(req, 'success', 'Колесо сохранено.'); res.redirect('/admin/wheels');
 });
 router.post('/wheels/:id/delete', (req, res) => {
@@ -1106,6 +1110,9 @@ router.post('/wheel-conditions/:id/delete', (req, res) => {
 router.post('/wheel-settings', (req, res) => {
   setSetting('tg_bot_token', s(req.body.tg_bot_token));
   setSetting('tg_bot_link', s(req.body.tg_bot_link));
+  setSetting('steam_keys_subtitle', s(req.body.steam_keys_subtitle));
+  setSetting('tg_verified_image', s(req.body.tg_verified_image));
+  setSetting('tg_verify_btn_image', s(req.body.tg_verify_btn_image));
   setSetting('nav_steamkeys', s(req.body.nav_steamkeys) || 'Ключи Steam');
   setSetting('nav_steamkeys_icon', s(req.body.nav_steamkeys_icon));
   setSetting('nav_steamkeys_icon_image', s(req.body.nav_steamkeys_icon_image));

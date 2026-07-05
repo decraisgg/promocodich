@@ -16,14 +16,23 @@
   </div>
 
   <div class="field">
+    <label>Страница</label>
+    <select name="page_key" class="input">
+      <option value="" <%= (!banner.service_id && !banner.page_key) ? 'selected' : '' %>>Главная страница</option>
+      <option value="steam-keys" <%= (banner.page_key === 'steam-keys') ? 'selected' : '' %>>Ключи Steam</option>
+    </select>
+    <span class="field-hint">На какой странице показывать баннер.</span>
+  </div>
+
+  <div class="field">
     <label>Сервис (страница сервиса)</label>
     <select name="service_id" class="input">
-      <option value="">Главная страница</option>
+      <option value="">—</option>
       <% (typeof services !== 'undefined' ? services : []).forEach(function(svc){ %>
         <option value="<%= svc.id %>" <%= (banner.service_id == svc.id ? 'selected' : '') %>><%= svc.name %></option>
       <% }); %>
     </select>
-    <span class="field-hint">Выберите сервис, если баннер должен показываться только на странице этого сервиса.</span>
+    <span class="field-hint">Если выбран сервис — показывается только на его странице (переопределяет поле "Страница").</span>
   </div>
 
   <%- include('image-field', { name: 'image_url', value: banner.image_url, label: 'Картинка баннера (фон)' }) %>

@@ -247,6 +247,8 @@ addColIfMissing('articles', 'meta_description', "TEXT DEFAULT ''");
 addColIfMissing('ratings', 'bonus_code', "TEXT DEFAULT ''");
 addColIfMissing('inline_banners', 'banner_image', "TEXT DEFAULT ''");
 addColIfMissing('tg_sessions', 'reject_reason', "TEXT DEFAULT ''");
+addColIfMissing('banners', 'page_key', "TEXT DEFAULT ''");
+addColIfMissing('wheels', 'icon_url', "TEXT DEFAULT ''");
 
 // --- Settings helpers ---------------------------------------------------
 const getSettingStmt = db.prepare('SELECT value FROM settings WHERE key = ?');
@@ -393,6 +395,11 @@ function _ensureDefaults() {
     tg_bot_token: '8819786475:AAGPVn-p8GSvxyA0wABDeDt8ZEvvlxKQ0yM',
     tg_bot_link: 't.me/promocodichbot',
     tg_site_url: '',
+
+    // Steam Keys page content
+    steam_keys_subtitle: 'Крути колесо фортуны и выигрывай ключи Steam. 1 попытка в день.',
+    tg_verified_image: '',
+    tg_verify_btn_image: '',
 
     // Steam Keys nav item
     nav_steamkeys: 'Ключи Steam',

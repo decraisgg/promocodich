@@ -528,9 +528,9 @@ router.get('/steam-keys', (req, res) => {
     });
     w.alreadySpun = tgId ? !!db.prepare("SELECT id FROM wheel_spins WHERE tg_id = ? AND wheel_id = ? AND date(spun_at) = date('now')").get(tgId, w.id) : false;
   });
-  const banners = (snap.banners || []).filter(b => !b.service_id);
-  const bigBanner = banners.find(b => b.size === 'big') || null;
-  const smallBanners = banners.filter(b => b.size === 'small').slice(0, 2);
+  const skBanners = (snap.banners || []).filter(b => !b.service_id && b.page_key === 'steam-keys');
+  const bigBanner = skBanners.find(b => b.size === 'big') || null;
+  const smallBanners = skBanners.filter(b => b.size === 'small').slice(0, 2);
   const botLink = st.tg_bot_link || 't.me/promocodichbot';
   const ps = (snap.pageSeo || {})['steam-keys'] || {};
   const pageH1 = ps.h1 || st.nav_steamkeys || 'Ключи Steam';
@@ -545,6 +545,9 @@ router.get('/steam-keys', (req, res) => {
     bigBanner,
     smallBanners,
     pageH1,
+    pageSubtitle: st.steam_keys_subtitle || 'Крути колесо фортуны и выигрывай ключи Steam. 1 попытка в день.',
+    tgVerifiedImage: st.tg_verified_image || '',
+    tgVerifyBtnImage: st.tg_verify_btn_image || '',
     seo: seoFor(snap, req, { pageKey: 'steam-keys', defaultTitle: pageH1, path: '/steam-keys' }),
   });
 });

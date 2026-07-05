@@ -23,9 +23,9 @@
   <!-- Page title -->
   <section class="section section--tight">
     <div class="container">
-      <div class="page-hero-head">
-        <h1 class="page-hero-title">🎮 <%= pageH1 %></h1>
-        <p class="page-hero-sub">Крути колесо фортуны и выигрывай ключи Steam. 1 попытка в день.</p>
+      <div class="page-hero-head sk-page-head">
+        <h1 class="page-hero-title">&#x1F3AE; <%= pageH1 %></h1>
+        <p class="page-hero-sub"><%= pageSubtitle %></p>
       </div>
     </div>
   </section>
@@ -33,11 +33,13 @@
   <!-- Telegram verification -->
   <section class="section section--tight">
     <div class="container container--narrow">
-      <div class="tg-verify-section" id="tgVerifySection">
+      <div class="tg-verify-section sk-card" id="tgVerifySection">
         <% if (tgId) { %>
           <!-- Already verified -->
           <div class="tg-verified-state">
-            <div class="tg-verified-avatar">✅</div>
+            <div class="tg-verified-avatar">
+              <% if (tgVerifiedImage) { %><img src="<%= tgVerifiedImage %>" alt="verified" class="tg-verified-img"><% } else { %>&#x2705;<% } %>
+            </div>
             <div class="tg-verified-info">
               <p class="tg-verified-name">Вы вошли как <b>@<%= tgUsername || tgId %></b></p>
               <p class="tg-verified-sub">Вы можете крутить колесо фортуны раз в день!</p>
@@ -55,8 +57,7 @@
                 <p class="tg-conditions-title">Условия участия:</p>
                 <ul class="tg-conditions">
                   <% conditions.forEach(function(c){ %>
-                    <li>
-                      <span class="tg-cond-check">○</span>
+                    <li class="tg-cond-item">
                       <% if (c.channel_url) { %>
                         <a href="<%= c.channel_url %>" target="_blank" rel="noopener nofollow"><%= c.label || c.channel_url %></a>
                       <% } else { %>
@@ -68,7 +69,7 @@
               </div>
             <% } %>
             <button class="tg-verify-btn" id="tgVerifyBtn" type="button">
-              <span class="tg-verify-btn-icon">✈</span>
+              <% if (tgVerifyBtnImage) { %><img src="<%= tgVerifyBtnImage %>" alt="" class="tg-verify-btn-img"><% } else { %><span class="tg-verify-btn-icon">&#x2708;</span><% } %>
               Подтвердить через Telegram
             </button>
             <p class="tg-verify-hint" id="tgVerifyHint" style="display:none">Переходите в бот и отправьте команду /start. Ждём подтверждения…</p>
@@ -98,7 +99,7 @@
         <div class="container">
           <div class="section-head">
             <h2 class="section-title">
-              <span class="ico">🎰</span>
+              <% if (wheel.icon_url) { %><img src="<%= wheel.icon_url %>" alt="" class="wheel-section-icon-img"><% } else { %><span class="ico">&#x1F3B0;</span><% } %>
               <%= wheel.name %>
             </h2>
           </div>
@@ -106,11 +107,13 @@
           <div class="wheel-layout">
             <!-- Wheel canvas -->
             <div class="wheel-wrap">
-              <div class="wheel-canvas-wrap">
-                <div class="wheel-pointer"></div>
-                <canvas id="wheelCanvas<%= wi %>" class="wheel-canvas" width="380" height="380"
-                  data-prizes="<%= JSON.stringify(wheel.prizes.map(function(p){ return { label: p.label, color: p.color || '#cccccc', chance: p.chance }; })) %>"
-                  data-wheel-id="<%= wheel.id %>"></canvas>
+              <div class="wheel-frame">
+                <div class="wheel-canvas-wrap">
+                  <div class="wheel-pointer"></div>
+                  <canvas id="wheelCanvas<%= wi %>" class="wheel-canvas" width="380" height="380"
+                    data-prizes="<%= JSON.stringify(wheel.prizes.map(function(p){ return { label: p.label, color: p.color || '#cccccc', chance: p.chance }; })) %>"
+                    data-wheel-id="<%= wheel.id %>"></canvas>
+                </div>
               </div>
               <% if (wheel.alreadySpun) { %>
                 <div class="wheel-already-spun">
@@ -400,6 +403,7 @@
   var _verifyCode = null;
   var _verifyInterval = null;
   var _verifyTimeout = null;
+  var _tgVerifyBtnImage = '<%= tgVerifyBtnImage || "" %>';
 
   function showUnverified() {
     var u = document.getElementById('tgUnverifiedState');
@@ -409,7 +413,13 @@
     if (l) l.style.display = 'none';
     if (r) r.style.display = 'none';
     var verifyBtn = document.getElementById('tgVerifyBtn');
-    if (verifyBtn) { verifyBtn.disabled = false; verifyBtn.innerHTML = '<span class="tg-verify-btn-icon">✈</span> Подтвердить через Telegram'; }
+    if (verifyBtn) {
+      verifyBtn.disabled = false;
+      var _btnIcon = _tgVerifyBtnImage
+        ? '<img src="' + _tgVerifyBtnImage + '" alt="" class="tg-verify-btn-img">'
+        : '<span class="tg-verify-btn-icon">&#x2708;</span>';
+      verifyBtn.innerHTML = _btnIcon + ' Подтвердить через Telegram';
+    }
   }
 
   function stopPolling() {
