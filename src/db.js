@@ -179,6 +179,54 @@ CREATE TABLE IF NOT EXISTS inline_banners (
   button_enabled INTEGER NOT NULL DEFAULT 1,
   sort_order     INTEGER NOT NULL DEFAULT 0
 );
+
+CREATE TABLE IF NOT EXISTS wheels (
+  id         INTEGER PRIMARY KEY AUTOINCREMENT,
+  name       TEXT DEFAULT 'Колесо фортуны',
+  enabled    INTEGER NOT NULL DEFAULT 1,
+  sort_order INTEGER NOT NULL DEFAULT 0
+);
+CREATE TABLE IF NOT EXISTS wheel_prizes (
+  id         INTEGER PRIMARY KEY AUTOINCREMENT,
+  wheel_id   INTEGER NOT NULL REFERENCES wheels(id) ON DELETE CASCADE,
+  label      TEXT DEFAULT '',
+  image_url  TEXT DEFAULT '',
+  chance     INTEGER NOT NULL DEFAULT 10,
+  color      TEXT DEFAULT '',
+  sort_order INTEGER NOT NULL DEFAULT 0
+);
+CREATE TABLE IF NOT EXISTS wheel_keys (
+  id             INTEGER PRIMARY KEY AUTOINCREMENT,
+  prize_id       INTEGER NOT NULL REFERENCES wheel_prizes(id) ON DELETE CASCADE,
+  key_value      TEXT NOT NULL DEFAULT '',
+  used           INTEGER NOT NULL DEFAULT 0,
+  used_by_tg_id  TEXT DEFAULT '',
+  used_at        TEXT DEFAULT NULL
+);
+CREATE TABLE IF NOT EXISTS wheel_conditions (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  label       TEXT DEFAULT 'Подписаться на канал',
+  channel_url TEXT DEFAULT '',
+  channel_id  TEXT DEFAULT '',
+  enabled     INTEGER NOT NULL DEFAULT 1,
+  sort_order  INTEGER NOT NULL DEFAULT 0
+);
+CREATE TABLE IF NOT EXISTS wheel_spins (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  tg_id       TEXT NOT NULL,
+  tg_username TEXT DEFAULT '',
+  wheel_id    INTEGER,
+  prize_id    INTEGER,
+  key_id      INTEGER,
+  spun_at     TEXT DEFAULT (datetime('now'))
+);
+CREATE TABLE IF NOT EXISTS tg_sessions (
+  code        TEXT PRIMARY KEY,
+  tg_id       TEXT DEFAULT '',
+  tg_username TEXT DEFAULT '',
+  verified    INTEGER NOT NULL DEFAULT 0,
+  created_at  TEXT DEFAULT (datetime('now'))
+);
 `);
 
 // Migration: add service_id to existing tables if column is missing
@@ -293,7 +341,7 @@ function _ensureDefaults() {
     nav_giveaways: 'Розыгрыши',
     nav_contacts: 'Контакты',
     nav_rating: 'Рейтинг',
-    nav_order: 'home,promocodes,rating,services,articles,contacts',
+    nav_order: 'steamkeys,home,promocodes,rating,services,articles,contacts',
 
     // Site background (configurable in admin Settings)
     bg_image: '',
@@ -340,6 +388,17 @@ function _ensureDefaults() {
     home_sites_limit: '12',
     home_articles_limit: '12',
 
+    // Telegram bot (for wheel verification)
+    tg_bot_token: '8819786475:AAGPVn-p8GSvxyA0wABDeDt8ZEvvlxKQ0yM',
+    tg_bot_link: 't.me/promocodichbot',
+
+    // Steam Keys nav item
+    nav_steamkeys: 'Ключи Steam',
+    nav_steamkeys_icon: '🎮',
+    nav_steamkeys_icon_image: '',
+    nav_steamkeys_bold: '1',
+    nav_steamkeys_enabled: '1',
+
     // Web analytics counters (Метрика)
     metrika_yandex_id: '',
     metrika_google_id: '',
@@ -370,7 +429,8 @@ function _ensureDefaults() {
     { page: 'giveaways',h1: '🎁 Розыгрыши', title: '' },
     { page: 'articles', h1: 'Статьи',    title: '' },
     { page: 'rating',   h1: 'Рейтинг сайтов', title: '' },
-    { page: 'contacts', h1: 'Контакты',  title: '' },
+    { page: 'contacts',    h1: 'Контакты',     title: '' },
+    { page: 'steam-keys', h1: 'Ключи Steam',  title: '' },
   ];
   const ins = db.prepare('INSERT OR IGNORE INTO page_seo (page, h1, title) VALUES (@page, @h1, @title)');
   for (const p of pages) ins.run(p);

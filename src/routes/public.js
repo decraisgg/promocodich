@@ -1,9 +1,11 @@
 'use strict';
 
+const crypto = require('crypto');
 const express = require('express');
 const { db, getSetting } = require('../db');
 const { getPublishedSnapshot } = require('../publish');
 const { generate: generateCaptcha } = require('../captcha');
+const { sendMessage, getChatMember } = require('../telegram');
 
 const router = express.Router();
 
@@ -464,6 +466,160 @@ router.get('/contacts', (req, res) => {
     contactsBlocks,
     seo: seoFor(snap, req, { pageKey: 'contacts', defaultTitle: h1, path: '/contacts' }),
   });
+});
+
+// --- Telegram webhook ---------------------------------------------------
+router.post('/telegram/webhook', express.json(), async (req, res) => {
+  res.sendStatus(200);
+  try {
+    const update = req.body;
+    if (!update || !update.message) return;
+    const msg = update.message;
+    const tgId = String(msg.from.id);
+    const tgUsername = msg.from.username || msg.from.first_name || '';
+    const chatId = msg.chat.id;
+    const text = msg.text || '';
+    const token = getSetting('tg_bot_token', '');
+    if (!token) return;
+    if (text.startsWith('/start ')) {
+      const code = text.split(' ')[1] || '';
+      if (!code) return;
+      const sess = db.prepare('SELECT * FROM tg_sessions WHERE code = ?').get(code);
+      if (!sess) { await sendMessage(token, chatId, '❌ Неверный код. Попробуйте снова.'); return; }
+      db.prepare('UPDATE tg_sessions SET tg_id = ?, tg_username = ? WHERE code = ?').run(tgId, tgUsername, code);
+      const conditions = db.prepare('SELECT * FROM wheel_conditions WHERE enabled = 1 ORDER BY sort_order, id').all();
+      let allMet = true;
+      const failed = [];
+      for (const cond of conditions) {
+        if (!cond.channel_id) continue;
+        try {
+          const r = await getChatMember(token, cond.channel_id, tgId);
+          const st = r.result && r.result.status;
+          if (!['member', 'administrator', 'creator'].includes(st)) {
+            allMet = false;
+            failed.push(cond.label || cond.channel_url);
+          }
+        } catch (_) { allMet = false; failed.push(cond.label || cond.channel_url); }
+      }
+      if (allMet) {
+        db.prepare('UPDATE tg_sessions SET verified = 1 WHERE code = ?').run(code);
+        await sendMessage(token, chatId, '✅ Отлично! Вы можете крутить колесо фортуны.');
+      } else {
+        await sendMessage(token, chatId, '❌ Вы не выполнили условие:\n' + failed.map(f => '• ' + f).join('\n') + '\n\nПодпишитесь и попробуйте снова.');
+      }
+    }
+  } catch (e) { console.error('TG webhook error:', e); }
+});
+
+// --- Steam Keys page ----------------------------------------------------
+router.get('/steam-keys', (req, res) => {
+  const snap = getPublishedSnapshot();
+  const st = snap.settings || {};
+  const allWheels = db.prepare('SELECT * FROM wheels WHERE enabled = 1 ORDER BY sort_order, id').all();
+  const conditions = db.prepare('SELECT * FROM wheel_conditions WHERE enabled = 1 ORDER BY sort_order, id').all();
+  const tgId = req.session.tg_id || '';
+  const tgUsername = req.session.tg_username || '';
+  allWheels.forEach(w => {
+    w.prizes = db.prepare('SELECT * FROM wheel_prizes WHERE wheel_id = ? ORDER BY sort_order, id').all(w.id);
+    w.prizes.forEach(p => {
+      p.keyCount = (db.prepare('SELECT COUNT(*) n FROM wheel_keys WHERE prize_id = ? AND used = 0').get(p.id) || {}).n || 0;
+    });
+    w.alreadySpun = tgId ? !!db.prepare("SELECT id FROM wheel_spins WHERE tg_id = ? AND wheel_id = ? AND date(spun_at) = date('now')").get(tgId, w.id) : false;
+  });
+  const banners = (snap.banners || []).filter(b => !b.service_id);
+  const bigBanner = banners.find(b => b.size === 'big') || null;
+  const smallBanners = banners.filter(b => b.size === 'small').slice(0, 2);
+  const botLink = st.tg_bot_link || 't.me/promocodichbot';
+  const ps = (snap.pageSeo || {})['steam-keys'] || {};
+  const pageH1 = ps.h1 || st.nav_steamkeys || 'Ключи Steam';
+  res.render('public/steam-keys', {
+    ...baseLocals(snap),
+    page: 'steam-keys',
+    wheels: allWheels,
+    conditions,
+    tgId,
+    tgUsername,
+    botLink,
+    bigBanner,
+    smallBanners,
+    pageH1,
+    seo: seoFor(snap, req, { pageKey: 'steam-keys', defaultTitle: pageH1, path: '/steam-keys' }),
+  });
+});
+
+// --- API: start-verify --------------------------------------------------
+router.post('/api/wheel/start-verify', (req, res) => {
+  const code = crypto.randomBytes(16).toString('hex');
+  db.prepare('INSERT INTO tg_sessions (code) VALUES (?)').run(code);
+  db.prepare("DELETE FROM tg_sessions WHERE created_at < datetime('now', '-1 hour')").run();
+  const botLink = getSetting('tg_bot_link', 't.me/promocodichbot');
+  res.json({ ok: true, code, url: 'https://' + botLink + '?start=' + code });
+});
+
+// --- API: verify poll ---------------------------------------------------
+router.get('/api/wheel/verify', (req, res) => {
+  const code = String(req.query.code || '');
+  if (!code) return res.json({ ok: false });
+  const sess = db.prepare('SELECT * FROM tg_sessions WHERE code = ?').get(code);
+  if (!sess) return res.json({ ok: false });
+  if (sess.verified && sess.tg_id) {
+    req.session.tg_id = sess.tg_id;
+    req.session.tg_username = sess.tg_username || '';
+    db.prepare('DELETE FROM tg_sessions WHERE code = ?').run(code);
+    return res.json({ ok: true, tg_id: sess.tg_id, tg_username: sess.tg_username });
+  }
+  res.json({ ok: false, pending: true });
+});
+
+// --- API: spin ----------------------------------------------------------
+router.post('/api/wheel/spin', (req, res) => {
+  const tgId = req.session.tg_id || '';
+  if (!tgId) return res.json({ ok: false, error: 'not_verified' });
+  const wheelId = parseInt(req.body && req.body.wheel_id, 10);
+  if (!wheelId) return res.json({ ok: false, error: 'no_wheel' });
+  const alreadySpun = db.prepare("SELECT id FROM wheel_spins WHERE tg_id = ? AND wheel_id = ? AND date(spun_at) = date('now')").get(tgId, wheelId);
+  if (alreadySpun) return res.json({ ok: false, error: 'already_spun', message: 'Вы уже крутили это колесо сегодня. Возвращайтесь завтра!' });
+  const prizes = db.prepare('SELECT * FROM wheel_prizes WHERE wheel_id = ? ORDER BY sort_order, id').all(wheelId);
+  if (!prizes.length) return res.json({ ok: false, error: 'no_prizes' });
+  const total = prizes.reduce((s, p) => s + (parseInt(p.chance, 10) || 1), 0);
+  let rand = Math.random() * total;
+  let selected = prizes[prizes.length - 1];
+  for (const p of prizes) { rand -= (parseInt(p.chance, 10) || 1); if (rand <= 0) { selected = p; break; } }
+  const prizeIdx = prizes.indexOf(selected);
+  const key = db.prepare('SELECT * FROM wheel_keys WHERE prize_id = ? AND used = 0 ORDER BY id LIMIT 1').get(selected.id);
+  let keyId = null;
+  if (key) {
+    db.prepare('UPDATE wheel_keys SET used = 1, used_by_tg_id = ?, used_at = datetime("now") WHERE id = ?').run(tgId, key.id);
+    keyId = key.id;
+  }
+  const tgUsername = req.session.tg_username || '';
+  db.prepare('INSERT INTO wheel_spins (tg_id, tg_username, wheel_id, prize_id, key_id) VALUES (?, ?, ?, ?, ?)').run(tgId, tgUsername, wheelId, selected.id, keyId);
+  res.json({ ok: true, prizeIdx, prize: { id: selected.id, label: selected.label, image_url: selected.image_url }, key: key ? key.key_value : null });
+});
+
+// --- API: logout --------------------------------------------------------
+router.post('/api/wheel/logout', (req, res) => {
+  delete req.session.tg_id;
+  delete req.session.tg_username;
+  res.json({ ok: true });
+});
+
+// --- API: history -------------------------------------------------------
+router.get('/api/wheel/history', (req, res) => {
+  const tgId = req.session.tg_id || '';
+  if (!tgId) return res.json({ ok: true, history: [], total: 0, pages: 0, page: 1 });
+  const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+  const perPage = 7;
+  const offset = (page - 1) * perPage;
+  const history = db.prepare(`SELECT ws.spun_at, wp.label as prize_label, wp.image_url,
+    wk.key_value, w.name as wheel_name
+    FROM wheel_spins ws
+    LEFT JOIN wheel_prizes wp ON ws.prize_id = wp.id
+    LEFT JOIN wheel_keys wk ON ws.key_id = wk.id
+    LEFT JOIN wheels w ON ws.wheel_id = w.id
+    WHERE ws.tg_id = ? ORDER BY ws.spun_at DESC LIMIT ? OFFSET ?`).all(tgId, perPage, offset);
+  const total = (db.prepare('SELECT COUNT(*) n FROM wheel_spins WHERE tg_id = ?').get(tgId) || {}).n || 0;
+  res.json({ ok: true, history, total, pages: Math.ceil(total / perPage), page });
 });
 
 // --- robots.txt & sitemap.xml ------------------------------------------

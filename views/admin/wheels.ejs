@@ -1,0 +1,423 @@
+<%- include('partials/admin-header') %>
+
+<div class="page-head">
+  <h1>🎰 Ключи Steam</h1>
+  <p class="page-sub">Настройте колёса фортуны, призы, ключи Steam и условия участия через Telegram.</p>
+</div>
+
+<!-- Bot & Nav settings -->
+<div class="card">
+  <h3>Настройки Telegram-бота и навигации</h3>
+  <form method="post" action="/admin/wheel-settings">
+    <div class="form-grid">
+      <div class="field">
+        <label>Telegram Bot Token</label>
+        <input type="text" name="tg_bot_token" class="input" value="<%= botToken %>" placeholder="1234567890:AAA...">
+        <span class="field-hint">Токен от @BotFather. Не публикуйте его.</span>
+      </div>
+      <div class="field">
+        <label>Ссылка на бота</label>
+        <input type="text" name="tg_bot_link" class="input" value="<%= botLink %>" placeholder="t.me/yourbot">
+        <span class="field-hint">Без https://, например: t.me/promocodichbot</span>
+      </div>
+      <div class="field">
+        <label>Название пункта меню</label>
+        <input type="text" name="nav_steamkeys" class="input" value="<%= navSteamkeys %>" placeholder="Ключи Steam">
+      </div>
+      <div class="field">
+        <label>Иконка (эмодзи)</label>
+        <input type="text" name="nav_steamkeys_icon" class="input" value="<%= navSteamkeysIcon %>" placeholder="🎮" style="max-width:120px">
+      </div>
+      <div class="field field--full">
+        <label>URL иконки (изображение, необязательно)</label>
+        <input type="text" name="nav_steamkeys_icon_image" class="input" value="<%= navSteamkeysIconImage %>" placeholder="/uploads/icon.png">
+      </div>
+      <div class="field--switch field">
+        <label class="switch"><input type="checkbox" name="nav_steamkeys_bold" value="1" <%= navSteamkeysBold ? 'checked' : '' %>><span class="slider"></span></label>
+        <span>Жирный текст в меню</span>
+      </div>
+      <div class="field--switch field">
+        <label class="switch"><input type="checkbox" name="nav_steamkeys_enabled" value="1" <%= navSteamkeysEnabled ? 'checked' : '' %>><span class="slider"></span></label>
+        <span>Показывать в меню</span>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">Сохранить настройки</button>
+    </div>
+  </form>
+
+  <hr style="margin:22px 0;border:0;border-top:1px solid var(--line)">
+
+  <h3 style="margin-bottom:10px">Webhook Telegram</h3>
+  <p class="hint">После сохранения токена нажмите кнопку, чтобы зарегистрировать webhook у Telegram.</p>
+  <form method="post" action="/admin/wheel-webhook">
+    <button type="submit" class="btn btn-primary">Установить Webhook</button>
+  </form>
+  <% if (botToken) { %>
+    <p class="hint" style="margin-top:8px">Webhook будет установлен на: <code><%= req ? req.protocol + '://' + req.headers.host : '' %>/telegram/webhook</code></p>
+  <% } %>
+</div>
+
+<!-- Conditions -->
+<div class="card">
+  <div class="item-head" style="border:0;padding:0;margin-bottom:16px">
+    <h3 style="margin:0">Условия участия</h3>
+    <details class="adder" style="margin:0">
+      <summary class="btn btn-primary btn-sm">+ Добавить условие</summary>
+      <form method="post" action="/admin/wheel-conditions" style="margin-top:14px">
+        <div class="form-grid">
+          <div class="field">
+            <label>Название</label>
+            <input type="text" name="label" class="input" placeholder="Подписаться на канал" required>
+          </div>
+          <div class="field">
+            <label>Ссылка на канал</label>
+            <input type="text" name="channel_url" class="input" placeholder="https://t.me/yourchannel">
+          </div>
+          <div class="field">
+            <label>ID канала (для проверки)</label>
+            <input type="text" name="channel_id" class="input" placeholder="-100123456789">
+            <span class="field-hint">Числовой ID или @username. Необходим для автоматической проверки подписки.</span>
+          </div>
+          <div class="field">
+            <label>Порядок</label>
+            <input type="number" name="sort_order" class="input" value="0" style="max-width:100px">
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">Добавить</button>
+        </div>
+      </form>
+    </details>
+  </div>
+
+  <% if (!conditions.length) { %>
+    <p class="empty-note">Условий пока нет. При отсутствии условий верификация проходит без проверки подписок.</p>
+  <% } else { %>
+    <div class="items">
+      <% conditions.forEach(function(cond){ %>
+        <div class="card" style="margin-bottom:10px">
+          <div class="item-head">
+            <div class="item-title">
+              <span class="badge <%= cond.enabled ? 'on' : 'off' %>"><%= cond.enabled ? 'ВКЛ' : 'ВЫКЛ' %></span>
+              <b><%= cond.label || 'Без названия' %></b>
+              <% if (cond.channel_url) { %><a href="<%= cond.channel_url %>" target="_blank" class="page-sub-link" style="font-size:13px"><%= cond.channel_url %></a><% } %>
+              <% if (cond.channel_id) { %><span class="item-stat">ID: <%= cond.channel_id %></span><% } %>
+            </div>
+            <div class="item-actions">
+              <form method="post" action="/admin/wheel-conditions/<%= cond.id %>/delete" onsubmit="return confirm('Удалить условие?')" style="display:inline">
+                <button class="btn btn-danger btn-sm" type="submit">Удалить</button>
+              </form>
+            </div>
+          </div>
+          <form method="post" action="/admin/wheel-conditions/<%= cond.id %>">
+            <div class="form-grid">
+              <div class="field">
+                <label>Название</label>
+                <input type="text" name="label" class="input" value="<%= cond.label %>">
+              </div>
+              <div class="field">
+                <label>Ссылка на канал</label>
+                <input type="text" name="channel_url" class="input" value="<%= cond.channel_url %>">
+              </div>
+              <div class="field">
+                <label>ID канала</label>
+                <input type="text" name="channel_id" class="input" value="<%= cond.channel_id %>">
+              </div>
+              <div class="field">
+                <label>Порядок</label>
+                <input type="number" name="sort_order" class="input" value="<%= cond.sort_order %>" style="max-width:100px">
+              </div>
+              <div class="field--switch field">
+                <label class="switch"><input type="checkbox" name="enabled" value="1" <%= cond.enabled ? 'checked' : '' %>><span class="slider"></span></label>
+                <span>Активно</span>
+              </div>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary btn-sm">Сохранить</button>
+            </div>
+          </form>
+        </div>
+      <% }); %>
+    </div>
+  <% } %>
+</div>
+
+<!-- Wheels list -->
+<div class="card">
+  <div class="item-head" style="border:0;padding:0;margin-bottom:16px">
+    <h3 style="margin:0">Колёса фортуны</h3>
+    <details class="adder" style="margin:0">
+      <summary class="btn btn-primary btn-sm">+ Новое колесо</summary>
+      <form method="post" action="/admin/wheels" style="margin-top:14px">
+        <div class="form-grid">
+          <div class="field">
+            <label>Название</label>
+            <input type="text" name="name" class="input" value="Колесо фортуны" required>
+          </div>
+          <div class="field">
+            <label>Порядок</label>
+            <input type="number" name="sort_order" class="input" value="0" style="max-width:100px">
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">Добавить</button>
+        </div>
+      </form>
+    </details>
+  </div>
+
+  <% if (!wheels.length) { %>
+    <p class="empty-note">Колёс пока нет. Создайте первое колесо.</p>
+  <% } %>
+
+  <% wheels.forEach(function(wheel){ %>
+    <div class="wheel-admin-block card" style="border:2px solid var(--line);margin-bottom:20px">
+
+      <!-- Wheel header & edit form -->
+      <div class="item-head">
+        <div class="item-title">
+          <span class="badge <%= wheel.enabled ? 'on' : 'off' %>"><%= wheel.enabled ? 'ВКЛ' : 'ВЫКЛ' %></span>
+          <b style="font-size:17px"><%= wheel.name %></b>
+          <span class="item-stat">Призов: <%= wheel.prizes.length %></span>
+          <span class="item-stat">Прокруток: <%= wheel.spinCount %></span>
+        </div>
+        <div class="item-actions">
+          <form method="post" action="/admin/wheels/<%= wheel.id %>/delete" onsubmit="return confirm('Удалить колесо и все его призы/ключи?')" style="display:inline">
+            <button class="btn btn-danger btn-sm" type="submit">Удалить</button>
+          </form>
+        </div>
+      </div>
+
+      <form method="post" action="/admin/wheels/<%= wheel.id %>" style="margin-bottom:16px">
+        <div class="form-grid">
+          <div class="field">
+            <label>Название</label>
+            <input type="text" name="name" class="input" value="<%= wheel.name %>">
+          </div>
+          <div class="field">
+            <label>Порядок</label>
+            <input type="number" name="sort_order" class="input" value="<%= wheel.sort_order %>" style="max-width:100px">
+          </div>
+          <div class="field--switch field">
+            <label class="switch"><input type="checkbox" name="enabled" value="1" <%= wheel.enabled ? 'checked' : '' %>><span class="slider"></span></label>
+            <span>Активно</span>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary btn-sm">Сохранить колесо</button>
+        </div>
+      </form>
+
+      <!-- Prizes -->
+      <div style="margin-top:8px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <h4 style="margin:0;font-size:15px">Призы (секторы колеса)</h4>
+          <details class="adder" style="margin:0">
+            <summary class="btn btn-sm btn-primary">+ Добавить приз</summary>
+            <form method="post" action="/admin/wheels/<%= wheel.id %>/prizes" style="margin-top:12px">
+              <div class="form-grid">
+                <div class="field">
+                  <label>Название приза</label>
+                  <input type="text" name="label" class="input" placeholder="Steam Gift Card 500₽" required>
+                </div>
+                <div class="field">
+                  <label>Шанс (1–100)</label>
+                  <input type="number" name="chance" class="input" value="10" min="1" max="100" style="max-width:100px">
+                </div>
+                <div class="field">
+                  <label>Цвет сектора</label>
+                  <div class="color-field-row">
+                    <input type="color" name="color" class="color-picker" value="#ff2d55">
+                    <input type="text" name="color" class="input" value="#ff2d55" style="max-width:120px" placeholder="#ff2d55">
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Изображение (URL)</label>
+                  <input type="text" name="image_url" class="input" placeholder="/uploads/prize.png">
+                </div>
+                <div class="field">
+                  <label>Порядок</label>
+                  <input type="number" name="sort_order" class="input" value="0" style="max-width:100px">
+                </div>
+              </div>
+              <div class="form-actions">
+                <button type="submit" class="btn btn-primary btn-sm">Добавить приз</button>
+              </div>
+            </form>
+          </details>
+        </div>
+
+        <% if (!wheel.prizes.length) { %>
+          <p class="hint">Призов нет. Добавьте хотя бы один приз для работы колеса.</p>
+        <% } %>
+
+        <% wheel.prizes.forEach(function(prize){ %>
+          <div class="prize-card" style="border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px;background:#fafbfc">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+              <% if (prize.color) { %><span class="color-dot" style="background:<%= prize.color %>"></span><% } %>
+              <b><%= prize.label || 'Без названия' %></b>
+              <span class="item-stat">Шанс: <%= prize.chance %>%</span>
+              <span class="item-stat">Ключей: <b class="<%= prize.keyCount > 0 ? '' : 'muted' %>"><%= prize.keyCount %> свободных</b></span>
+              <span class="item-stat">Всего: <%= prize.keys.length %></span>
+              <div style="margin-left:auto;display:flex;gap:8px">
+                <form method="post" action="/admin/wheel-prizes/<%= prize.id %>/delete" onsubmit="return confirm('Удалить приз и все его ключи?')" style="display:inline">
+                  <button class="btn btn-danger btn-sm" type="submit">Удалить</button>
+                </form>
+              </div>
+            </div>
+
+            <form method="post" action="/admin/wheel-prizes/<%= prize.id %>" style="margin-bottom:12px">
+              <div class="form-grid">
+                <div class="field">
+                  <label>Название</label>
+                  <input type="text" name="label" class="input" value="<%= prize.label %>">
+                </div>
+                <div class="field">
+                  <label>Шанс</label>
+                  <input type="number" name="chance" class="input" value="<%= prize.chance %>" min="1" max="100" style="max-width:100px">
+                </div>
+                <div class="field">
+                  <label>Цвет</label>
+                  <div class="color-field-row">
+                    <input type="color" name="color" class="color-picker" value="<%= prize.color || '#cccccc' %>">
+                    <input type="text" name="color_text" class="input" value="<%= prize.color %>" style="max-width:120px" placeholder="#cccccc">
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Изображение</label>
+                  <input type="text" name="image_url" class="input" value="<%= prize.image_url %>">
+                </div>
+                <div class="field">
+                  <label>Порядок</label>
+                  <input type="number" name="sort_order" class="input" value="<%= prize.sort_order %>" style="max-width:100px">
+                </div>
+              </div>
+              <div class="form-actions">
+                <button type="submit" class="btn btn-primary btn-sm">Сохранить приз</button>
+              </div>
+            </form>
+
+            <!-- Keys for this prize -->
+            <div style="border-top:1px solid var(--line);padding-top:12px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+                <b style="font-size:13px">Ключи Steam (всего: <%= prize.keys.length %>, свободных: <%= prize.keyCount %>)</b>
+                <details class="adder" style="margin:0">
+                  <summary class="btn btn-sm" style="font-size:12px">+ Добавить ключи</summary>
+                  <form method="post" action="/admin/wheel-prizes/<%= prize.id %>/keys" style="margin-top:10px">
+                    <div class="field">
+                      <label>Ключи (по одному на строку или через запятую)</label>
+                      <textarea name="keys" class="input" rows="4" placeholder="XXXXX-XXXXX-XXXXX&#10;YYYYY-YYYYY-YYYYY"></textarea>
+                    </div>
+                    <div class="form-actions">
+                      <button type="submit" class="btn btn-primary btn-sm">Добавить</button>
+                    </div>
+                  </form>
+                </details>
+              </div>
+
+              <% if (prize.keys.length) { %>
+                <div style="max-height:200px;overflow-y:auto">
+                  <table class="data-table" style="font-size:13px">
+                    <thead>
+                      <tr>
+                        <th>Ключ</th>
+                        <th>Статус</th>
+                        <th>Использован</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <% prize.keys.forEach(function(k){ %>
+                        <tr>
+                          <td><code style="font-size:12px;background:#f3f4f7;padding:3px 6px;border-radius:5px"><%= k.key_value %></code></td>
+                          <td><span class="badge <%= k.used ? 'off' : 'on' %>"><%= k.used ? 'ИСПОЛЬЗОВАН' : 'СВОБОДЕН' %></span></td>
+                          <td class="muted"><%= k.used ? (k.used_by_tg_id + (k.used_at ? ' · ' + k.used_at.slice(0,16) : '')) : '—' %></td>
+                          <td>
+                            <form method="post" action="/admin/wheel-keys/<%= k.id %>/delete" onsubmit="return confirm('Удалить ключ?')" style="display:inline">
+                              <button class="btn btn-danger btn-sm" type="submit" style="padding:4px 8px;font-size:11px">×</button>
+                            </form>
+                          </td>
+                        </tr>
+                      <% }); %>
+                    </tbody>
+                  </table>
+                </div>
+              <% } else { %>
+                <p class="hint" style="margin:0">Ключей нет. Добавьте ключи Steam для этого приза.</p>
+              <% } %>
+            </div>
+          </div>
+        <% }); %>
+      </div>
+    </div>
+  <% }); %>
+</div>
+
+<!-- Stats -->
+<div class="card">
+  <h3>Статистика прокруток</h3>
+  <div class="stat-grid" style="grid-template-columns:repeat(2,1fr)">
+    <div class="stat-card">
+      <div class="stat-num"><%= totalSpins %></div>
+      <div class="stat-label">Всего прокруток</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num"><%= spinStats.length %></div>
+      <div class="stat-label">Уникальных игроков</div>
+    </div>
+  </div>
+
+  <% if (spinStats.length) { %>
+    <table class="data-table" style="margin-top:10px">
+      <thead>
+        <tr>
+          <th>Пользователь</th>
+          <th>Прокруток</th>
+          <th>Последний раз</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% spinStats.forEach(function(s){ %>
+          <tr>
+            <td><b><%= s.tg_username || '—' %></b></td>
+            <td><%= s.spins %></td>
+            <td class="muted"><%= s.last_spin ? s.last_spin.slice(0,16) : '—' %></td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  <% } else { %>
+    <p class="empty-note">Прокруток ещё не было.</p>
+  <% } %>
+</div>
+
+<script>
+// Sync color picker ↔ text input for prize form
+document.querySelectorAll('.prize-card').forEach(function(card) {
+  var pickers = card.querySelectorAll('input[type="color"]');
+  pickers.forEach(function(picker) {
+    var textInput = picker.closest('.color-field-row').querySelector('input[name="color_text"]') ||
+                    picker.closest('.color-field-row').querySelector('input[type="text"]');
+    if (!textInput) return;
+    picker.addEventListener('input', function() { textInput.value = picker.value; });
+    textInput.addEventListener('input', function() {
+      if (/^#[0-9a-fA-F]{6}$/.test(textInput.value)) picker.value = textInput.value;
+    });
+  });
+});
+// Add prize color picker sync
+document.querySelectorAll('.adder form').forEach(function(form) {
+  var picker = form.querySelector('input[type="color"]');
+  if (!picker) return;
+  var texts = form.querySelectorAll('input[name="color"]');
+  if (texts.length < 2) return;
+  var textInput = texts[1];
+  picker.addEventListener('input', function() { textInput.value = picker.value; });
+  textInput.addEventListener('input', function() {
+    if (/^#[0-9a-fA-F]{6}$/.test(textInput.value)) picker.value = textInput.value;
+  });
+});
+</script>
+
+<%- include('partials/admin-footer') %>

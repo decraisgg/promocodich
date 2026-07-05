@@ -1,0 +1,477 @@
+<%- include('partials/header') %>
+
+<div class="steam-keys-page">
+  <!-- Hero / banners -->
+  <% if (bigBanner || (smallBanners && smallBanners.length)) { %>
+  <section class="hero">
+    <div class="container">
+      <div class="hero-grid">
+        <div class="hero-side">
+          <% if (smallBanners[0]) { %><%- include('partials/banner', { variant: 'small', b: smallBanners[0] }) %><% } else { %><div></div><% } %>
+        </div>
+        <div class="hero-main">
+          <% if (bigBanner) { %><%- include('partials/banner', { variant: 'big', b: bigBanner }) %><% } else { %><div></div><% } %>
+        </div>
+        <div class="hero-side">
+          <% if (smallBanners[1]) { %><%- include('partials/banner', { variant: 'small', b: smallBanners[1] }) %><% } else { %><div></div><% } %>
+        </div>
+      </div>
+    </div>
+  </section>
+  <% } %>
+
+  <!-- Page title -->
+  <section class="section section--tight">
+    <div class="container">
+      <div class="page-hero-head">
+        <h1 class="page-hero-title">🎮 <%= pageH1 %></h1>
+        <p class="page-hero-sub">Крути колесо фортуны и выигрывай ключи Steam. 1 попытка в день.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Telegram verification -->
+  <section class="section section--tight">
+    <div class="container container--narrow">
+      <div class="tg-verify-section" id="tgVerifySection">
+        <% if (tgId) { %>
+          <!-- Already verified -->
+          <div class="tg-verified-state">
+            <div class="tg-verified-avatar">✅</div>
+            <div class="tg-verified-info">
+              <p class="tg-verified-name">Вы вошли как <b>@<%= tgUsername || tgId %></b></p>
+              <p class="tg-verified-sub">Вы можете крутить колесо фортуны раз в день!</p>
+            </div>
+            <button class="tg-logout-btn" id="tgLogoutBtn" type="button">Выйти</button>
+          </div>
+        <% } else { %>
+          <!-- Not verified -->
+          <div class="tg-unverified-state" id="tgUnverifiedState">
+            <div class="tg-verify-icon">🎰</div>
+            <h2 class="tg-verify-title">Нужна верификация через Telegram</h2>
+            <p class="tg-verify-desc">Чтобы крутить колесо, подтвердите аккаунт через нашего Telegram-бота.</p>
+            <% if (conditions && conditions.length) { %>
+              <div class="tg-conditions-list">
+                <p class="tg-conditions-title">Условия участия:</p>
+                <ul class="tg-conditions">
+                  <% conditions.forEach(function(c){ %>
+                    <li>
+                      <span class="tg-cond-check">○</span>
+                      <% if (c.channel_url) { %>
+                        <a href="<%= c.channel_url %>" target="_blank" rel="noopener nofollow"><%= c.label || c.channel_url %></a>
+                      <% } else { %>
+                        <%= c.label %>
+                      <% } %>
+                    </li>
+                  <% }); %>
+                </ul>
+              </div>
+            <% } %>
+            <button class="tg-verify-btn" id="tgVerifyBtn" type="button">
+              <span class="tg-verify-btn-icon">✈</span>
+              Подтвердить через Telegram
+            </button>
+            <p class="tg-verify-hint" id="tgVerifyHint" style="display:none">Переходите в бот и отправьте команду /start. Ждём подтверждения…</p>
+          </div>
+          <div class="tg-loading-state" id="tgLoadingState" style="display:none">
+            <div class="tg-spinner"></div>
+            <p>Ожидаем подтверждение от Telegram-бота…</p>
+            <p class="tg-verify-hint" style="margin-top:4px">Если окно бота не открылось, <a href="#" id="tgRetryLink">нажмите здесь</a>.</p>
+          </div>
+        <% } %>
+      </div>
+    </div>
+  </section>
+
+  <!-- Wheels -->
+  <% if (wheels && wheels.length) { %>
+    <% wheels.forEach(function(wheel, wi){ %>
+      <section class="section wheel-section" id="wheel-<%= wheel.id %>">
+        <div class="container">
+          <div class="section-head">
+            <h2 class="section-title">
+              <span class="ico">🎰</span>
+              <%= wheel.name %>
+            </h2>
+          </div>
+
+          <div class="wheel-layout">
+            <!-- Wheel canvas -->
+            <div class="wheel-wrap">
+              <div class="wheel-canvas-wrap">
+                <div class="wheel-pointer"></div>
+                <canvas id="wheelCanvas<%= wi %>" class="wheel-canvas" width="380" height="380"
+                  data-prizes="<%= JSON.stringify(wheel.prizes.map(function(p){ return { label: p.label, color: p.color || '#cccccc', chance: p.chance }; })) %>"
+                  data-wheel-id="<%= wheel.id %>"></canvas>
+              </div>
+              <% if (wheel.alreadySpun) { %>
+                <div class="wheel-already-spun">
+                  ✅ Вы уже крутили сегодня. Возвращайтесь завтра!
+                </div>
+              <% } else { %>
+                <button class="wheel-spin-btn <%= tgId ? '' : 'wheel-spin-btn--disabled' %>"
+                  id="spinBtn<%= wi %>"
+                  data-wheel-idx="<%= wi %>"
+                  data-wheel-id="<%= wheel.id %>"
+                  <%= tgId ? '' : 'disabled' %>>
+                  <% if (!tgId) { %>
+                    🔒 Нужна верификация
+                  <% } else { %>
+                    🎰 Крутить колесо!
+                  <% } %>
+                </button>
+              <% } %>
+              <p class="wheel-keys-note">
+                <% var totalKeys = wheel.prizes.reduce(function(s, p){ return s + (p.keyCount || 0); }, 0); %>
+                Доступно ключей: <b><%= totalKeys %></b>
+              </p>
+            </div>
+
+            <!-- Prizes list -->
+            <div class="wheel-prizes-list">
+              <h3 class="wheel-prizes-title">Возможные призы</h3>
+              <% if (!wheel.prizes.length) { %>
+                <p class="empty-note">Призов пока нет.</p>
+              <% } else { %>
+                <% wheel.prizes.forEach(function(prize){ %>
+                  <div class="wheel-prize-item">
+                    <span class="wheel-prize-dot" style="background:<%= prize.color || '#ccc' %>"></span>
+                    <span class="wheel-prize-label"><%= prize.label || 'Приз' %></span>
+                    <span class="wheel-prize-keys"><%= prize.keyCount %> кл.</span>
+                  </div>
+                <% }); %>
+              <% } %>
+            </div>
+          </div>
+        </div>
+      </section>
+    <% }); %>
+  <% } else { %>
+    <section class="section">
+      <div class="container">
+        <p class="empty-note" style="text-align:center">Колёса пока не настроены. Следите за обновлениями!</p>
+      </div>
+    </section>
+  <% } %>
+
+  <!-- Spin history -->
+  <% if (tgId) { %>
+  <section class="section spin-history" id="spinHistory">
+    <div class="container">
+      <div class="section-head">
+        <h2 class="section-title">История прокруток</h2>
+      </div>
+      <div id="historyContainer">
+        <div class="tg-spinner" style="margin:20px auto"></div>
+      </div>
+    </div>
+  </section>
+  <% } %>
+</div>
+
+<!-- Result overlay -->
+<div class="wheel-result-overlay" id="wheelResultOverlay" style="display:none">
+  <div class="wheel-result-box">
+    <button class="wheel-result-close" id="wheelResultClose">×</button>
+    <div class="wheel-result-emoji" id="wheelResultEmoji">🎉</div>
+    <h2 class="wheel-result-title" id="wheelResultTitle">Поздравляем!</h2>
+    <p class="wheel-result-prize" id="wheelResultPrize"></p>
+    <div class="wheel-result-key-wrap" id="wheelResultKeyWrap" style="display:none">
+      <p class="wheel-result-key-label">Ваш ключ Steam:</p>
+      <div class="wheel-result-key" id="wheelResultKey"></div>
+      <button class="wheel-result-copy" id="wheelResultCopy" type="button">Копировать ключ</button>
+    </div>
+    <p class="wheel-result-nokey" id="wheelResultNoKey" style="display:none">К сожалению, ключи для этого приза закончились. Следите за обновлениями!</p>
+  </div>
+</div>
+
+<script>
+(function() {
+  // ---- Wheel drawing ----
+  function drawWheel(canvas, prizes) {
+    var ctx = canvas.getContext('2d');
+    var W = canvas.width, H = canvas.height;
+    var cx = W / 2, cy = H / 2, r = W / 2 - 8;
+    ctx.clearRect(0, 0, W, H);
+    if (!prizes || !prizes.length) {
+      ctx.fillStyle = '#ccc';
+      ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#fff'; ctx.font = 'bold 16px Montserrat,sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('Нет призов', cx, cy);
+      return;
+    }
+    var total = prizes.reduce(function(s, p) { return s + (parseInt(p.chance, 10) || 1); }, 0);
+    var startAngle = -Math.PI / 2;
+    prizes.forEach(function(prize, i) {
+      var slice = ((parseInt(prize.chance, 10) || 1) / total) * Math.PI * 2;
+      var endAngle = startAngle + slice;
+      // Fill
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.arc(cx, cy, r, startAngle, endAngle);
+      ctx.closePath();
+      ctx.fillStyle = prize.color || ('#' + ['ff2d55','4cd964','007aff','ff9500','5856d6','ff3b30','34c759'][i % 7]);
+      ctx.fill();
+      // Border
+      ctx.strokeStyle = 'rgba(0,0,0,0.08)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      // Label
+      var midAngle = startAngle + slice / 2;
+      var labelR = r * 0.65;
+      var lx = cx + Math.cos(midAngle) * labelR;
+      var ly = cy + Math.sin(midAngle) * labelR;
+      ctx.save();
+      ctx.translate(lx, ly);
+      ctx.rotate(midAngle + Math.PI / 2);
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 13px Montserrat,sans-serif';
+      ctx.textAlign = 'center';
+      ctx.shadowColor = 'rgba(0,0,0,0.4)';
+      ctx.shadowBlur = 4;
+      var label = prize.label || 'Приз';
+      if (label.length > 14) label = label.slice(0, 12) + '…';
+      ctx.fillText(label, 0, 0);
+      ctx.restore();
+      startAngle = endAngle;
+    });
+    // Center circle
+    ctx.beginPath();
+    ctx.arc(cx, cy, 28, 0, Math.PI * 2);
+    ctx.fillStyle = '#fff';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,0.12)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    // Center icon
+    ctx.font = '20px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.shadowColor = 'transparent';
+    ctx.fillText('🎰', cx, cy + 7);
+  }
+
+  // Init all wheels
+  var canvases = document.querySelectorAll('.wheel-canvas');
+  canvases.forEach(function(canvas) {
+    var prizes = [];
+    try { prizes = JSON.parse(canvas.dataset.prizes || '[]'); } catch(_) {}
+    drawWheel(canvas, prizes);
+    canvas._prizes = prizes;
+    canvas._currentRotation = 0;
+    canvas.style.transition = 'none';
+  });
+
+  // ---- Spin logic ----
+  var spinInProgress = false;
+
+  document.querySelectorAll('.wheel-spin-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      if (spinInProgress) return;
+      var idx = parseInt(btn.dataset.wheelIdx, 10);
+      var wheelId = btn.dataset.wheelId;
+      var canvas = document.querySelector('#wheelCanvas' + idx);
+      if (!canvas || btn.disabled) return;
+
+      spinInProgress = true;
+      btn.disabled = true;
+      btn.textContent = '⏳ Крутим…';
+
+      fetch('/api/wheel/spin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ wheel_id: parseInt(wheelId, 10) })
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (!data.ok) {
+          spinInProgress = false;
+          btn.disabled = false;
+          btn.textContent = '🎰 Крутить колесо!';
+          if (data.error === 'not_verified') {
+            alert('Сначала выполните верификацию через Telegram!');
+          } else if (data.message) {
+            alert(data.message);
+            if (data.error === 'already_spun') {
+              btn.textContent = '✅ Уже крутили сегодня';
+              btn.disabled = true;
+            }
+          } else {
+            alert('Ошибка: ' + (data.error || 'Неизвестная ошибка'));
+          }
+          return;
+        }
+        // Animate
+        var prizes = canvas._prizes;
+        var prizeIdx = data.prizeIdx;
+        if (!prizes || !prizes.length) return;
+        var total = prizes.reduce(function(s, p) { return s + (parseInt(p.chance, 10) || 1); }, 0);
+        var slices = prizes.map(function(p) { return (parseInt(p.chance, 10) || 1) / total * 360; });
+        // Calculate angle to bring prize to top (pointer at top = -90 deg = 0 in our coords)
+        var prizeMidAngle = -90;
+        for (var i = 0; i < prizeIdx; i++) prizeMidAngle += slices[i];
+        prizeMidAngle += slices[prizeIdx] / 2;
+        // Target: bring prizeMidAngle to the top (pointer at -90)
+        var targetOffset = (-prizeMidAngle - canvas._currentRotation);
+        // Normalize so we always spin forward
+        targetOffset = ((targetOffset % 360) + 360) % 360;
+        if (targetOffset < 20) targetOffset += 360;
+        var totalRotation = canvas._currentRotation + targetOffset + 360 * 5;
+        canvas.style.transition = 'transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99)';
+        canvas.style.transform = 'rotate(' + totalRotation + 'deg)';
+        canvas._currentRotation = totalRotation % 360;
+
+        setTimeout(function() {
+          spinInProgress = false;
+          showResult(data);
+          if (data.error !== 'already_spun') {
+            btn.textContent = '✅ Уже крутили сегодня';
+            btn.disabled = true;
+          }
+          // Refresh history if shown
+          if (document.getElementById('spinHistory')) loadHistory(1);
+        }, 4200);
+      })
+      .catch(function(e) {
+        spinInProgress = false;
+        btn.disabled = false;
+        btn.textContent = '🎰 Крутить колесо!';
+        console.error(e);
+        alert('Сетевая ошибка. Попробуйте ещё раз.');
+      });
+    });
+  });
+
+  // ---- Result overlay ----
+  function showResult(data) {
+    var overlay = document.getElementById('wheelResultOverlay');
+    var title = document.getElementById('wheelResultTitle');
+    var prizeEl = document.getElementById('wheelResultPrize');
+    var keyWrap = document.getElementById('wheelResultKeyWrap');
+    var keyEl = document.getElementById('wheelResultKey');
+    var noKeyEl = document.getElementById('wheelResultNoKey');
+    var emoji = document.getElementById('wheelResultEmoji');
+
+    title.textContent = 'Поздравляем!';
+    prizeEl.textContent = 'Ваш приз: ' + (data.prize && data.prize.label ? data.prize.label : 'Приз');
+
+    if (data.key) {
+      emoji.textContent = '🎉';
+      keyWrap.style.display = '';
+      keyEl.textContent = data.key;
+      noKeyEl.style.display = 'none';
+    } else {
+      emoji.textContent = '😔';
+      keyWrap.style.display = 'none';
+      noKeyEl.style.display = '';
+    }
+
+    overlay.style.display = 'flex';
+  }
+
+  document.getElementById('wheelResultClose').addEventListener('click', function() {
+    document.getElementById('wheelResultOverlay').style.display = 'none';
+  });
+  document.getElementById('wheelResultOverlay').addEventListener('click', function(e) {
+    if (e.target === this) this.style.display = 'none';
+  });
+  document.getElementById('wheelResultCopy') && document.getElementById('wheelResultCopy').addEventListener('click', function() {
+    var key = document.getElementById('wheelResultKey').textContent;
+    navigator.clipboard.writeText(key).then(function() {
+      document.getElementById('wheelResultCopy').textContent = '✅ Скопировано!';
+      setTimeout(function() { document.getElementById('wheelResultCopy').textContent = 'Копировать ключ'; }, 2000);
+    }).catch(function() {
+      var ta = document.createElement('textarea');
+      ta.value = key;
+      document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+      document.getElementById('wheelResultCopy').textContent = '✅ Скопировано!';
+      setTimeout(function() { document.getElementById('wheelResultCopy').textContent = 'Копировать ключ'; }, 2000);
+    });
+  });
+
+  // ---- Telegram verification ----
+  var _verifyCode = null;
+  var _verifyInterval = null;
+  var _verifyBotUrl = null;
+
+  var verifyBtn = document.getElementById('tgVerifyBtn');
+  if (verifyBtn) {
+    verifyBtn.addEventListener('click', function() {
+      verifyBtn.disabled = true;
+      verifyBtn.textContent = '⏳ Получаем ссылку…';
+      fetch('/api/wheel/start-verify', { method: 'POST' })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (!data.ok) { verifyBtn.disabled = false; verifyBtn.innerHTML = '<span class="tg-verify-btn-icon">✈</span> Подтвердить через Telegram'; return; }
+          _verifyCode = data.code;
+          _verifyBotUrl = data.url;
+          window.open(data.url, '_blank');
+          document.getElementById('tgUnverifiedState').style.display = 'none';
+          document.getElementById('tgLoadingState').style.display = '';
+          var retryLink = document.getElementById('tgRetryLink');
+          if (retryLink) retryLink.href = data.url;
+          _verifyInterval = setInterval(pollVerify, 2000);
+        })
+        .catch(function() { verifyBtn.disabled = false; verifyBtn.innerHTML = '<span class="tg-verify-btn-icon">✈</span> Подтвердить через Telegram'; });
+    });
+  }
+
+  function pollVerify() {
+    if (!_verifyCode) return;
+    fetch('/api/wheel/verify?code=' + encodeURIComponent(_verifyCode))
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data.ok) {
+          clearInterval(_verifyInterval);
+          location.reload();
+        }
+      })
+      .catch(function() {});
+  }
+
+  // ---- Logout ----
+  var logoutBtn = document.getElementById('tgLogoutBtn');
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', function() {
+      fetch('/api/wheel/logout', { method: 'POST' })
+        .then(function() { location.reload(); })
+        .catch(function() { location.reload(); });
+    });
+  }
+
+  // ---- History ----
+  function loadHistory(page) {
+    var container = document.getElementById('historyContainer');
+    if (!container) return;
+    fetch('/api/wheel/history?page=' + (page || 1))
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (!data.ok || !data.history || !data.history.length) {
+          container.innerHTML = '<p class="empty-note">Прокруток ещё не было.</p>';
+          return;
+        }
+        var rows = data.history.map(function(h) {
+          var key = h.key_value ? '<code class="spin-key">' + h.key_value + '</code>' : '<span class="muted">—</span>';
+          var date = h.spun_at ? h.spun_at.slice(0, 16).replace('T', ' ') : '—';
+          return '<tr><td>' + date + '</td><td>' + (h.wheel_name || '—') + '</td><td>' + (h.prize_label || '—') + '</td><td>' + key + '</td></tr>';
+        }).join('');
+        var pager = '';
+        if (data.pages > 1) {
+          pager = '<div class="spin-history-pager">';
+          for (var p = 1; p <= data.pages; p++) {
+            pager += '<button class="spin-page-btn' + (p === data.page ? ' active' : '') + '" data-page="' + p + '">' + p + '</button>';
+          }
+          pager += '</div>';
+        }
+        container.innerHTML = '<div class="spin-history-wrap"><table class="spin-history-table"><thead><tr><th>Дата</th><th>Колесо</th><th>Приз</th><th>Ключ</th></tr></thead><tbody>' + rows + '</tbody></table></div>' + pager;
+        container.querySelectorAll('.spin-page-btn').forEach(function(btn) {
+          btn.addEventListener('click', function() { loadHistory(parseInt(btn.dataset.page, 10)); });
+        });
+      })
+      .catch(function() { if (container) container.innerHTML = '<p class="empty-note">Ошибка загрузки истории.</p>'; });
+  }
+
+  if (document.getElementById('spinHistory')) loadHistory(1);
+})();
+</script>
+
+<%- include('partials/footer') %>

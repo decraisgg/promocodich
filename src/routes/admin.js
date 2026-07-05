@@ -947,12 +947,13 @@ const SECTION_KEYS = [
   'sec_promocodes_icon', 'sec_sites_icon', 'sec_articles_icon',
 ];
 const PAGE_SEO_PAGES = [
-  { page: 'home',      label: 'Главная',           hasH1: false },
-  { page: 'services',  label: 'Сайты (список)',    hasH1: true },
-  { page: 'giveaways', label: 'Розыгрыши (список)', hasH1: true },
-  { page: 'articles',  label: 'Статьи (список)',   hasH1: true },
-  { page: 'rating',    label: 'Рейтинг (список)',  hasH1: true },
-  { page: 'contacts',  label: 'Контакты',          hasH1: true },
+  { page: 'home',       label: 'Главная',           hasH1: false },
+  { page: 'services',   label: 'Сайты (список)',    hasH1: true },
+  { page: 'giveaways',  label: 'Розыгрыши (список)', hasH1: true },
+  { page: 'articles',   label: 'Статьи (список)',   hasH1: true },
+  { page: 'rating',     label: 'Рейтинг (список)',  hasH1: true },
+  { page: 'contacts',   label: 'Контакты',          hasH1: true },
+  { page: 'steam-keys', label: 'Ключи Steam',       hasH1: true },
 ];
 
 router.get('/seo', (req, res) => {
@@ -999,6 +1000,120 @@ router.post('/seo', (req, res) => {
   markDirty();
   flash(req, 'success', 'SEO-настройки сохранены.');
   res.redirect('/admin/seo');
+});
+
+// --- Wheels (Steam Keys roulette) ----------------------------------------
+router.get('/wheels', (req, res) => {
+  const wheels = db.prepare('SELECT * FROM wheels ORDER BY sort_order, id').all();
+  wheels.forEach(w => {
+    w.prizes = db.prepare('SELECT * FROM wheel_prizes WHERE wheel_id = ? ORDER BY sort_order, id').all(w.id);
+    w.prizes.forEach(p => {
+      p.keys = db.prepare('SELECT * FROM wheel_keys WHERE prize_id = ? ORDER BY id').all(p.id);
+      p.keyCount = p.keys.filter(k => !k.used).length;
+    });
+    w.spinCount = (db.prepare('SELECT COUNT(*) n FROM wheel_spins WHERE wheel_id = ?').get(w.id) || {}).n || 0;
+  });
+  const conditions = db.prepare('SELECT * FROM wheel_conditions ORDER BY sort_order, id').all();
+  const spinStats = db.prepare(`SELECT ws.tg_username, COUNT(*) spins, MAX(ws.spun_at) last_spin
+    FROM wheel_spins ws GROUP BY ws.tg_id ORDER BY last_spin DESC LIMIT 50`).all();
+  const totalSpins = (db.prepare('SELECT COUNT(*) n FROM wheel_spins').get() || {}).n || 0;
+  renderAdmin(req, res, 'admin/wheels', {
+    active: 'wheels', wheels, conditions, spinStats, totalSpins,
+    botToken: getSetting('tg_bot_token', ''),
+    botLink: getSetting('tg_bot_link', 't.me/promocodichbot'),
+    navSteamkeys: getSetting('nav_steamkeys', 'Ключи Steam'),
+    navSteamkeysIcon: getSetting('nav_steamkeys_icon', '🎮'),
+    navSteamkeysIconImage: getSetting('nav_steamkeys_icon_image', ''),
+    navSteamkeysBold: getSetting('nav_steamkeys_bold', '1') === '1',
+    navSteamkeysEnabled: getSetting('nav_steamkeys_enabled', '1') === '1',
+  });
+});
+
+router.post('/wheels', (req, res) => {
+  db.prepare('INSERT INTO wheels (name, enabled, sort_order) VALUES (?, ?, ?)').run(
+    s(req.body.name) || 'Колесо фортуны', 1, parseInt(req.body.sort_order, 10) || 0);
+  markDirty(); flash(req, 'success', 'Колесо добавлено.'); res.redirect('/admin/wheels');
+});
+router.post('/wheels/:id', (req, res) => {
+  db.prepare('UPDATE wheels SET name=?, enabled=?, sort_order=? WHERE id=?').run(
+    s(req.body.name) || 'Колесо фортуны', b(req.body.enabled), parseInt(req.body.sort_order, 10) || 0, req.params.id);
+  markDirty(); flash(req, 'success', 'Колесо сохранено.'); res.redirect('/admin/wheels');
+});
+router.post('/wheels/:id/delete', (req, res) => {
+  db.prepare('DELETE FROM wheels WHERE id = ?').run(req.params.id);
+  markDirty(); flash(req, 'success', 'Колесо удалено.'); res.redirect('/admin/wheels');
+});
+
+router.post('/wheels/:wid/prizes', (req, res) => {
+  db.prepare('INSERT INTO wheel_prizes (wheel_id,label,image_url,chance,color,sort_order) VALUES (?,?,?,?,?,?)').run(
+    req.params.wid, s(req.body.label), s(req.body.image_url),
+    Math.max(1, parseInt(req.body.chance, 10) || 10), s(req.body.color),
+    parseInt(req.body.sort_order, 10) || 0);
+  markDirty(); flash(req, 'success', 'Приз добавлен.'); res.redirect('/admin/wheels');
+});
+router.post('/wheel-prizes/:id', (req, res) => {
+  db.prepare('UPDATE wheel_prizes SET label=?,image_url=?,chance=?,color=?,sort_order=? WHERE id=?').run(
+    s(req.body.label), s(req.body.image_url),
+    Math.max(1, parseInt(req.body.chance, 10) || 10), s(req.body.color),
+    parseInt(req.body.sort_order, 10) || 0, req.params.id);
+  markDirty(); flash(req, 'success', 'Приз сохранён.'); res.redirect('/admin/wheels');
+});
+router.post('/wheel-prizes/:id/delete', (req, res) => {
+  db.prepare('DELETE FROM wheel_prizes WHERE id = ?').run(req.params.id);
+  markDirty(); flash(req, 'success', 'Приз удалён.'); res.redirect('/admin/wheels');
+});
+
+router.post('/wheel-prizes/:pid/keys', (req, res) => {
+  const keysRaw = s(req.body.keys);
+  const keys = keysRaw.split(/[\s,]+/).map(k => k.trim()).filter(Boolean);
+  const ins = db.prepare('INSERT INTO wheel_keys (prize_id, key_value) VALUES (?, ?)');
+  for (const k of keys) ins.run(req.params.pid, k);
+  markDirty(); flash(req, 'success', `Добавлено ключей: ${keys.length}`); res.redirect('/admin/wheels');
+});
+router.post('/wheel-keys/:id/delete', (req, res) => {
+  db.prepare('DELETE FROM wheel_keys WHERE id = ?').run(req.params.id);
+  markDirty(); flash(req, 'success', 'Ключ удалён.'); res.redirect('/admin/wheels');
+});
+
+router.post('/wheel-conditions', (req, res) => {
+  db.prepare('INSERT INTO wheel_conditions (label,channel_url,channel_id,enabled,sort_order) VALUES (?,?,?,?,?)').run(
+    s(req.body.label) || 'Подписаться на канал', s(req.body.channel_url), s(req.body.channel_id),
+    1, parseInt(req.body.sort_order, 10) || 0);
+  flash(req, 'success', 'Условие добавлено.'); res.redirect('/admin/wheels');
+});
+router.post('/wheel-conditions/:id', (req, res) => {
+  db.prepare('UPDATE wheel_conditions SET label=?,channel_url=?,channel_id=?,enabled=?,sort_order=? WHERE id=?').run(
+    s(req.body.label), s(req.body.channel_url), s(req.body.channel_id),
+    b(req.body.enabled), parseInt(req.body.sort_order, 10) || 0, req.params.id);
+  flash(req, 'success', 'Условие сохранено.'); res.redirect('/admin/wheels');
+});
+router.post('/wheel-conditions/:id/delete', (req, res) => {
+  db.prepare('DELETE FROM wheel_conditions WHERE id = ?').run(req.params.id);
+  flash(req, 'success', 'Условие удалено.'); res.redirect('/admin/wheels');
+});
+
+router.post('/wheel-settings', (req, res) => {
+  setSetting('tg_bot_token', s(req.body.tg_bot_token));
+  setSetting('tg_bot_link', s(req.body.tg_bot_link));
+  setSetting('nav_steamkeys', s(req.body.nav_steamkeys) || 'Ключи Steam');
+  setSetting('nav_steamkeys_icon', s(req.body.nav_steamkeys_icon));
+  setSetting('nav_steamkeys_icon_image', s(req.body.nav_steamkeys_icon_image));
+  setSetting('nav_steamkeys_bold', b(req.body.nav_steamkeys_bold) ? '1' : '0');
+  setSetting('nav_steamkeys_enabled', b(req.body.nav_steamkeys_enabled) ? '1' : '0');
+  markDirty(); flash(req, 'success', 'Настройки сохранены.'); res.redirect('/admin/wheels');
+});
+
+router.post('/wheel-webhook', async (req, res) => {
+  try {
+    const { setWebhook } = require('../telegram');
+    const token = getSetting('tg_bot_token', '');
+    if (!token) { flash(req, 'error', 'Токен не задан.'); return res.redirect('/admin/wheels'); }
+    const host = req.protocol + '://' + req.get('host');
+    const result = await setWebhook(token, host + '/telegram/webhook');
+    if (result.ok) flash(req, 'success', 'Webhook установлен: ' + host + '/telegram/webhook');
+    else flash(req, 'error', 'Ошибка: ' + JSON.stringify(result));
+  } catch (e) { flash(req, 'error', String(e)); }
+  res.redirect('/admin/wheels');
 });
 
 module.exports = router;

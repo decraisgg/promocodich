@@ -86,9 +86,10 @@
     rating:     { href: '/rating',      label: site.nav_rating     || 'Рейтинг',   active: page === 'rating' },
     services:   { href: '/services',    label: site.nav_services   || 'Сайты',     active: page === 'services' },
     articles:   { href: '/articles',    label: site.nav_articles   || 'Статьи',    active: page === 'articles' },
-    contacts:   { href: '/contacts',    label: site.nav_contacts   || 'Контакты',  active: page === 'contacts' }
+    contacts:   { href: '/contacts',    label: site.nav_contacts   || 'Контакты',  active: page === 'contacts' },
+    steamkeys:  { href: '/steam-keys',  label: site.nav_steamkeys  || 'Ключи Steam', active: page === 'steam-keys', bold: String(site.nav_steamkeys_bold) === '1', icon: site.nav_steamkeys_icon || '🎮', iconImg: site.nav_steamkeys_icon_image || '', enabled: String(site.nav_steamkeys_enabled) !== '0' }
   };
-  var __navOrder = String(site.nav_order || 'home,promocodes,rating,services,articles,contacts')
+  var __navOrder = String(site.nav_order || 'steamkeys,home,promocodes,rating,services,articles,contacts')
     .split(',').map(function (k) { return k.trim(); }).filter(function (k) { return __navItems[k]; });
   Object.keys(__navItems).forEach(function (k) { if (__navOrder.indexOf(k) < 0) __navOrder.push(k); });
 %>
@@ -110,7 +111,14 @@
               <a href="<%= it.href %>" class="<%= it.active ? 'active' : '' %> nav-rating" data-track="Меню: <%= it.label %>">
                 <span class="nav-rating-inner"><%= it.label %><% if (String(site.nav_rating_icon_enabled) === '1') { %><% if (site.nav_rating_icon_image) { %><img class="nav-rating-star-img" src="<%= site.nav_rating_icon_image %>" alt=""><% } else { %><span class="nav-rating-star"><%= site.nav_rating_icon || '★' %></span><% } %><% } %></span>
               </a>
-            <% } else { %>
+            <% } else if (k === 'steamkeys' && it.enabled !== false) { %>
+              <a href="<%= it.href %>" class="<%= it.active ? 'active' : '' %> nav-steamkeys" data-track="Меню: <%= it.label %>">
+                <span class="nav-steamkeys-inner">
+                  <% if (it.iconImg) { %><img class="nav-steamkeys-icon-img" src="<%= it.iconImg %>" alt=""><% } else if (it.icon) { %><span class="nav-steamkeys-icon"><%= it.icon %></span><% } %>
+                  <span class="<%= it.bold ? 'nav-steamkeys-bold' : '' %>"><%= it.label %></span>
+                </span>
+              </a>
+            <% } else if (k !== 'steamkeys') { %>
               <a href="<%= it.href %>" class="<%= it.active ? 'active' : '' %>" data-track="Меню: <%= it.label %>"><%= it.label %></a>
             <% } %>
           <% }); %>
