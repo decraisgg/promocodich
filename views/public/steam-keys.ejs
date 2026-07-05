@@ -289,7 +289,10 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ wheel_id: parseInt(wheelId, 10) })
       })
-      .then(function(r) { return r.json(); })
+      .then(function(r) {
+        if (!r.ok) throw new Error('server_' + r.status);
+        return r.json();
+      })
       .then(function(data) {
         if (!data.ok) {
           spinInProgress = false;
