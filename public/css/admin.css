@@ -268,3 +268,10 @@ textarea.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, mono
 .prize-card { background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 14px; margin-bottom: 12px; }
 .prize-card:last-child { margin-bottom: 0; }
 .prize-card .form-grid { margin-top: 8px; }
+
+/* Relay setup */
+.relay-cmd {
+  background: #1a1d27; color: #e2e8f0; font-size: 12px; line-height: 1.6;
+  padding: 14px 18px; border-radius: 10px; overflow-x: auto; white-space: pre;
+  margin: 0; font-family: 'Consolas','Courier New',monospace;
+}

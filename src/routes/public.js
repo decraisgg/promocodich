@@ -610,6 +610,30 @@ router.post('/api/wheel/logout', (req, res) => {
   res.json({ ok: true });
 });
 
+// --- Warsaw relay: provide conditions list (called by relay.js) ---------
+router.post('/api/tg-conditions', express.json(), (req, res) => {
+  const secret = getSetting('relay_secret', '');
+  if (!secret || req.headers['x-relay-secret'] !== secret) return res.status(403).json({ ok: false });
+  const conditions = db.prepare('SELECT label, channel_url, channel_id FROM wheel_conditions WHERE enabled = 1 AND channel_id != "" ORDER BY sort_order, id').all();
+  res.json({ ok: true, conditions });
+});
+
+// --- Warsaw relay: receive verification result (called by relay.js) -----
+router.post('/api/tg-relay', express.json(), (req, res) => {
+  const secret = getSetting('relay_secret', '');
+  if (!secret || req.headers['x-relay-secret'] !== secret) return res.status(403).json({ ok: false });
+  const { code, tg_id, tg_username, verified, reason } = req.body || {};
+  if (!code || !tg_id) return res.json({ ok: false, error: 'missing_fields' });
+  const sess = db.prepare('SELECT * FROM tg_sessions WHERE code = ?').get(code);
+  if (!sess) return res.json({ ok: false, error: 'session_not_found' });
+  if (verified) {
+    db.prepare('UPDATE tg_sessions SET tg_id = ?, tg_username = ?, verified = 1, reject_reason = ? WHERE code = ?').run(String(tg_id), tg_username || '', '', code);
+  } else {
+    db.prepare('UPDATE tg_sessions SET tg_id = ?, tg_username = ?, reject_reason = ? WHERE code = ?').run(String(tg_id), tg_username || '', reason || 'Условия не выполнены', code);
+  }
+  res.json({ ok: true });
+});
+
 // --- API: history -------------------------------------------------------
 router.get('/api/wheel/history', (req, res) => {
   const tgId = req.session.tg_id || '';

@@ -1019,6 +1019,12 @@ router.get('/wheels', (req, res) => {
   const totalSpins = (db.prepare('SELECT COUNT(*) n FROM wheel_spins').get() || {}).n || 0;
   const _hostname = req.get('x-forwarded-host') || req.get('host') || 'localhost';
   const _proto = _hostname.startsWith('localhost') ? 'http' : 'https';
+  // Auto-generate relay secret if missing
+  let relaySecret = getSetting('relay_secret', '');
+  if (!relaySecret) {
+    relaySecret = crypto.randomBytes(20).toString('hex');
+    setSetting('relay_secret', relaySecret);
+  }
   renderAdmin(req, res, 'admin/wheels', {
     active: 'wheels', wheels, conditions, spinStats, totalSpins,
     botToken: getSetting('tg_bot_token', ''),
@@ -1030,6 +1036,7 @@ router.get('/wheels', (req, res) => {
     navSteamkeysEnabled: getSetting('nav_steamkeys_enabled', '1') === '1',
     webhookUrl: `${_proto}://${_hostname}`,
     siteUrl: getSetting('tg_site_url', ''),
+    relaySecret,
   });
 });
 
@@ -1107,25 +1114,16 @@ router.post('/wheel-settings', (req, res) => {
   markDirty(); flash(req, 'success', 'Настройки сохранены.'); res.redirect('/admin/wheels');
 });
 
-router.post('/wheel-webhook', async (req, res) => {
-  try {
-    const { setWebhook } = require('../telegram');
-    const token = getSetting('tg_bot_token', '');
-    if (!token) { flash(req, 'error', 'Токен не задан.'); return res.redirect('/admin/wheels'); }
-    // Use explicit site_url from form if provided; otherwise auto-detect
-    let base = s(req.body.site_url) || '';
-    if (!base) {
-      const hostname = req.get('x-forwarded-host') || req.get('host') || 'localhost';
-      const proto = hostname.startsWith('localhost') ? 'http' : 'https';
-      base = proto + '://' + hostname;
-    }
-    base = base.replace(/\/$/, '');
-    // Save for future use
-    setSetting('tg_site_url', base);
-    const result = await setWebhook(token, base + '/telegram/webhook');
-    if (result.ok) flash(req, 'success', 'Webhook установлен: ' + base + '/telegram/webhook');
-    else flash(req, 'error', 'Ошибка Telegram: ' + JSON.stringify(result));
-  } catch (e) { flash(req, 'error', String(e)); }
+router.post('/wheel-webhook', (req, res) => {
+  let base = s(req.body.site_url) || '';
+  if (!base) {
+    const hostname = req.get('x-forwarded-host') || req.get('host') || 'localhost';
+    const proto = hostname.startsWith('localhost') ? 'http' : 'https';
+    base = proto + '://' + hostname;
+  }
+  base = base.replace(/\/$/, '');
+  setSetting('tg_site_url', base);
+  flash(req, 'success', 'URL сохранён: ' + base);
   res.redirect('/admin/wheels');
 });
 
